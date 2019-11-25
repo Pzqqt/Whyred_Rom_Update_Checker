@@ -3,7 +3,7 @@
 
 import time
 
-from config import SENDMESSAGE_ENABLE, LOOP_CHECK_INTERVAL
+from config import DEBUG_ENABLE, SENDMESSAGE_ENABLE, LOOP_CHECK_INTERVAL
 from check_list import CHECK_LIST, PE_PAGE_BS_CACHE
 from database import write_to_database, is_updated
 from tgbot import send_message
@@ -21,6 +21,8 @@ def _check_one(class_):
     try:
         cls.do_check()
     except:
+        if DEBUG_ENABLE:
+            raise
         print("\n! Check failed!")
         write_log_warning("%s check failed!" % cls.fullname)
         return False

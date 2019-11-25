@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+# 是否启用调试 若启用 将不再忽略检查过程中发生的任何异常
+# 建议在开发环境中启用 在生产环境中禁用
+DEBUG_ENABLE = False
+
 # SQLite 数据库文件名
 SQLITE_FILE = "saved.db"
 

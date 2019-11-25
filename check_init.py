@@ -11,7 +11,7 @@ import urllib3
 import requests
 from bs4 import BeautifulSoup
 
-from config import PROXIES_DIC, TIMEOUT
+from config import DEBUG_ENABLE, PROXIES_DIC, TIMEOUT
 
 # 禁用安全请求警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -92,6 +92,8 @@ class CheckUpdate:
                 verify=not disable_ssl_verify,
             )
         except:
+            if DEBUG_ENABLE:
+                raise
             return ""
         if req.ok:
             req.encoding = "utf-8"
