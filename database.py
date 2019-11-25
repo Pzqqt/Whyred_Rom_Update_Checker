@@ -60,6 +60,8 @@ def get_saved_info(name):
 
 def is_updated(check_update_obj):
     assert isinstance(check_update_obj, CheckUpdate)
+    if check_update_obj.info_dic["LATEST_VERSION"] == "Looks like there is no Rom file right now":
+        return False
     saved_info = get_saved_info(check_update_obj.name)
     if saved_info is None:
         return True
