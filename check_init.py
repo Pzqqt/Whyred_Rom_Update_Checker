@@ -73,23 +73,16 @@ class CheckUpdate:
             % (self.name, prop)
         )
 
-    def request_url(self, url, disable_ssl_verify=False, disable_proxy=False, custom_headers=None):
-        """ 请求 url 并返回页面源码 若请求失败 则返回空字符串
-        :param url: 要请求的 url
-        :param disable_ssl_verify: 是否禁用 SSL 检查
-        :param disable_proxy: 是否强制禁用代理
-        :param custom_headers: 使用自定义的请求头
-        :return: 页面源码
-        """
-        headers = custom_headers if custom_headers else {"user-agent": random.choice(UAS)}
-        proxies = {} if disable_proxy else self.proxies_dic
+    def request_url(self, url, **kwargs):
+        headers = kwargs.pop("headers", {"user-agent": random.choice(UAS)})
+        proxies = kwargs.pop("proxies", self.proxies_dic)
         try:
             req = requests.get(
                 url,
-                proxies=proxies,
                 timeout=TIMEOUT,
                 headers=headers,
-                verify=not disable_ssl_verify,
+                proxies=proxies,
+                **kwargs,
             )
         except:
             if DEBUG_ENABLE:
@@ -159,7 +152,7 @@ class H5aiCheck(CheckUpdate):
 
     def do_check(self):
         url = self.base_url + self.sub_url
-        bs_obj = self.get_bs(self.request_url(url, disable_ssl_verify=True))
+        bs_obj = self.get_bs(self.request_url(url, verify=False))
         trs = bs_obj.find("div", {"id": "fallback"}).find("table").find_all("tr")[1:]
         trs.sort(key=lambda x: x.find_all("td")[2].get_text(), reverse=True)
         build = list(filter(lambda x: x.find("a").get_text().endswith(".zip"), trs))[0]
@@ -181,7 +174,7 @@ class AexCheck(CheckUpdate):
         url = "https://api.aospextended.com/builds/" + self.sub_path
         json_text = self.request_url(
             url,
-            custom_headers={
+            headers={
                 "origin": "https://downloads.aospextended.com",
                 "referer": "https://downloads.aospextended.com/" + self.sub_path.split("/")[0],
                 "user-agent": UAS[0]

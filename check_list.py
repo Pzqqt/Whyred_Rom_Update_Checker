@@ -33,7 +33,7 @@ class Aicp(CheckUpdate):
     def do_check(self):
         req_text = self.request_url(
             "https://cors.aicp-rom.com/http://ota.aicp-rom.com/update.php?device=whyred",
-            custom_headers={
+            headers={
                 "Origin": "https://dwnld.aicp-rom.com",
                 "Referer": "https://dwnld.aicp-rom.com/",
                 "User-Agent": UAS[0]
@@ -198,7 +198,7 @@ class MiuiChinaStable(CheckUpdate):
 
     def do_check(self):
         url = "http://www.miui.com/download-341.html"
-        bs_obj = self.get_bs(self.request_url(url, disable_proxy=True))
+        bs_obj = self.get_bs(self.request_url(url, proxies={}))
         build = bs_obj.find("div", {"class": "content current_content"}).find("div", {"class": "block"})
         self.update_info("DOWNLOAD_LINK", build.find("div", {"class": "to_miroute"}).find("a")["href"])
         rom_info = build.find("div", {"class": "supports"}).find("p").get_text() \
@@ -212,7 +212,7 @@ class MiuiChinaBeta(CheckUpdate):
 
     def do_check(self):
         url = "http://www.miui.com/download-341.html"
-        bs_obj = self.get_bs(self.request_url(url, disable_proxy=True))
+        bs_obj = self.get_bs(self.request_url(url, proxies={}))
         build = bs_obj.find("div", {"class": "content current_content"}).find_all("div", {"class": "block"})[1]
         self.update_info("DOWNLOAD_LINK", build.find("div", {"class": "to_miroute"}).find("a")["href"])
         rom_info = build.find("div", {"class": "supports"}).find("p").get_text() \
