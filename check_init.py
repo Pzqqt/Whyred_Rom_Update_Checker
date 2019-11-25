@@ -17,8 +17,10 @@ from config import PROXIES_DIC, TIMEOUT
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 UAS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50",
+    ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+     "(KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"),
+    ("Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; en-us) AppleWebKit/534.50 "
+     "(KHTML, like Gecko) Version/5.1 Safari/534.50"),
     "Opera/9.80 (Windows NT 6.1; U; en) Presto/2.8.131 Version/11.11",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1"
 ]
@@ -67,9 +69,13 @@ class CheckUpdate:
             ("FILE_SIZE", None),
         ])
         if self.fullname is None:
-            raise Exception(
-                "Subclasses inherited from the CheckUpdate class must specify the 'fullname' property!"
-            )
+            self.raise_missing_property("fullname")
+
+    def raise_missing_property(self, prop):
+        raise Exception(
+            "Subclasses inherited from the %s class must specify the '%s' property when defining!"
+            % (self.name, prop)
+        )
 
     def request_url(self, url, disable_ssl_verify=False, disable_proxy=False, custom_headers=None):
         """ 请求 url 并返回页面源码 若请求失败 则返回空字符串
@@ -79,14 +85,8 @@ class CheckUpdate:
         :param custom_headers: 使用自定义的请求头
         :return: 页面源码
         """
-        if custom_headers is None:
-            headers = {"user-agent": random.choice(UAS)}
-        else:
-            headers = custom_headers
-        if disable_proxy:
-            proxies = {}
-        else:
-            proxies = self.proxies_dic
+        headers = custom_headers if custom_headers else {"user-agent": random.choice(UAS)}
+        proxies = {} if disable_proxy else self.proxies_dic
         try:
             req = requests.get(
                 url,
@@ -123,9 +123,7 @@ class SfCheck(CheckUpdate):
     def __init__(self):
         super().__init__()
         if self.project_name is None:
-            raise Exception(
-                "Subclasses inherited from the SfCheck class must specify the 'project_name' property!"
-            )
+            self.raise_missing_property("project_name")
 
     def do_check(self):
         if self.sub_path:
@@ -159,9 +157,7 @@ class H5aiCheck(CheckUpdate):
     def __init__(self):
         super().__init__()
         if self.base_url is None or self.sub_url is None:
-            raise Exception(
-                "Subclasses inherited from the H5aiCheck class must specify the 'base_url' & 'sub_url' property!"
-            )
+            self.raise_missing_property("base_url' & 'sub_url")
 
     def do_check(self):
         url = self.base_url + self.sub_url
@@ -169,8 +165,7 @@ class H5aiCheck(CheckUpdate):
         trs = bs_obj.find("div", {"id": "fallback"}).find("table").find_all("tr")[1:]
         trs.sort(key=lambda x: x.find_all("td")[2].get_text(), reverse=True)
         build = list(filter(lambda x: x.find("a").get_text().endswith(".zip"), trs))[0]
-        latest_version = build.find("a").get_text()
-        self.update_info("LATEST_VERSION", latest_version)
+        self.update_info("LATEST_VERSION", build.find("a").get_text())
         self.update_info("BUILD_DATE", build.find_all("td")[2].get_text())
         self.update_info("DOWNLOAD_LINK", self.base_url + build.find_all("td")[1].find("a")["href"])
         self.update_info("FILE_SIZE", build.find_all("td")[3].get_text())
@@ -182,9 +177,7 @@ class AexCheck(CheckUpdate):
     def __init__(self):
         super().__init__()
         if self.sub_path is None:
-            raise Exception(
-                "Subclasses inherited from the AexCheck class must specify the 'sub_path' property!"
-            )
+            self.raise_missing_property("sub_path")
 
     def do_check(self):
         url = "https://api.aospextended.com/builds/" + self.sub_path
@@ -193,13 +186,12 @@ class AexCheck(CheckUpdate):
             custom_headers={
                 "origin": "https://downloads.aospextended.com",
                 "referer": "https://downloads.aospextended.com/" + self.sub_path.split("/")[0],
-                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                              "(KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
+                "user-agent": UAS[0]
             }
         )
         json_dic = json.loads(json_text)[0]
         self.update_info("LATEST_VERSION", json_dic["file_name"])
-        self.update_info("FILE_SIZE", "%0.2f MB" % (int(json_dic["file_size"])/1048576,))
+        self.update_info("FILE_SIZE", "%0.2f MB" % (int(json_dic["file_size"]) / 1048576,))
         self.update_info("DOWNLOAD_LINK", json_dic["download_link"])
         self.update_info("BUILD_DATE", json_dic["timestamp"])
         try:
@@ -214,9 +206,7 @@ class PeCheck(CheckUpdate):
     def __init__(self):
         super().__init__()
         if self.index is None:
-            raise Exception(
-                "Subclasses inherited from the PeCheck class must specify the 'index' property!"
-            )
+            self.raise_missing_property("index")
 
     def do_check(self):
         url = "https://download.pixelexperience.org"
