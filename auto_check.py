@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+
+import time
+
+from config import SENDMESSAGE_ENABLE, LOOP_CHECK_INTERVAL
+from check_init import PeCheck
+from check_list import CHECK_LIST
+from database import write_to_database, is_updated
+from tgbot import send_message
+from format_text import gen_print_text
+from logger import write_log_info, write_log_warning
+
+def _get_time_str(time_num=None, offset=0):
+    if time_num is None:
+        time_num = time.time()
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_num + offset))
+
+def _check_one(class_):
+    cls = class_()
+    print("- Checking", cls.fullname, "...", end="")
+    try:
+        cls.do_check()
+    except:
+        print("\n! Check failed!")
+        write_log_warning("%s check failed!" % cls.fullname)
+        return False
+    if is_updated(cls):
+        print("\n> New build:", cls.info_dic["LATEST_VERSION"])
+        write_log_info("%s has updates: %s" % (cls.fullname, cls.info_dic["LATEST_VERSION"]))
+        write_to_database(cls)
+        if SENDMESSAGE_ENABLE:
+            send_message(gen_print_text(cls))
+    else:
+        print(" no update")
+        write_log_info("%s no update" % cls.fullname)
+    return True
+
+def loop_check():
+    while True:
+        check_failed_list = []
+        start_time = _get_time_str()
+        print(" - " + start_time)
+        print(" - Start...")
+        write_log_info("Start checking at %s" % start_time)
+        for class_ in CHECK_LIST:
+            result = _check_one(class_)
+            if not result:
+                check_failed_list.append(class_)
+            time.sleep(2)
+        print(" - Check again for failed items...")
+        write_log_info("Check again for failed items")
+        for class_ in check_failed_list:
+            _check_one(class_)
+            time.sleep(2)
+        PeCheck.cleanup_page_cache()
+        print(" - The next check will start at %s\n" % _get_time_str(offset=LOOP_CHECK_INTERVAL))
+        write_log_info("End of check")
+        try:
+            time.sleep(LOOP_CHECK_INTERVAL)
+        except KeyboardInterrupt:
+            print(" - Abort")
+            write_log_warning("Interrupt at %s" % _get_time_str())
+            return
+
+if __name__ == "__main__":
+    loop_check()
