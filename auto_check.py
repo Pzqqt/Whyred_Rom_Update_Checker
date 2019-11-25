@@ -4,8 +4,7 @@
 import time
 
 from config import SENDMESSAGE_ENABLE, LOOP_CHECK_INTERVAL
-from check_init import PeCheck
-from check_list import CHECK_LIST
+from check_list import CHECK_LIST, PE_PAGE_BS_CACHE
 from database import write_to_database, is_updated
 from tgbot import send_message
 from format_text import gen_print_text
@@ -53,7 +52,7 @@ def loop_check():
         for class_ in check_failed_list:
             _check_one(class_)
             time.sleep(2)
-        PeCheck.cleanup_page_cache()
+        PE_PAGE_BS_CACHE.clear()
         print(" - The next check will start at %s\n" % _get_time_str(offset=LOOP_CHECK_INTERVAL))
         write_log_info("End of check")
         try:

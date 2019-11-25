@@ -3,7 +3,9 @@
 
 import json
 
-from check_init import UAS, CheckUpdate, SfCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck
+from check_init import UAS, CheckUpdate, SfCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck, PeCheckPageCache
+
+PE_PAGE_BS_CACHE = PeCheckPageCache()
 
 class Linux44Y(CheckUpdate):
 
@@ -282,14 +284,17 @@ class Omni(CheckUpdate):
 
 class PeQ(PeCheck):
     fullname = "Pixel Experience Q Official"
+    page_cache = PE_PAGE_BS_CACHE
     index = 0
 
 class PeP(PeCheck):
     fullname = "Pixel Experience Pie Official"
+    page_cache = PE_PAGE_BS_CACHE
     index = 1
 
 class PePPe(PeCheck):
     fullname = "Pixel Experience Pie (Plus edition) Official"
+    page_cache = PE_PAGE_BS_CACHE
     index = 2
 
 class Pixys(SfCheck):

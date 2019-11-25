@@ -25,10 +25,6 @@ UAS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1"
 ]
 
-# PE 页面 bs 对象缓存 避免重复请求
-# 这样做(修改全局变量)并不是个好方法
-PE_PAGE_BS_CACHE = None
-
 def select_bs4_parser():
     try:
         import lxml
@@ -199,23 +195,36 @@ class AexCheck(CheckUpdate):
         except KeyError:
             pass
 
+class PeCheckPageCache:
+
+    def __init__(self):
+        self.cache = None
+
+    clear = __init__
+
 class PeCheck(CheckUpdate):
 
     index = None
+    page_cache = None
 
     def __init__(self):
         super().__init__()
         if self.index is None:
             self.raise_missing_property("index")
+        if self.page_cache is None:
+            self.raise_missing_property("page_cache")
+        if not isinstance(self.page_cache, PeCheckPageCache):
+            raise Exception(
+                "'page_cache' property must be a PeCheckPageCache object!"
+            )
 
     def do_check(self):
         url = "https://download.pixelexperience.org"
-        global PE_PAGE_BS_CACHE
-        if PE_PAGE_BS_CACHE is None:
+        if self.page_cache.cache is None:
             bs_obj = self.get_bs(self.request_url(url + "/whyred"))
-            PE_PAGE_BS_CACHE = bs_obj
+            self.page_cache.cache = bs_obj
         else:
-            bs_obj = PE_PAGE_BS_CACHE
+            bs_obj = self.page_cache.cache
         build = bs_obj.find_all("div", {"class": "panel panel-collapse"})[self.index]
         build_info = build.find("tbody").find("tr").find_all("td")
         self.update_info("BUILD_DATE", build_info[0].get_text())
@@ -236,11 +245,6 @@ class PeCheck(CheckUpdate):
             if "File size: " in line:
                 self.update_info("FILE_SIZE", line.strip().split(": ")[1])
         self.update_info("BUILD_CHANGELOG", build_changelog)
-
-    @staticmethod
-    def cleanup_page_cache():
-        global PE_PAGE_BS_CACHE
-        PE_PAGE_BS_CACHE = None
 
 class PlingCheck(CheckUpdate):
 
