@@ -174,11 +174,6 @@ class Legion(SfCheck):
     project_name = "legionrom"
     sub_path = "whyred/"
 
-# class LineageU1(SfCheck):
-#     fullname = "Lineage OS (Unofficial By srfarias)"
-#     project_name = "whyreddev"
-#     sub_path = "LineageOS17/"
-
 class LineageU1(PlingCheck):
     fullname = "Lineage OS (Unofficial By srfarias)"
     p_id = 1336266
