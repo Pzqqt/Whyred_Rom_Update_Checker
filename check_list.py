@@ -63,6 +63,7 @@ class AosipDf2(SfCheck):
 class AosipDf3(PlingCheck):
     fullname = "AOSiP DerpFest (By srfarias)"
     p_id = 1338683
+    collection_id = 1574482242
 
 class Aosmp(SfCheck):
     fullname = "AOSmP Official"
@@ -181,6 +182,7 @@ class Legion(SfCheck):
 class LineageU1(PlingCheck):
     fullname = "Lineage OS (Unofficial By srfarias)"
     p_id = 1336266
+    collection_id = 1573678199
 
 class Liquid(SfCheck):
     fullname = "Liquid Remix Official"

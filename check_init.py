@@ -4,7 +4,6 @@
 import random
 from collections import OrderedDict
 import json
-import re
 from urllib.parse import unquote
 import urllib3
 
@@ -244,24 +243,31 @@ class PeCheck(CheckUpdate):
 class PlingCheck(CheckUpdate):
 
     p_id = None
+    collection_id = None
 
     def __init__(self):
         super().__init__()
         if self.p_id is None:
-            raise Exception(
-                "Subclasses inherited from the PlingCheck class must specify the 'p_id' property!"
-            )
+            self.raise_missing_property("p_id")
+        if self.collection_id is None:
+            self.raise_missing_property("collection_id")
 
     def do_check(self):
-        url = "https://www.pling.com/p/%s/#files-panel" % self.p_id
-        req_text = self.request_url(url)
-        json_text = re.search(r"filesJson..=.(.*?);\n", req_text).group(1)
-        json_dic = json.loads(json_text)
-        if len(json_dic):
-            latest_build = json_dic[0]
+        url = "https://www.pling.com/p/%s/getfilesajax" % self.p_id
+        params = {
+            "format": "json",
+            "ignore_status_code": 1,
+            "status": "all",
+            "collection_id": self.collection_id,
+            "perpage": 1000,
+            "page": 1,
+        }
+        json_dic = json.loads(self.request_url(url, params=params))
+        if json_dic["files"]:
+            latest_build = json_dic["files"][-1]
             self.update_info("LATEST_VERSION", latest_build["name"])
             self.update_info("BUILD_DATE", latest_build["updated_timestamp"])
             self.update_info("FILE_MD5", latest_build["md5sum"])
-            self.update_info("DOWNLOAD_LINK", unquote(latest_build["url"]))
+            self.update_info("DOWNLOAD_LINK", unquote(latest_build["tags"]).replace("link##", ""))
         else:
             self.update_info("LATEST_VERSION", "Looks like there is no Rom file right now")
