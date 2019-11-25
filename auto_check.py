@@ -20,11 +20,16 @@ def _check_one(class_):
     print("- Checking", cls.fullname, "...", end="")
     try:
         cls.do_check()
-    except:
-        if DEBUG_ENABLE:
-            raise
+    except Exception as error:
         print("\n! Check failed!")
+        write_log_warning(str(error))
         write_log_warning("%s check failed!" % cls.fullname)
+        if DEBUG_ENABLE:
+            print(error)
+            if input("* Continue?(Y/N) ").upper() != "Y":
+                print(" - Abort by user")
+                write_log_warning("Abort by user")
+                raise
         return False
     if is_updated(cls):
         print("\n> New build:", cls.info_dic["LATEST_VERSION"])
@@ -60,8 +65,8 @@ def loop_check():
         try:
             time.sleep(LOOP_CHECK_INTERVAL)
         except KeyboardInterrupt:
-            print(" - Abort")
-            write_log_warning("Interrupt at %s" % _get_time_str())
+            print(" - Abort by user")
+            write_log_warning("Abort by user")
             return
 
 if __name__ == "__main__":
