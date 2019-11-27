@@ -10,7 +10,7 @@ import requests
 from requests.packages import urllib3
 from bs4 import BeautifulSoup
 
-from config import DEBUG_ENABLE, PROXIES_DIC, TIMEOUT
+from config import PROXIES_DIC, TIMEOUT
 
 # 禁用安全请求警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -73,18 +73,13 @@ class CheckUpdate:
     def request_url(url, **kwargs):
         headers = kwargs.pop("headers", {"user-agent": random.choice(UAS)})
         proxies = kwargs.pop("proxies", PROXIES_DIC)
-        try:
-            req = requests.get(
-                url, timeout=TIMEOUT, headers=headers, proxies=proxies, **kwargs
-            )
-        except:
-            if DEBUG_ENABLE:
-                raise
-            return ""
+        req = requests.get(
+            url, timeout=TIMEOUT, headers=headers, proxies=proxies, **kwargs
+        )
         if req.ok:
             req.encoding = "utf-8"
             return req.text
-        return ""
+        raise Exception("Request failed, code: %s" % req.status_code)
 
     def get_hash_from_file(self, url, **kwargs):
         return self.request_url(url, **kwargs).strip().split()[0]

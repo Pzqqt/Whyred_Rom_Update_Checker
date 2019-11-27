@@ -21,7 +21,7 @@ def _check_one(class_):
     try:
         cls.do_check()
     except Exception as error:
-        print("\n! Check failed!")
+        print("\n! %s\n! Check failed!" % error)
         write_log_warning(str(error))
         write_log_warning("%s check failed!" % cls.fullname)
         if DEBUG_ENABLE:
