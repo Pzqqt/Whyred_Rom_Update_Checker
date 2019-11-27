@@ -5,9 +5,9 @@ import random
 from collections import OrderedDict
 import json
 from urllib.parse import unquote
-import urllib3
 
 import requests
+from requests.packages import urllib3
 from bs4 import BeautifulSoup
 
 from config import DEBUG_ENABLE, PROXIES_DIC, TIMEOUT
@@ -44,9 +44,6 @@ BS4_PARSER = select_bs4_parser()
 
 class CheckUpdate:
 
-    proxies_dic = PROXIES_DIC
-    bs4_parser = BS4_PARSER
-
     fullname = None
 
     def __init__(self):
@@ -72,16 +69,13 @@ class CheckUpdate:
             % (self.name, prop)
         )
 
-    def request_url(self, url, **kwargs):
+    @staticmethod
+    def request_url(url, **kwargs):
         headers = kwargs.pop("headers", {"user-agent": random.choice(UAS)})
-        proxies = kwargs.pop("proxies", self.proxies_dic)
+        proxies = kwargs.pop("proxies", PROXIES_DIC)
         try:
             req = requests.get(
-                url,
-                timeout=TIMEOUT,
-                headers=headers,
-                proxies=proxies,
-                **kwargs,
+                url, timeout=TIMEOUT, headers=headers, proxies=proxies, **kwargs
             )
         except:
             if DEBUG_ENABLE:
@@ -95,8 +89,9 @@ class CheckUpdate:
     def get_hash_from_file(self, url, **kwargs):
         return self.request_url(url, **kwargs).strip().split()[0]
 
-    def get_bs(self, url_text):
-        return BeautifulSoup(url_text, self.bs4_parser)
+    @staticmethod
+    def get_bs(url_text):
+        return BeautifulSoup(url_text, BS4_PARSER)
 
     def do_check(self):
         raise NotImplementedError
@@ -104,6 +99,9 @@ class CheckUpdate:
     def update_info(self, key, value):
         assert key in self.info_dic.keys()
         self.info_dic[key] = value
+
+    def no_any_builds(self):
+        self.info_dic["LATEST_VERSION"] = "Looks like there is no Rom file right now"
 
 class SfCheck(CheckUpdate):
 
@@ -124,7 +122,7 @@ class SfCheck(CheckUpdate):
         bs_obj = self.get_bs(self.request_url(url))
         builds = list(bs_obj.find_all("item"))
         if not builds:
-            self.update_info("LATEST_VERSION", "Looks like there is no Rom file right now")
+            self.no_any_builds()
             return
         builds.sort(key=lambda x: -int(x.find("files:sf-file-id").get_text()))
         for build in builds:
@@ -137,7 +135,7 @@ class SfCheck(CheckUpdate):
                 self.update_info("FILE_SIZE", "%0.1f MB" % (int(build.find("media:content")["filesize"]) / 1000 / 1000,))
                 break
         else:
-            self.update_info("LATEST_VERSION", "Looks like there is no Rom file right now")
+            self.no_any_builds()
 
 class H5aiCheck(CheckUpdate):
 
@@ -270,4 +268,4 @@ class PlingCheck(CheckUpdate):
             self.update_info("FILE_MD5", latest_build["md5sum"])
             self.update_info("DOWNLOAD_LINK", unquote(latest_build["tags"]).replace("link##", ""))
         else:
-            self.update_info("LATEST_VERSION", "Looks like there is no Rom file right now")
+            self.no_any_builds()

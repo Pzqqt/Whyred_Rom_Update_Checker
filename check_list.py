@@ -3,7 +3,8 @@
 
 import json
 
-from check_init import UAS, CheckUpdate, SfCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck, PeCheckPageCache
+from check_init import UAS, CheckUpdate, SfCheck, H5aiCheck, \
+                       AexCheck, PeCheck, PlingCheck, PeCheckPageCache
 
 PE_PAGE_BS_CACHE = PeCheckPageCache()
 
@@ -14,8 +15,8 @@ class Linux44Y(CheckUpdate):
     def do_check(self):
         url = "https://www.kernel.org"
         bs_obj = self.get_bs(self.request_url(url))
-        for tr in bs_obj.find("table", {"id": "releases"}).find_all("tr"):
-            kernel_version = tr.find_all("td")[1].get_text()
+        for tr_obj in bs_obj.find("table", {"id": "releases"}).find_all("tr"):
+            kernel_version = tr_obj.find_all("td")[1].get_text()
             if kernel_version.startswith("4.4."):
                 self.update_info("LATEST_VERSION", kernel_version)
                 break
@@ -196,7 +197,8 @@ class MiuiChinaStable(CheckUpdate):
     def do_check(self):
         url = "http://www.miui.com/download-341.html"
         bs_obj = self.get_bs(self.request_url(url, proxies={}))
-        build = bs_obj.find("div", {"class": "content current_content"}).find("div", {"class": "block"})
+        build = bs_obj.find("div", {"class": "content current_content"}) \
+                      .find("div", {"class": "block"})
         self.update_info("DOWNLOAD_LINK", build.find("div", {"class": "to_miroute"}).find("a")["href"])
         rom_info = build.find("div", {"class": "supports"}).find("p").get_text() \
                         .replace("\n", "").replace("（", "(").replace("）", ")").split("：")
@@ -210,7 +212,8 @@ class MiuiChinaBeta(CheckUpdate):
     def do_check(self):
         url = "http://www.miui.com/download-341.html"
         bs_obj = self.get_bs(self.request_url(url, proxies={}))
-        build = bs_obj.find("div", {"class": "content current_content"}).find_all("div", {"class": "block"})[1]
+        build = bs_obj.find("div", {"class": "content current_content"}) \
+                      .find_all("div", {"class": "block"})[1]
         self.update_info("DOWNLOAD_LINK", build.find("div", {"class": "to_miroute"}).find("a")["href"])
         rom_info = build.find("div", {"class": "supports"}).find("p").get_text() \
                         .replace("\n", "").replace("（", "(").replace("）", ")").split("：")
@@ -236,7 +239,8 @@ class MiuiPolska(CheckUpdate):
     def do_check(self):
         url = "https://miuipolska.pl/download/"
         bs_obj = self.get_bs(self.request_url(url))
-        build = bs_obj.find("div", {"id": "redmi-note-5pro"}).find_next().find("div", {"class": "col-sm-9"})
+        build = bs_obj.find("div", {"id": "redmi-note-5pro"}).find_next() \
+                      .find("div", {"class": "col-sm-9"})
         dl_link1 = build.find("ul", {"class": "dwnl-b"}).find("li").find("a")["href"]
         dl_link2 = build.find("ul", {"class": "dwnl-b"}).find_all("li")[1].find("a")["href"]
         dl_link3 = build.find_all("ul", {"class": "dwnl-b"})[1].find("li").find("a")["href"]
@@ -272,7 +276,7 @@ class Omni(CheckUpdate):
                 self.update_info("FILE_SIZE", file.find_all("td")[3].get_text())
                 break
         else:
-            self.update_info("LATEST_VERSION", "Looks like there is no Rom file right now")
+            self.no_any_builds()
             return
         for file in files:
             file_name = file.find("a").get_text()
@@ -327,7 +331,8 @@ class ResurrectionRemix(CheckUpdate):
                 self.update_info("BUILD_DATE", file_info.find_all("span")[2].get_text().strip())
                 try:
                     hash_dic = json.loads(self.request_url(
-                        "https://get.resurrectionremix.com/?hash=whyred/" + self.info_dic["LATEST_VERSION"]
+                        "https://get.resurrectionremix.com/?hash=whyred/%s"
+                        % self.info_dic["LATEST_VERSION"]
                     ))
                 except:
                     pass
@@ -336,7 +341,7 @@ class ResurrectionRemix(CheckUpdate):
                     self.update_info("FILE_SHA1", hash_dic["sha1"])
                 break
         else:
-            self.update_info("LATEST_VERSION", "Looks like there is no Rom file right now")
+            self.no_any_builds()
 
 class ResurrectionRemixU1(SfCheck):
     fullname = "Resurrection Remix OS(Unofficial By srfarias)"
