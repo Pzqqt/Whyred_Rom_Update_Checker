@@ -48,6 +48,7 @@ def loop_check():
         start_time = _get_time_str()
         print(" - " + start_time)
         print(" - Start...")
+        write_log_info("=" * 64)
         write_log_info("Start checking at %s" % start_time)
         for class_ in CHECK_LIST:
             result = _check_one(class_)
