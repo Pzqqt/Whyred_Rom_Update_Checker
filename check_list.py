@@ -185,10 +185,14 @@ class Liquid(SfCheck):
     project_name = "liquid-remix"
     sub_path = "whyred/"
 
-class Nitrogen(SfCheck):
-    fullname = "Nitrogen Official"
-    project_name = "nitrogen-project"
+class Lotus(SfCheck):
+    fullname = "Lotus OS Official"
+    project_name = "lotus-os"
     sub_path = "whyred/"
+
+class Minimal(SfCheck):
+    fullname = "Minimal Project Official"
+    project_name = "minimalwhyred"
 
 class MiuiChinaStable(CheckUpdate):
 
@@ -257,6 +261,11 @@ class MiuiPolska(CheckUpdate):
             "# Spare 2\n%s"
             % (dl_link1, dl_link2, dl_link3)
         )
+
+class Nitrogen(SfCheck):
+    fullname = "Nitrogen Official"
+    project_name = "nitrogen-project"
+    sub_path = "whyred/"
 
 class Omni(CheckUpdate):
 
@@ -410,11 +419,13 @@ CHECK_LIST = (
     Legion,
     LineageU1,
     Liquid,
-    Nitrogen,
+    Lotus,
+    Minimal,
     MiuiChinaStable,
     MiuiChinaBeta,
     MiuiGlobalStable,
     MiuiPolska,
+    Nitrogen,
     Omni,
     PeQ,
     PeP,
