@@ -70,19 +70,22 @@ class CheckUpdate:
         )
 
     @staticmethod
-    def request_url(url, **kwargs):
+    def request_url(url, encoding="utf-8", **kwargs):
         headers = kwargs.pop("headers", {"user-agent": random.choice(UAS)})
         proxies = kwargs.pop("proxies", PROXIES_DIC)
         req = requests.get(
             url, timeout=TIMEOUT, headers=headers, proxies=proxies, **kwargs
         )
-        if req.ok:
-            req.encoding = "utf-8"
-            return req.text
-        raise Exception("Request failed, code: %s" % req.status_code)
+        if not req.ok:
+            raise Exception("Request failed, code: %s" % req.status_code)
+        req.encoding = encoding
+        return req.text
 
     def get_hash_from_file(self, url, **kwargs):
-        return self.request_url(url, **kwargs).strip().split()[0]
+        try:
+            return self.request_url(url, **kwargs).strip().split()[0]
+        except:
+            return None
 
     @staticmethod
     def get_bs(url_text):
