@@ -298,7 +298,7 @@ class Omni(CheckUpdate):
         else:
             self.no_any_builds()
             return
-        self.update_info("FILE_MD5", self.get_hash_from_file(url + ".md5sum"))
+        self.update_info("FILE_MD5", self.get_hash_from_file(url + file_name + ".md5sum"))
 
 class PeQ(PeCheck):
     fullname = "Pixel Experience Q Official"
