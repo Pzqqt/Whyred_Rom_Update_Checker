@@ -48,10 +48,21 @@ class Aicp(CheckUpdate):
         self.update_info("FILE_MD5", json_dic["md5"])
         self.update_info("BUILD_CHANGELOG", json_dic["url"] + ".html")
 
-class AosipBeta(H5aiCheck):
+class Aosip(H5aiCheck):
     fullname = "AOSiP Official"
     base_url = "https://get.aosip.dev"
     sub_url = "/whyred/"
+
+    def do_check(self):
+        super().do_check()
+        self.update_info(
+            "BUILD_CHANGELOG",
+            "https://raw.githubusercontent.com/AOSiP-Devices/Updater-Stuff/master/whyred/changelog"
+        )
+        self.update_info(
+            "FILE_MD5",
+            self.get_hash_from_file(self.info_dic["DOWNLOAD_LINK"] + ".md5sum")
+        )
 
 class AosipDf(SfCheck):
     fullname = "AOSiP DerpFest (By Adi)"
@@ -80,11 +91,6 @@ class ArrowQ(SfCheck):
     fullname = "Arrow OS Q Official"
     project_name = "arrow-os"
     sub_path = "arrow-10.0/whyred/"
-
-class AtomQ(SfCheck):
-    fullname = "Atom OS Official"
-    project_name = "atom-os-project"
-    sub_path = "Ten/whyred/"
 
 class Beast(SfCheck):
     fullname = "BeastRom Pie Official"
@@ -127,9 +133,14 @@ class Cosmic(SfCheck):
     sub_path = "whyred/"
 
 class CrDroid(SfCheck):
-    fullname = "CrDroid Official"
+    fullname = "CrDroid Pie Official"
     project_name = "crdroidpie"
     sub_path = "WHYRED/"
+
+class CrDroidQ(SfCheck):
+    fullname = "CrDroid Q Official"
+    project_name = "crdroid"
+    sub_path = "whyred/v6.x/"
 
 class CrDroidU1(SfCheck):
     fullname = "CrDroid Q (Unofficial By AncientProject)"
@@ -350,7 +361,7 @@ class ResurrectionRemix(CheckUpdate):
             self.no_any_builds()
 
 class ResurrectionRemixU1(SfCheck):
-    fullname = "Resurrection Remix OS(Unofficial By srfarias)"
+    fullname = "Resurrection Remix OS (Unofficial By srfarias)"
     project_name = "whyreddev"
     sub_path = "ResurrectionRemixOS/"
 
@@ -388,14 +399,13 @@ CHECK_LIST = (
     Linux44Y,
     AexP,
     Aicp,
-    AosipBeta,
+    Aosip,
     AosipDf,
     AosipDf2,
     AosipDf3,
     Aosmp,
     ArrowP,
     ArrowQ,
-    AtomQ,
     Beast,
     Bliss,
     Bootleggers,
@@ -405,6 +415,7 @@ CHECK_LIST = (
     Cosp,
     Cosmic,
     CrDroid,
+    CrDroidQ,
     CrDroidU1,
     DotP,
     EvolutionX,
