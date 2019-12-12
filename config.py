@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+import os
+
 # 是否启用调试 若启用 将不再忽略检查过程中发生的任何异常
 # 建议在开发环境中启用 在生产环境中禁用
 DEBUG_ENABLE = False
@@ -30,10 +32,10 @@ IS_SOCKS = True
 SENDMESSAGE_ENABLE = False
 
 # TG BOT TOKEN
-TG_TOKEN = "123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHI"
+TG_TOKEN = os.environ.get("TG_TOKEN", "")
 
 # 发送消息到...
-TG_SENDTO = "@******"
+TG_SENDTO = os.environ.get("TG_SENDTO", "")
 
 if IS_SOCKS:
     PROXIES_DIC = {"http": "socks5h://%s" % PROXIES, "https": "socks5h://%s" % PROXIES}
