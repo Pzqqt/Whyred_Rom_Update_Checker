@@ -93,7 +93,7 @@ class ArrowQ(SfCheck):
     sub_path = "arrow-10.0/whyred/"
 
 class Beast(SfCheck):
-    fullname = "BeastRom Pie Official"
+    fullname = "Beast Rom Pie Official"
     project_name = "beastroms"
     sub_path = "whyred/"
 
@@ -247,36 +247,24 @@ class MiuiGlobalStable(CheckUpdate):
         self.update_info("FILE_SIZE", rom_info["size"])
         self.update_info("DOWNLOAD_LINK", rom_info["rom_url"])
 
-class MiuiPolska(CheckUpdate):
+class MiuiEu(SfCheck):
+    fullname = "Xiaomi.eu Multilang Developer ROM"
+    project_name = "xiaomi-eu-multilang-miui-roms"
+    sub_path = "xiaomi.eu/MIUI-WEEKLY-RELEASES/"
 
-    fullname = "MIUI Polska Developer ROM"
-
-    def do_check(self):
-        url = "https://miuipolska.pl/download/"
-        bs_obj = self.get_bs(self.request_url(url))
-        build = bs_obj.find("div", {"id": "redmi-note-5pro"}).find_next() \
-                      .find("div", {"class": "col-sm-9"})
-        dl_link1 = build.find("ul", {"class": "dwnl-b"}).find("li").find("a")["href"]
-        dl_link2 = build.find("ul", {"class": "dwnl-b"}).find_all("li")[1].find("a")["href"]
-        dl_link3 = build.find_all("ul", {"class": "dwnl-b"})[1].find("li").find("a")["href"]
-        rom_info = build.find("div", {"class": "dwnl-m"})
-        self.update_info("LATEST_VERSION", rom_info.find("ul").find("li").get_text().split()[-1])
-        rom_info_2 = rom_info.find("i").get_text().split(" ")
-        self.update_info("FILE_SIZE", rom_info.find("ul").find_all("li")[-1].get_text().split()[-1])
-        self.update_info("FILE_MD5", rom_info_2[1])
-        self.update_info("BUILD_DATE", rom_info_2[-1])
-        self.update_info(
-            "DOWNLOAD_LINK",
-            "# Main server(sourceforge)\n%s\n"
-            "# Spare 1(AFH)\n%s\n"
-            "# Spare 2\n%s"
-            % (dl_link1, dl_link2, dl_link3)
-        )
+    @staticmethod
+    def filter_rule(string):
+        return "HMNote5Pro" in string
 
 class Nitrogen(SfCheck):
-    fullname = "Nitrogen Official"
+    fullname = "Nitrogen OS Official"
     project_name = "nitrogen-project"
     sub_path = "whyred/"
+
+class NitrogenU1(SfCheck):
+    fullname = "Nitrogen OS (Unofficial By Bagaskara815)"
+    project_name = "nangis"
+    sub_path = "NitrogenOS/Whyred/10/"
 
 class Omni(CheckUpdate):
 
@@ -326,7 +314,7 @@ class Posp(SfCheck):
     sub_path = "whyred/"
 
 class Revenge(SfCheck):
-    fullname = "Revenge OS Official(By srfarias)"
+    fullname = "Revenge OS Official (By srfarias)"
     project_name = "whyreddev"
     sub_path = "RevengeOS/"
 
@@ -432,8 +420,9 @@ CHECK_LIST = (
     MiuiChinaStable,
     MiuiChinaBeta,
     MiuiGlobalStable,
-    MiuiPolska,
+    MiuiEu,
     Nitrogen,
+    NitrogenU1,
     Omni,
     PeQ,
     PeP,

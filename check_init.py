@@ -125,7 +125,7 @@ class SfCheck(CheckUpdate):
         builds.sort(key=lambda x: -int(x.find("files:sf-file-id").get_text()))
         for build in builds:
             file_version = build.guid.string.split("/")[-2]
-            if file_version.endswith(".zip"):
+            if self.filter_rule(file_version):
                 self.update_info("LATEST_VERSION", file_version)
                 self.update_info("DOWNLOAD_LINK", build.guid.string)
                 self.update_info("BUILD_DATE", build.pubdate.string)
@@ -134,6 +134,10 @@ class SfCheck(CheckUpdate):
                 break
         else:
             self.no_any_builds()
+
+    @staticmethod
+    def filter_rule(string):
+        return string.endswith(".zip")
 
 class H5aiCheck(CheckUpdate):
 
