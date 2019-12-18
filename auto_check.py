@@ -3,7 +3,7 @@
 
 import time
 
-from config import DEBUG_ENABLE, SENDMESSAGE_ENABLE, LOOP_CHECK_INTERVAL
+from config import DEBUG_ENABLE, ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL
 from check_list import CHECK_LIST, PE_PAGE_BS_CACHE
 from database import write_to_database, is_updated
 from tgbot import send_message
@@ -35,7 +35,7 @@ def _check_one(class_):
         print("\n> New build:", cls.info_dic["LATEST_VERSION"])
         write_log_info("%s has updates: %s" % (cls.fullname, cls.info_dic["LATEST_VERSION"]))
         write_to_database(cls)
-        if SENDMESSAGE_ENABLE:
+        if ENABLE_SENDMESSAGE:
             send_message(gen_print_text(cls))
     else:
         print(" no update")

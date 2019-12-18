@@ -182,7 +182,7 @@ class Ion(SfCheck):
     sub_path = "device/xiaomi/whyred/"
 
 class Legion(SfCheck):
-    fullname = "Legion Official"
+    fullname = "Legion OS Official"
     project_name = "legionrom"
     sub_path = "whyred/"
 

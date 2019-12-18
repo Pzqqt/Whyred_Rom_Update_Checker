@@ -10,7 +10,7 @@ import requests
 from requests.packages import urllib3
 from bs4 import BeautifulSoup
 
-from config import PROXIES_DIC, TIMEOUT
+from config import _PROXIES_DIC, TIMEOUT
 
 # 禁用安全请求警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -71,10 +71,11 @@ class CheckUpdate:
 
     @staticmethod
     def request_url(url, encoding="utf-8", **kwargs):
+        timeout = kwargs.pop("timeout", TIMEOUT)
         headers = kwargs.pop("headers", {"user-agent": random.choice(UAS)})
-        proxies = kwargs.pop("proxies", PROXIES_DIC)
+        proxies = kwargs.pop("proxies", _PROXIES_DIC)
         req = requests.get(
-            url, timeout=TIMEOUT, headers=headers, proxies=proxies, **kwargs
+            url, timeout=timeout, headers=headers, proxies=proxies, **kwargs
         )
         if not req.ok:
             raise Exception("Request failed, code: %s" % req.status_code)
@@ -184,10 +185,7 @@ class AexCheck(CheckUpdate):
         self.update_info("FILE_SIZE", "%0.2f MB" % (int(json_dic["file_size"]) / 1048576,))
         self.update_info("DOWNLOAD_LINK", json_dic["download_link"])
         self.update_info("BUILD_DATE", json_dic["timestamp"])
-        try:
-            self.update_info("BUILD_CHANGELOG", json_dic["changelog"])
-        except KeyError:
-            pass
+        self.update_info("BUILD_CHANGELOG", json_dic.get("changelog"))
 
 class PeCheckPageCache:
 
@@ -203,10 +201,8 @@ class PeCheck(CheckUpdate):
 
     def __init__(self):
         super().__init__()
-        if self.index is None:
-            self.raise_missing_property("index")
-        if self.page_cache is None:
-            self.raise_missing_property("page_cache")
+        if self.index is None or self.page_cache is None:
+            self.raise_missing_property("index' & 'page_cache")
         if not isinstance(self.page_cache, PeCheckPageCache):
             raise Exception(
                 "'page_cache' property must be a PeCheckPageCache object!"
@@ -247,10 +243,8 @@ class PlingCheck(CheckUpdate):
 
     def __init__(self):
         super().__init__()
-        if self.p_id is None:
-            self.raise_missing_property("p_id")
-        if self.collection_id is None:
-            self.raise_missing_property("collection_id")
+        if self.p_id is None or self.collection_id is None:
+            self.raise_missing_property("p_id' & 'collection_id")
 
     def do_check(self):
         url = "https://www.pling.com/p/%s/getfilesajax" % self.p_id

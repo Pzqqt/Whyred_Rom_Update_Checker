@@ -34,20 +34,22 @@ Base.metadata.create_all(Engine)
 def write_to_database(check_update_obj):
     assert isinstance(check_update_obj, CheckUpdate)
     session = DBSession()
-    if check_update_obj.name in {x.ID for x in session.query(Saved).all()}:
-        saved_data = session.query(Saved).filter(Saved.ID == check_update_obj.name).one()
-        saved_data.FULL_NAME = check_update_obj.fullname
-        for key, value in check_update_obj.info_dic.items():
-            setattr(saved_data, key, value)
-    else:
-        new_data = Saved(
-            ID=check_update_obj.name,
-            FULL_NAME=check_update_obj.fullname,
-            **check_update_obj.info_dic
-        )
-        session.add(new_data)
-    session.commit()
-    session.close()
+    try:
+        if check_update_obj.name in {x.ID for x in session.query(Saved).all()}:
+            saved_data = session.query(Saved).filter(Saved.ID == check_update_obj.name).one()
+            saved_data.FULL_NAME = check_update_obj.fullname
+            for key, value in check_update_obj.info_dic.items():
+                setattr(saved_data, key, value)
+        else:
+            new_data = Saved(
+                ID=check_update_obj.name,
+                FULL_NAME=check_update_obj.fullname,
+                **check_update_obj.info_dic
+            )
+            session.add(new_data)
+        session.commit()
+    finally:
+        session.close()
 
 def get_saved_info(name):
     session = DBSession()

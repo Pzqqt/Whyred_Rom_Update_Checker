@@ -14,7 +14,7 @@ SQLITE_FILE = "saved.db"
 LOG_FILE = "log.txt"
 
 # 是否启用日志
-LOGGER_ENABLE = True
+ENABLE_LOGGER = True
 
 # 循环检查的间隔时间(360分钟)
 LOOP_CHECK_INTERVAL = 360 * 60
@@ -26,10 +26,10 @@ PROXIES = "127.0.0.1:1080"
 TIMEOUT = 20
 
 # 是否为 Socks5 代理
-IS_SOCKS = True
+IS_SOCKS = False
 
 # 是否启用 TG BOT 发送消息的功能
-SENDMESSAGE_ENABLE = False
+ENABLE_SENDMESSAGE = False
 
 # TG BOT TOKEN
 TG_TOKEN = os.environ.get("TG_TOKEN", "")
@@ -38,6 +38,6 @@ TG_TOKEN = os.environ.get("TG_TOKEN", "")
 TG_SENDTO = os.environ.get("TG_SENDTO", "")
 
 if IS_SOCKS:
-    PROXIES_DIC = {"http": "socks5h://%s" % PROXIES, "https": "socks5h://%s" % PROXIES}
+    _PROXIES_DIC = {"http": "socks5h://%s" % PROXIES, "https": "socks5h://%s" % PROXIES}
 else:
-    PROXIES_DIC = {"http": PROXIES, "https": PROXIES}
+    _PROXIES_DIC = {"http": PROXIES, "https": PROXIES}

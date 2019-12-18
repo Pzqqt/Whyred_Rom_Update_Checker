@@ -3,11 +3,11 @@
 
 import telebot
 
-from config import TG_TOKEN, TG_SENDTO, PROXIES_DIC
+from config import TG_TOKEN, TG_SENDTO, _PROXIES_DIC
 from logger import write_log_warning
 
 bot = telebot.TeleBot(TG_TOKEN)
-telebot.apihelper.proxy = PROXIES_DIC
+telebot.apihelper.proxy = _PROXIES_DIC
 
 def send_message(text, user=TG_SENDTO):
     try:

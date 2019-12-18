@@ -3,7 +3,7 @@
 
 import logging
 
-from config import LOG_FILE, LOGGER_ENABLE
+from config import LOG_FILE, ENABLE_LOGGER
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(level=logging.INFO)
@@ -18,9 +18,9 @@ def build_handler():
 LOGGER.addHandler(build_handler())
 
 def write_log_info(text):
-    if LOGGER_ENABLE:
+    if ENABLE_LOGGER:
         LOGGER.info(text)
 
 def write_log_warning(text):
-    if LOGGER_ENABLE:
+    if ENABLE_LOGGER:
         LOGGER.warning(text)
