@@ -99,9 +99,6 @@ class CheckUpdate:
         assert key in self.info_dic.keys()
         self.info_dic[key] = value
 
-    def no_any_builds(self):
-        self.info_dic["LATEST_VERSION"] = "Looks like there is no Rom file right now"
-
 class SfCheck(CheckUpdate):
 
     project_name = None
@@ -121,7 +118,6 @@ class SfCheck(CheckUpdate):
         bs_obj = self.get_bs(self.request_url(url))
         builds = list(bs_obj.find_all("item"))
         if not builds:
-            self.no_any_builds()
             return
         builds.sort(key=lambda x: -int(x.find("files:sf-file-id").get_text()))
         for build in builds:
@@ -131,10 +127,11 @@ class SfCheck(CheckUpdate):
                 self.update_info("DOWNLOAD_LINK", build.guid.string)
                 self.update_info("BUILD_DATE", build.pubdate.string)
                 self.update_info("FILE_MD5", build.find("media:hash", {"algo": "md5"}).string)
-                self.update_info("FILE_SIZE", "%0.1f MB" % (int(build.find("media:content")["filesize"]) / 1000 / 1000,))
+                self.update_info(
+                    "FILE_SIZE",
+                    "%0.1f MB" % (int(build.find("media:content")["filesize"]) / 1000 / 1000,)
+                )
                 break
-        else:
-            self.no_any_builds()
 
     @staticmethod
     def filter_rule(string):
@@ -263,5 +260,3 @@ class PlingCheck(CheckUpdate):
             self.update_info("BUILD_DATE", latest_build["updated_timestamp"])
             self.update_info("FILE_MD5", latest_build["md5sum"])
             self.update_info("DOWNLOAD_LINK", unquote(latest_build["tags"]).replace("link##", ""))
-        else:
-            self.no_any_builds()

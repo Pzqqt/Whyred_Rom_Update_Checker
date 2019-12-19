@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 import time
+import traceback
 
 from config import DEBUG_ENABLE, ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL
 from check_list import CHECK_LIST, PE_PAGE_BS_CACHE
@@ -20,12 +21,12 @@ def _check_one(class_):
     print("- Checking", cls.fullname, "...", end="")
     try:
         cls.do_check()
-    except Exception as error:
-        print("\n! %s\n! Check failed!" % error)
-        write_log_warning(str(error))
+    except:
+        traceback_string = traceback.format_exc()
+        print("\n! %s\n! Check failed!" % traceback_string)
+        write_log_warning(traceback_string.splitlines())
         write_log_warning("%s check failed!" % cls.fullname)
         if DEBUG_ENABLE:
-            print(error)
             if input("* Continue?(Y/N) ").upper() != "Y":
                 print(" - Abort by user")
                 write_log_warning("Abort by user")

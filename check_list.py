@@ -284,7 +284,6 @@ class Omni(CheckUpdate):
                 self.update_info("FILE_SIZE", file.find_all("td")[3].get_text())
                 break
         else:
-            self.no_any_builds()
             return
         self.update_info("FILE_MD5", self.get_hash_from_file(url + file_name + ".md5sum"))
 
@@ -334,19 +333,15 @@ class ResurrectionRemix(CheckUpdate):
                 self.update_info("DOWNLOAD_LINK", url + file_info["href"])
                 self.update_info("FILE_SIZE", file_info.find_all("span")[1].get_text().strip())
                 self.update_info("BUILD_DATE", file_info.find_all("span")[2].get_text().strip())
-                try:
-                    hash_dic = json.loads(self.request_url(
-                        "https://get.resurrectionremix.com/?hash=whyred/%s"
-                        % self.info_dic["LATEST_VERSION"]
-                    ))
-                except:
-                    pass
-                else:
-                    self.update_info("FILE_MD5", hash_dic["md5"])
-                    self.update_info("FILE_SHA1", hash_dic["sha1"])
+                json_str = self.request_url(
+                    "https://get.resurrectionremix.com/?hash=whyred/%s"
+                    % self.info_dic["LATEST_VERSION"]
+                )
+                if json_str is not None:
+                    json_dic = json.loads(json_str)
+                    self.update_info("FILE_MD5", json_dic.get("md5"))
+                    self.update_info("FILE_SHA1", json_dic.get("sha1"))
                 break
-        else:
-            self.no_any_builds()
 
 class ResurrectionRemixU1(SfCheck):
     fullname = "Resurrection Remix OS (Unofficial By srfarias)"
