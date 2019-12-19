@@ -24,7 +24,7 @@ def _check_one(class_):
     except:
         traceback_string = traceback.format_exc()
         print("\n! %s\n! Check failed!" % traceback_string)
-        write_log_warning(traceback_string.splitlines())
+        write_log_warning(*traceback_string.splitlines())
         write_log_warning("%s check failed!" % cls.fullname)
         if DEBUG_ENABLE:
             if input("* Continue?(Y/N) ").upper() != "Y":
