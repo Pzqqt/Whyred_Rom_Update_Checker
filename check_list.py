@@ -203,7 +203,8 @@ class Lotus(SfCheck):
 
 class Minimal(SfCheck):
     fullname = "Minimal Project Official"
-    project_name = "minimalwhyred"
+    project_name = "minimal-project"
+    sub_path = "whyred/"
 
 class MiuiChinaStable(CheckUpdate):
 
