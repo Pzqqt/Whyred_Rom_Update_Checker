@@ -217,21 +217,20 @@ class PeCheck(CheckUpdate):
         self.update_info("BUILD_DATE", build_info[0].get_text())
         self.update_info("LATEST_VERSION", build_info[1].get_text().strip())
         build_id = build_info[1].find("a")["data-modal-id"]
-        build_info_sp = bs_obj.find("div", {"id": build_id}).find("div", {"class": "modal-body"}).get_text()
-        build_changelog = ""
-        changelog_start = False
-        for line in build_info_sp.splitlines():
-            if changelog_start:
-                build_changelog += line.strip() + "\n"
-                continue
-            if "Changelog" in line:
-                changelog_start = True
-                continue
+        build_info_sp_div = bs_obj.find("div", {"id": build_id})
+        self.update_info("BUILD_CHANGELOG", build_info_sp_div.find("pre").get_text())
+        real_download_link = self.request_url(
+            "".join([url, "/download/", build_info_sp_div.find("a")["data-file-uid"]]),
+            headers={
+                "referer": url + build_info_sp_div.find("a")["href"],
+            }
+        )
+        self.update_info("DOWNLOAD_LINK", real_download_link)
+        for line in build_info_sp_div.get_text().splitlines():
             if "MD5 hash: " in line:
                 self.update_info("FILE_MD5", line.strip().split(": ")[1])
             if "File size: " in line:
                 self.update_info("FILE_SIZE", line.strip().split(": ")[1])
-        self.update_info("BUILD_CHANGELOG", build_changelog)
 
 class PlingCheck(CheckUpdate):
 
