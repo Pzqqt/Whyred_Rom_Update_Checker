@@ -99,6 +99,16 @@ class CheckUpdate:
         assert key in self.info_dic.keys()
         self.info_dic[key] = value
 
+    def __repr__(self):
+        return "%s(fullname='%s', info_dic={%s})" % (
+            self.name,
+            self.fullname,
+            ", ".join([
+                "%s='%s'" % (key, value.replace("\n", "\\n"))
+                for key, value in self.info_dic.items() if value is not None
+            ])
+        )
+
 class SfCheck(CheckUpdate):
 
     project_name = None
