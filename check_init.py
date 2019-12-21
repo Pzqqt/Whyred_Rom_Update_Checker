@@ -208,17 +208,19 @@ class PeCheck(CheckUpdate):
 
     def __init__(self):
         super().__init__()
-        if self.index is None or self.page_cache is None:
-            self.raise_missing_property("index' & 'page_cache")
-        if not isinstance(self.page_cache, PeCheckPageCache):
+        if self.index is None:
+            self.raise_missing_property("index")
+        if not (self.page_cache is None or isinstance(self.page_cache, PeCheckPageCache)):
             raise Exception(
-                "'page_cache' property must be a PeCheckPageCache object!"
+                "'page_cache' property must be NoneType or PeCheckPageCache object!"
             )
 
     def do_check(self):
         url = "https://download.pixelexperience.org"
-        if self.page_cache.cache is None:
-            bs_obj = self.get_bs(self.request_url(url + "/whyred"))
+        if self.page_cache is None:
+            bs_obj = self.get_bs(self.request_url(self.url + "/whyred"))
+        elif self.page_cache.cache is None:
+            bs_obj = self.get_bs(self.request_url(self.url + "/whyred"))
             self.page_cache.cache = bs_obj
         else:
             bs_obj = self.page_cache.cache
