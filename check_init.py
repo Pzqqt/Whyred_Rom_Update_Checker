@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+import json
 import random
 from collections import OrderedDict
-import json
 from urllib.parse import unquote
 
 import requests
-from requests.packages import urllib3
 from bs4 import BeautifulSoup
+from requests.packages import urllib3
 
 from config import _PROXIES_DIC, TIMEOUT
 

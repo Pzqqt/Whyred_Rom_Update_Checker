@@ -3,6 +3,7 @@
 
 import time
 import traceback
+import sys
 
 from config import DEBUG_ENABLE, ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL
 from check_list import CHECK_LIST, PE_PAGE_BS_CACHE
@@ -30,7 +31,7 @@ def _check_one(class_):
             if input("* Continue?(Y/N) ").upper() != "Y":
                 print(" - Abort by user")
                 write_log_warning("Abort by user")
-                raise
+                sys.exit(1)
         return False
     if is_updated(cls):
         print("\n> New build:", cls.info_dic["LATEST_VERSION"])
