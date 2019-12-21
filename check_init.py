@@ -60,6 +60,7 @@ class CheckUpdate:
             ("DOWNLOAD_LINK", None),
             ("FILE_SIZE", None),
         ])
+        self.__private_dic = {}  # 私有变量 不存储 不显示 只是为了方便实例内部进行数据交互
         if self.fullname is None:
             self.raise_missing_property("fullname")
 
@@ -93,7 +94,23 @@ class CheckUpdate:
         return BeautifulSoup(url_text, BS4_PARSER)
 
     def do_check(self):
+        """
+        开始进行更新检查, 包括页面请求 数据清洗 info_dic更新, 都应该在此方法中完成.
+        为保持一致性, 此方法不允许传入任何参数, 并且不允许返回任何值.
+        如确实有必要引用参数, 可以借助self.__private_dic字典.
+        :return: None
+        """
         raise NotImplementedError
+
+    def after_check(self):
+        """
+        此方法将在确定检查对象有更新之后才会执行.
+        比如: 将下载哈希文件并获取哈希值的代码放在这里, 可以节省一些时间.
+        为保持一致性, 此方法不允许传入任何参数, 并且不允许返回任何值.
+        如确实有必要引用参数, 可以借助self.__private_dic字典.
+        :return: None
+        """
+        pass
 
     def update_info(self, key, value):
         assert key in self.info_dic.keys()
@@ -214,9 +231,9 @@ class PeCheck(CheckUpdate):
             raise Exception(
                 "'page_cache' property must be NoneType or PeCheckPageCache object!"
             )
+        self.url = "https://download.pixelexperience.org"
 
     def do_check(self):
-        url = "https://download.pixelexperience.org"
         if self.page_cache is None:
             bs_obj = self.get_bs(self.request_url(self.url + "/whyred"))
         elif self.page_cache.cache is None:
@@ -231,18 +248,27 @@ class PeCheck(CheckUpdate):
         build_id = build_info[1].find("a")["data-modal-id"]
         build_info_sp_div = bs_obj.find("div", {"id": build_id})
         self.update_info("BUILD_CHANGELOG", build_info_sp_div.find("pre").get_text())
-        real_download_link = self.request_url(
-            "".join([url, "/download/", build_info_sp_div.find("a")["data-file-uid"]]),
-            headers={
-                "referer": url + build_info_sp_div.find("a")["href"],
-            }
-        )
-        self.update_info("DOWNLOAD_LINK", real_download_link)
         for line in build_info_sp_div.get_text().splitlines():
             if "MD5 hash: " in line:
                 self.update_info("FILE_MD5", line.strip().split(": ")[1])
             if "File size: " in line:
                 self.update_info("FILE_SIZE", line.strip().split(": ")[1])
+        self.__private_dic = {
+            "fake_download_link": "".join([
+                self.url, "/download/", build_info_sp_div.find("a")["data-file-uid"]
+            ]),
+            "request_headers_referer": self.url + build_info_sp_div.find("a")["href"],
+        }
+
+    def after_check(self):
+        real_download_link = self.request_url(
+            self.__private_dic["fake_download_link"],
+            headers={
+                "referer": self.__private_dic["request_headers_referer"],
+                "user-agent": UAS[0],
+            }
+        )
+        self.update_info("DOWNLOAD_LINK", real_download_link)
 
 class PlingCheck(CheckUpdate):
 

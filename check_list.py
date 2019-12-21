@@ -59,6 +59,8 @@ class Aosip(H5aiCheck):
             "BUILD_CHANGELOG",
             "https://raw.githubusercontent.com/AOSiP-Devices/Updater-Stuff/master/whyred/changelog"
         )
+
+    def after_check(self):
         self.update_info(
             "FILE_MD5",
             self.get_hash_from_file(self.info_dic["DOWNLOAD_LINK"] + ".md5sum")
@@ -273,6 +275,7 @@ class Omni(CheckUpdate):
 
     def do_check(self):
         url = "http://dl.omnirom.org/whyred/"
+        self.__private_dic = {"url": url}
         bs_obj = self.get_bs(self.request_url(url))
         files = bs_obj.find("div", {"id": "fallback"}).find("table").find_all("tr")[2:]
         files.sort(key=lambda x: x.find_all("td")[2].get_text(), reverse=True)
@@ -284,9 +287,14 @@ class Omni(CheckUpdate):
                 self.update_info("BUILD_DATE", file.find_all("td")[2].get_text())
                 self.update_info("FILE_SIZE", file.find_all("td")[3].get_text())
                 break
-        else:
-            return
-        self.update_info("FILE_MD5", self.get_hash_from_file(url + file_name + ".md5sum"))
+
+    def after_check(self):
+        self.update_info(
+            "FILE_MD5",
+            self.get_hash_from_file(
+                self.__private_dic["url"] + self.info_dic["LATEST_VERSION"] + ".md5sum"
+            )
+        )
 
 class PeQ(PeCheck):
     fullname = "Pixel Experience Q Official"
@@ -334,15 +342,17 @@ class ResurrectionRemix(CheckUpdate):
                 self.update_info("DOWNLOAD_LINK", url + file_info["href"])
                 self.update_info("FILE_SIZE", file_info.find_all("span")[1].get_text().strip())
                 self.update_info("BUILD_DATE", file_info.find_all("span")[2].get_text().strip())
-                json_str = self.request_url(
-                    "https://get.resurrectionremix.com/?hash=whyred/%s"
-                    % self.info_dic["LATEST_VERSION"]
-                )
-                if json_str is not None:
-                    json_dic = json.loads(json_str)
-                    self.update_info("FILE_MD5", json_dic.get("md5"))
-                    self.update_info("FILE_SHA1", json_dic.get("sha1"))
                 break
+
+    def after_check(self):
+        json_str = self.request_url(
+            "https://get.resurrectionremix.com/?hash=whyred/%s"
+            % self.info_dic["LATEST_VERSION"]
+        )
+        if json_str is not None:
+            json_dic = json.loads(json_str)
+            self.update_info("FILE_MD5", json_dic.get("md5"))
+            self.update_info("FILE_SHA1", json_dic.get("sha1"))
 
 class ResurrectionRemixU1(SfCheck):
     fullname = "Resurrection Remix OS (Unofficial By srfarias)"
