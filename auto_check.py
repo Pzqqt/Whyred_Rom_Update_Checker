@@ -24,7 +24,7 @@ def _check_one(class_):
         cls.do_check()
     except:
         traceback_string = traceback.format_exc()
-        print("\n! %s\n! Check failed!" % traceback_string)
+        print("\n%s\n! Check failed!" % traceback_string)
         write_log_warning(*traceback_string.splitlines())
         write_log_warning("%s check failed!" % cls.fullname)
         if DEBUG_ENABLE:
@@ -36,7 +36,13 @@ def _check_one(class_):
     if is_updated(cls):
         print("\n> New build:", cls.info_dic["LATEST_VERSION"])
         write_log_info("%s has updates: %s" % (cls.fullname, cls.info_dic["LATEST_VERSION"]))
-        cls.after_check()
+        try:
+            cls.after_check()
+        except:
+            traceback_string = traceback.format_exc()
+            print("\n%s\n! Something wrong when running after_check!" % traceback_string)
+            write_log_warning(*traceback_string.splitlines())
+            write_log_warning("%s: Something wrong when running after_check!" % cls.fullname)
         write_to_database(cls)
         if ENABLE_SENDMESSAGE:
             send_message(gen_print_text(cls))

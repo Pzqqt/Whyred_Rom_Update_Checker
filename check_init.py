@@ -97,7 +97,7 @@ class CheckUpdate:
         """
         开始进行更新检查, 包括页面请求 数据清洗 info_dic更新, 都应该在此方法中完成.
         为保持一致性, 此方法不允许传入任何参数, 并且不允许返回任何值.
-        如确实有必要引用参数, 可以借助self.__private_dic字典.
+        如确实有必要, 可以借助self.__private_dic.
         :return: None
         """
         raise NotImplementedError
@@ -107,7 +107,7 @@ class CheckUpdate:
         此方法将在确定检查对象有更新之后才会执行.
         比如: 将下载哈希文件并获取哈希值的代码放在这里, 可以节省一些时间.
         为保持一致性, 此方法不允许传入任何参数, 并且不允许返回任何值.
-        如确实有必要引用参数, 可以借助self.__private_dic字典.
+        如确实有必要, 可以借助self.__private_dic.
         :return: None
         """
         pass
@@ -231,13 +231,13 @@ class PeCheck(CheckUpdate):
             raise Exception(
                 "'page_cache' property must be NoneType or PeCheckPageCache object!"
             )
-        self.url = "https://download.pixelexperience.org"
 
     def do_check(self):
+        url = "https://download.pixelexperience.org"
         if self.page_cache is None:
-            bs_obj = self.get_bs(self.request_url(self.url + "/whyred"))
+            bs_obj = self.get_bs(self.request_url(url + "/whyred"))
         elif self.page_cache.cache is None:
-            bs_obj = self.get_bs(self.request_url(self.url + "/whyred"))
+            bs_obj = self.get_bs(self.request_url(url + "/whyred"))
             self.page_cache.cache = bs_obj
         else:
             bs_obj = self.page_cache.cache
@@ -255,9 +255,9 @@ class PeCheck(CheckUpdate):
                 self.update_info("FILE_SIZE", line.strip().split(": ")[1])
         self.__private_dic = {
             "fake_download_link": "".join([
-                self.url, "/download/", build_info_sp_div.find("a")["data-file-uid"]
+                url, "/download/", build_info_sp_div.find("a")["data-file-uid"]
             ]),
-            "request_headers_referer": self.url + build_info_sp_div.find("a")["href"],
+            "request_headers_referer": url + build_info_sp_div.find("a")["href"],
         }
 
     def after_check(self):
