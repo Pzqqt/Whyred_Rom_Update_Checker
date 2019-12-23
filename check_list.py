@@ -79,11 +79,6 @@ class AosipDf3(PlingCheck):
     p_id = 1338683
     collection_id = 1574482242
 
-class Aosmp(SfCheck):
-    fullname = "AOSmP Official"
-    project_name = "aosmp"
-    sub_path = "whyred"
-
 class ArrowP(SfCheck):
     fullname = "Arrow OS Pie Official"
     project_name = "arrow-os"
@@ -201,11 +196,6 @@ class Liquid(SfCheck):
 class Lotus(SfCheck):
     fullname = "Lotus OS Official"
     project_name = "lotus-os"
-    sub_path = "whyred/"
-
-class Minimal(SfCheck):
-    fullname = "Minimal Project Official"
-    project_name = "minimal-project"
     sub_path = "whyred/"
 
 class MiuiChinaStable(CheckUpdate):
@@ -359,6 +349,19 @@ class ResurrectionRemixU1(SfCheck):
     project_name = "whyreddev"
     sub_path = "ResurrectionRemixOS/"
 
+class Revolution(CheckUpdate):
+
+    fullname = "Revolution OS"
+
+    def do_check(self):
+        bs_obj = self.get_bs(self.request_url("https://os.revtechs.me/whyred/"))
+        tr_obj = bs_obj.find("tbody").find("tr")
+        version = tr_obj.find("td").get_text().strip()
+        base_version = tr_obj.find_all("td")[3].get_text().strip()
+        self.update_info("LATEST_VERSION", version)
+        self.update_info("BUILD_VERSION", "%s (base %s)" % (version, base_version))
+        self.update_info("DOWNLOAD_LINK", tr_obj.find("td").find("a")["href"])
+
 class Stag(SfCheck):
     fullname = "Stag OS Official"
     project_name = "stag-os"
@@ -397,7 +400,6 @@ CHECK_LIST = (
     AosipDf,
     AosipDf2,
     AosipDf3,
-    Aosmp,
     ArrowP,
     ArrowQ,
     Beast,
@@ -422,7 +424,6 @@ CHECK_LIST = (
     LineageU1,
     Liquid,
     Lotus,
-    Minimal,
     MiuiChinaStable,
     MiuiChinaBeta,
     MiuiGlobalStable,
@@ -438,6 +439,7 @@ CHECK_LIST = (
     Revenge,
     ResurrectionRemix,
     ResurrectionRemixU1,
+    Revolution,
     Stag,
     Superior,
     SuperiorU1,
