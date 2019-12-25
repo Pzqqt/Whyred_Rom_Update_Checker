@@ -47,7 +47,6 @@ class CheckUpdate:
     fullname = None
 
     def __init__(self):
-        self.name = self.__class__.__name__
         self.info_dic = OrderedDict([
             ("LATEST_VERSION", None),
             ("BUILD_TYPE", None),
@@ -63,6 +62,16 @@ class CheckUpdate:
         self.__private_dic = {}  # 私有变量 不存储 不显示 只是为了方便实例内部进行数据交互
         if self.fullname is None:
             self.raise_missing_property("fullname")
+
+    @property
+    def name(self):
+        """ 返回类的名字 """
+        return self.__class__.__name__
+
+    @classmethod
+    def get_name(cls):
+        """ 返回类的名字. 若已生成实例, 则可以通过实例的name属性获取, 不需要使用此方法 """
+        return cls.__name__
 
     def raise_missing_property(self, prop):
         raise Exception(

@@ -7,7 +7,7 @@ import sys
 
 from config import DEBUG_ENABLE, ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL
 from check_list import CHECK_LIST, PE_PAGE_BS_CACHE
-from database import write_to_database, is_updated
+from database import write_to_database, cleanup, is_updated
 from tgbot import send_message
 from format_text import gen_print_text
 from logger import write_log_info, write_log_warning
@@ -52,6 +52,9 @@ def _check_one(class_):
     return True
 
 def loop_check():
+    write_log_info("Run database cleanup before start")
+    drop_ids = cleanup()
+    write_log_info("Abandoned items: {%s}" % ", ".join(drop_ids))
     while True:
         check_failed_list = []
         start_time = _get_time_str()

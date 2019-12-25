@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 
 from check_init import CheckUpdate
+from check_list import CHECK_LIST
 from config import SQLITE_FILE
 
 Base = declarative_base()
@@ -57,6 +58,20 @@ def get_saved_info(name):
         return session.query(Saved).filter(Saved.ID == name).one()
     except NoResultFound:
         return None
+    finally:
+        session.close()
+
+def cleanup():
+    session = DBSession()
+    try:
+        saved_ids = {x.ID for x in session.query(Saved).all()}
+        checklist_ids = {x.get_name() for x in CHECK_LIST}
+        drop_ids = saved_ids - checklist_ids
+        for id_ in drop_ids:
+            saved_data = session.query(Saved).filter(Saved.ID == id_).one()
+            session.delete(saved_data)
+        session.commit()
+        return drop_ids
     finally:
         session.close()
 
