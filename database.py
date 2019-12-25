@@ -33,6 +33,11 @@ DBSession = sessionmaker(bind=Engine)
 Base.metadata.create_all(Engine)
 
 def write_to_database(check_update_obj):
+    """
+    将CheckUpdate实例的info_dic数据写入数据库
+    :param check_update_obj: CheckUpdate实例
+    :return: None
+    """
     assert isinstance(check_update_obj, CheckUpdate)
     session = DBSession()
     try:
@@ -53,6 +58,12 @@ def write_to_database(check_update_obj):
         session.close()
 
 def get_saved_info(name):
+    """
+    根据name查询并返回数据库中已存储的数据
+    如果数据不存在, 则返回None
+    :param name: CheckUpdate子类的类名
+    :return: Saved对象或None
+    """
     session = DBSession()
     try:
         return session.query(Saved).filter(Saved.ID == name).one()
@@ -62,6 +73,10 @@ def get_saved_info(name):
         session.close()
 
 def cleanup():
+    """
+    将数据库中存在于数据库但不存在于CHECK_LIST的项目删除掉
+    :return: 被删除的项目名字的集合
+    """
     session = DBSession()
     try:
         saved_ids = {x.ID for x in session.query(Saved).all()}
@@ -76,6 +91,12 @@ def cleanup():
         session.close()
 
 def is_updated(check_update_obj):
+    """
+    传入CheckUpdate实例, 与数据库中已存储的数据进行比对
+    如果有更新, 则返回True, 否则返回False
+    :param check_update_obj: CheckUpdate实例
+    :return: True或False
+    """
     assert isinstance(check_update_obj, CheckUpdate)
     if check_update_obj.info_dic["LATEST_VERSION"] is None:
         return False

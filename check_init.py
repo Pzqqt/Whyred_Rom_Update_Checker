@@ -81,6 +81,14 @@ class CheckUpdate:
 
     @staticmethod
     def request_url(url, encoding="utf-8", **kwargs):
+        """
+        对requests.get方法进行了简单的包装
+        timeout, headers, proxies这三个参数有默认值, 也可以根据需要自定义这些参数
+        :param url: 要请求的url
+        :param encoding: 文本编码, 默认为utf-8
+        :param kwargs: 需要传递给requests.get方法的参数
+        :return: url页面的源码
+        """
         timeout = kwargs.pop("timeout", TIMEOUT)
         headers = kwargs.pop("headers", {"user-agent": random.choice(UAS)})
         proxies = kwargs.pop("proxies", _PROXIES_DIC)
@@ -93,6 +101,13 @@ class CheckUpdate:
         return req.text
 
     def get_hash_from_file(self, url, **kwargs):
+        """
+        请求哈希校验文件的url, 返回文件中的哈希值
+        请求过程中发生任何异常都允许忽略
+        :param url: 哈希校验文件的url
+        :param kwargs: 需要传递给self.request_url方法的参数
+        :return: 哈希值字符串或None
+        """
         try:
             return self.request_url(url, **kwargs).strip().split()[0]
         except:
@@ -100,28 +115,36 @@ class CheckUpdate:
 
     @staticmethod
     def get_bs(url_text):
+        """
+        对BeautifulSoup函数进行了简单的包装
+        :param url_text: url源码
+        :return: BeautifulSoup对象
+        """
         return BeautifulSoup(url_text, BS4_PARSER)
 
     def do_check(self):
         """
-        开始进行更新检查, 包括页面请求 数据清洗 info_dic更新, 都应该在此方法中完成.
-        为保持一致性, 此方法不允许传入任何参数, 并且不允许返回任何值.
-        如确实有必要, 可以借助self.__private_dic.
+        开始进行更新检查, 包括页面请求 数据清洗 info_dic更新, 都应该在此方法中完成
+        为保持一致性, 此方法不允许传入任何参数, 并且不允许返回任何值
         :return: None
         """
         raise NotImplementedError
 
     def after_check(self):
         """
-        此方法将在确定检查对象有更新之后才会执行.
-        比如: 将下载哈希文件并获取哈希值的代码放在这里, 可以节省一些时间.
-        为保持一致性, 此方法不允许传入任何参数, 并且不允许返回任何值.
-        如确实有必要, 可以借助self.__private_dic.
+        此方法将在确定检查对象有更新之后才会执行
+        比如: 将下载哈希文件并获取哈希值的代码放在这里, 可以节省一些时间
+        为保持一致性, 此方法不允许传入任何参数, 并且不允许返回任何值
+        如确实需要使用self.do_check方法中的部分变量, 可以借助self.__private_dic变量进行传递
         :return: None
         """
         pass
 
     def update_info(self, key, value):
+        """
+        更新info_dic字典, 在更新之前会对key进行检查
+        :return: None
+        """
         assert key in self.info_dic.keys()
         self.info_dic[key] = value
 
@@ -171,6 +194,7 @@ class SfCheck(CheckUpdate):
 
     @staticmethod
     def filter_rule(string):
+        """ 文件列表的过滤规则 """
         return string.endswith(".zip")
 
 class H5aiCheck(CheckUpdate):
