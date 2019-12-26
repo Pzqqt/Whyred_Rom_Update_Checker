@@ -79,6 +79,11 @@ class AosipDf3(PlingCheck):
     p_id = 1338683
     collection_id = 1574482242
 
+class AosipDf4(SfCheck):
+    fullname = "AOSiP DerpFest (By xyzuan)"
+    project_name = "xyzuan"
+    sub_path = "DerpFest/"
+
 class ArrowP(SfCheck):
     fullname = "Arrow OS Pie Official"
     project_name = "arrow-os"
@@ -400,6 +405,7 @@ CHECK_LIST = (
     AosipDf,
     AosipDf2,
     AosipDf3,
+    AosipDf4,
     ArrowP,
     ArrowQ,
     Beast,
