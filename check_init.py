@@ -144,10 +144,7 @@ class CheckUpdate:
         pass
 
     def update_info(self, key, value):
-        """
-        更新info_dic字典, 在更新之前会对key进行检查
-        :return: None
-        """
+        """ 更新info_dic字典, 在更新之前会对key进行检查 """
         assert key in self.info_dic.keys()
         self.info_dic[key] = value
 
@@ -172,12 +169,8 @@ class SfCheck(CheckUpdate):
             self.raise_missing_property("project_name")
 
     def do_check(self):
-        if self.sub_path:
-            sub_path = "?path=/%s" % self.sub_path
-        else:
-            sub_path = ""
-        url = "https://sourceforge.net/projects/%s/rss%s" % (self.project_name, sub_path)
-        bs_obj = self.get_bs(self.request_url(url))
+        url = "https://sourceforge.net/projects/%s/rss" % self.project_name
+        bs_obj = self.get_bs(self.request_url(url, params={"path": "/"+self.sub_path}))
         builds = list(bs_obj.find_all("item"))
         if not builds:
             return

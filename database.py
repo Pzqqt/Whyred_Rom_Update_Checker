@@ -12,6 +12,8 @@ from config import SQLITE_FILE
 
 Base = declarative_base()
 Engine = create_engine("sqlite:///%s" % SQLITE_FILE)
+DBSession = sessionmaker(bind=Engine)
+Base.metadata.create_all(Engine)
 
 class Saved(Base):
 
@@ -28,9 +30,6 @@ class Saved(Base):
     FILE_SHA256 = Column(String)
     DOWNLOAD_LINK = Column(String)
     FILE_SIZE = Column(String)
-
-DBSession = sessionmaker(bind=Engine)
-Base.metadata.create_all(Engine)
 
 def write_to_database(check_update_obj):
     """
@@ -83,8 +82,7 @@ def cleanup():
         checklist_ids = {x.get_name() for x in CHECK_LIST}
         drop_ids = saved_ids - checklist_ids
         for id_ in drop_ids:
-            saved_data = session.query(Saved).filter(Saved.ID == id_).one()
-            session.delete(saved_data)
+            session.delete(session.query(Saved).filter(Saved.ID == id_).one())
         session.commit()
         return drop_ids
     finally:
