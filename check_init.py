@@ -92,9 +92,12 @@ class CheckUpdate:
         timeout = kwargs.pop("timeout", TIMEOUT)
         headers = kwargs.pop("headers", {"user-agent": random.choice(UAS)})
         proxies = kwargs.pop("proxies", _PROXIES_DIC)
-        req = requests.get(
-            url, timeout=timeout, headers=headers, proxies=proxies, **kwargs
-        )
+        try:
+            req = requests.get(
+                url, timeout=timeout, headers=headers, proxies=proxies, **kwargs
+            )
+        except requests.exceptions.ReadTimeout:
+            raise Exception("Request failed, timed out")
         if not req.ok:
             raise Exception("Request failed, code: %s" % req.status_code)
         req.encoding = encoding
