@@ -176,21 +176,22 @@ class SfCheck(CheckUpdate):
             return
         builds.sort(key=lambda x: -int(x.find("files:sf-file-id").get_text()))
         for build in builds:
+            file_size_mb = int(build.find("media:content")["filesize"]) / 1000 / 1000
+            # 过滤小于500MB的文件
+            if file_size_mb < 500:
+                continue
             file_version = build.guid.string.split("/")[-2]
             if self.filter_rule(file_version):
                 self.update_info("LATEST_VERSION", file_version)
                 self.update_info("DOWNLOAD_LINK", build.guid.string)
                 self.update_info("BUILD_DATE", build.pubdate.string)
                 self.update_info("FILE_MD5", build.find("media:hash", {"algo": "md5"}).string)
-                self.update_info(
-                    "FILE_SIZE",
-                    "%0.1f MB" % (int(build.find("media:content")["filesize"]) / 1000 / 1000,)
-                )
+                self.update_info("FILE_SIZE", "%0.1f MB" % file_size_mb)
                 break
 
     @staticmethod
     def filter_rule(string):
-        """ 文件列表的过滤规则 """
+        """ 文件名过滤规则 """
         return string.endswith(".zip")
 
 class H5aiCheck(CheckUpdate):
