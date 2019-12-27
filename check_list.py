@@ -368,9 +368,14 @@ class Revolution(CheckUpdate):
         self.update_info("DOWNLOAD_LINK", tr_obj.find("td").find("a")["href"])
 
 class Stag(SfCheck):
-    fullname = "Stag OS Official"
+    fullname = "Stag OS Pie Official"
     project_name = "stag-os"
     sub_path = "Whyred/"
+
+class StagQ(SfCheck):
+    fullname = "Stag OS Q Official"
+    project_name = "stagos-10"
+    sub_path = "whyred/"
 
 class Superior(SfCheck):
     fullname = "Superior OS Official"
@@ -447,6 +452,7 @@ CHECK_LIST = (
     ResurrectionRemixU1,
     Revolution,
     Stag,
+    StagQ,
     Superior,
     SuperiorU1,
     Syberia,
