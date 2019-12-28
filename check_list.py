@@ -79,11 +79,6 @@ class AosipDf3(PlingCheck):
     p_id = 1338683
     collection_id = 1574482242
 
-class AosipDf4(SfCheck):
-    fullname = "AOSiP DerpFest (By xyzuan)"
-    project_name = "xyzuan"
-    sub_path = "DerpFest/"
-
 class ArrowP(SfCheck):
     fullname = "Arrow OS Pie Official"
     project_name = "arrow-os"
@@ -144,11 +139,6 @@ class CrDroidQ(SfCheck):
     project_name = "crdroid"
     sub_path = "whyred/v6.x/"
 
-class CrDroidU1(SfCheck):
-    fullname = "CrDroid Q (Unofficial By AncientProject)"
-    project_name = "ancientproject"
-    sub_path = "whyred/rom/crdroid/"
-
 class DotP(SfCheck):
     fullname = "DotOS Pie Official"
     project_name = "dotos-downloads"
@@ -178,10 +168,36 @@ class HavocU2(SfCheck):
     fullname = "Havoc OS FAKE (Unofficial By fakeyatogod)"
     project_name = "fakehavoc"
 
+class HavocU3(SfCheck):
+    fullname = "Havoc OS (Unofficial By Ikaros)"
+    project_name = "ikarosdev"
+    sub_path = "HavocOS/Havoc-alpha/"
+
 class Ion(SfCheck):
     fullname = "ION Pie Official"
     project_name = "i-o-n"
     sub_path = "device/xiaomi/whyred/"
+
+class KubilProject(SfCheck):
+    fullname = "New rom release by Kubil"
+    project_name = "kubilproject"
+    sub_path = "Whyred/"
+
+    # file name keyword: full name
+    known_rom_project = {
+        "ExtendedUI": "ExtendedUI",
+        "EvolutionX": "EvolutionX",
+        "CleanDroidOS": "CleanDroid OS",
+        "Arrow": "Arrow OS",
+        "ion": "ION",
+    }
+
+    def do_check(self):
+        super().do_check()
+        for key, value in self.known_rom_project.items():
+            if key.upper() in self.info_dic["LATEST_VERSION"].upper():
+                self.fullname = "%s (By Kubil)" % value
+                break
 
 class Legion(SfCheck):
     fullname = "Legion OS Official"
@@ -402,6 +418,26 @@ class Xtended(SfCheck):
     project_name = "xtended"
     sub_path = "whyred/"
 
+class XyzuanProject(SfCheck):
+    fullname = "New rom release by xyzuan"
+    project_name = "xyzuan"
+
+    # file name keyword: full name
+    known_rom_project = {
+        "Bootleggers": "Bootleggers Rom",
+        "MK": "Mokee Rom",
+        "aicp": "AICP",
+        "DerpFest": "AOSiP DerpFest",
+        "crDroid": "CrDroid",
+    }
+
+    def do_check(self):
+        super().do_check()
+        for key, value in self.known_rom_project.items():
+            if key.upper() in self.info_dic["LATEST_VERSION"].upper():
+                self.fullname = "%s (By xyzuan)" % value
+                break
+
 CHECK_LIST = (
     Linux44Y,
     AexP,
@@ -410,7 +446,6 @@ CHECK_LIST = (
     AosipDf,
     AosipDf2,
     AosipDf3,
-    AosipDf4,
     ArrowP,
     ArrowQ,
     Beast,
@@ -423,14 +458,15 @@ CHECK_LIST = (
     Cosmic,
     CrDroid,
     CrDroidQ,
-    CrDroidU1,
     DotP,
     EvolutionX,
     Gzosp,
     Havoc,
     HavocU1,
     HavocU2,
+    HavocU3,
     Ion,
+    KubilProject,
     Legion,
     LineageU1,
     Liquid,
@@ -458,4 +494,5 @@ CHECK_LIST = (
     Syberia,
     Viper,
     Xtended,
+    XyzuanProject,
 )

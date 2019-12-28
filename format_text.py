@@ -23,6 +23,8 @@ def gen_print_text(check_update_obj):
     # SP
     if check_update_obj.name == "Linux44Y":
         return print_str[:-1].replace("4.4.y", check_update_obj.info_dic["LATEST_VERSION"])
+    if check_update_obj.fullname.startswith("New rom release by"):
+        print_str.replace(" Update", "")
     # SP END
     print_str += time.strftime("%Y-%m-%d\n", time.localtime(time.time()))
     for key, value in check_update_obj.info_dic.items():
