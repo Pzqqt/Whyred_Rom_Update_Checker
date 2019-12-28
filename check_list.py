@@ -3,7 +3,7 @@
 
 import json
 
-from check_init import UAS, CheckUpdate, SfCheck, H5aiCheck, \
+from check_init import UAS, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, \
                        AexCheck, PeCheck, PlingCheck, PeCheckPageCache
 
 PE_PAGE_BS_CACHE = PeCheckPageCache()
@@ -178,26 +178,10 @@ class Ion(SfCheck):
     project_name = "i-o-n"
     sub_path = "device/xiaomi/whyred/"
 
-class KubilProject(SfCheck):
-    fullname = "New rom release by Kubil"
+class KubilProject(SfProjectCheck):
     project_name = "kubilproject"
     sub_path = "Whyred/"
-
-    # file name keyword: full name
-    known_rom_project = {
-        "ExtendedUI": "ExtendedUI",
-        "EvolutionX": "EvolutionX",
-        "CleanDroidOS": "CleanDroid OS",
-        "Arrow": "Arrow OS",
-        "ion": "ION",
-    }
-
-    def do_check(self):
-        super().do_check()
-        for key, value in self.known_rom_project.items():
-            if key.upper() in self.info_dic["LATEST_VERSION"].upper():
-                self.fullname = "%s (By Kubil)" % value
-                break
+    developer = "kubil"
 
 class Legion(SfCheck):
     fullname = "Legion OS Official"
@@ -418,25 +402,9 @@ class Xtended(SfCheck):
     project_name = "xtended"
     sub_path = "whyred/"
 
-class XyzuanProject(SfCheck):
-    fullname = "New rom release by xyzuan"
+class XyzuanProject(SfProjectCheck):
     project_name = "xyzuan"
-
-    # file name keyword: full name
-    known_rom_project = {
-        "Bootleggers": "Bootleggers Rom",
-        "MK": "Mokee Rom",
-        "aicp": "AICP",
-        "DerpFest": "AOSiP DerpFest",
-        "crDroid": "CrDroid",
-    }
-
-    def do_check(self):
-        super().do_check()
-        for key, value in self.known_rom_project.items():
-            if key.upper() in self.info_dic["LATEST_VERSION"].upper():
-                self.fullname = "%s (By xyzuan)" % value
-                break
+    developer = "xyzuan"
 
 CHECK_LIST = (
     Linux44Y,

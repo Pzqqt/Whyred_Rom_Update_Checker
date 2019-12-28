@@ -47,6 +47,8 @@ class CheckUpdate:
     fullname = None
 
     def __init__(self):
+        if self.fullname is None:
+            self.raise_missing_property("fullname")
         self.info_dic = OrderedDict([
             ("LATEST_VERSION", None),
             ("BUILD_TYPE", None),
@@ -60,8 +62,6 @@ class CheckUpdate:
             ("FILE_SIZE", None),
         ])
         self.__private_dic = {}  # 私有变量 不存储 不显示 只是为了方便实例内部进行数据交互
-        if self.fullname is None:
-            self.raise_missing_property("fullname")
 
     @property
     def name(self):
@@ -164,9 +164,9 @@ class SfCheck(CheckUpdate):
     sub_path = ""
 
     def __init__(self):
-        super().__init__()
         if self.project_name is None:
             self.raise_missing_property("project_name")
+        super().__init__()
 
     def do_check(self):
         url = "https://sourceforge.net/projects/%s/rss" % self.project_name
@@ -194,15 +194,45 @@ class SfCheck(CheckUpdate):
         """ 文件名过滤规则 """
         return string.endswith(".zip")
 
+class SfProjectCheck(SfCheck):
+
+    # file name keyword: full name
+    known_rom_project = {
+        "aicp": "AICP",
+        "Arrow": "Arrow OS",
+        "Bootleggers": "Bootleggers Rom",
+        "CleanDroidOS": "CleanDroid OS",
+        "crDroid": "CrDroid",
+        "DerpFest": "AOSiP DerpFest",
+        "ExtendedUI": "ExtendedUI",
+        "EvolutionX": "EvolutionX",
+        "ion": "ION",
+        "MK": "Mokee Rom",
+    }
+    developer = ""
+
+    def __init__(self):
+        if not self.developer:
+            self.raise_missing_property("developer")
+        self.fullname = "New rom release by " + self.developer
+        super().__init__()
+
+    def do_check(self):
+        super().do_check()
+        for key, value in self.known_rom_project.items():
+            if key.upper() in self.info_dic["LATEST_VERSION"].upper():
+                self.fullname = "%s (By %s)" % (value, self.developer)
+                break
+
 class H5aiCheck(CheckUpdate):
 
     base_url = None
     sub_url = None
 
     def __init__(self):
-        super().__init__()
         if self.base_url is None or self.sub_url is None:
             self.raise_missing_property("base_url' & 'sub_url")
+        super().__init__()
 
     def do_check(self):
         url = self.base_url + self.sub_url
@@ -220,9 +250,9 @@ class AexCheck(CheckUpdate):
     sub_path = None
 
     def __init__(self):
-        super().__init__()
         if self.sub_path is None:
             self.raise_missing_property("sub_path")
+        super().__init__()
 
     def do_check(self):
         url = "https://api.aospextended.com/builds/" + self.sub_path
@@ -254,13 +284,13 @@ class PeCheck(CheckUpdate):
     page_cache = None
 
     def __init__(self):
-        super().__init__()
         if self.index is None:
             self.raise_missing_property("index")
         if not (self.page_cache is None or isinstance(self.page_cache, PeCheckPageCache)):
             raise Exception(
                 "'page_cache' property must be NoneType or PeCheckPageCache object!"
             )
+        super().__init__()
 
     def do_check(self):
         url = "https://download.pixelexperience.org"
@@ -306,9 +336,9 @@ class PlingCheck(CheckUpdate):
     collection_id = None
 
     def __init__(self):
-        super().__init__()
         if self.p_id is None or self.collection_id is None:
             self.raise_missing_property("p_id' & 'collection_id")
+        super().__init__()
 
     def do_check(self):
         url = "https://www.pling.com/p/%s/getfilesajax" % self.p_id
