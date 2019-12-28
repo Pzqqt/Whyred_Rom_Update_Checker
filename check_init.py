@@ -97,7 +97,7 @@ class CheckUpdate:
                 url, timeout=timeout, headers=headers, proxies=proxies, **kwargs
             )
         except requests.exceptions.ReadTimeout:
-            raise Exception("Request failed, timed out")
+            raise Exception("Request failed, timeout")
         if not req.ok:
             raise Exception("Request failed, code: %s" % req.status_code)
         req.encoding = encoding
