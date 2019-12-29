@@ -68,11 +68,6 @@ class CheckUpdate:
         """ 返回类的名字 """
         return self.__class__.__name__
 
-    @classmethod
-    def get_name(cls):
-        """ 返回类的名字. 若已生成实例, 则可以通过实例的name属性获取, 不需要使用此方法 """
-        return cls.__name__
-
     def raise_missing_property(self, prop):
         raise Exception(
             "Subclasses inherited from the %s class must specify the '%s' property when defining!"
@@ -194,7 +189,7 @@ class SfCheck(CheckUpdate):
 class SfProjectCheck(SfCheck):
 
     # file name keyword: full name
-    known_rom_project = OrderedDict(
+    __known_rom_project = OrderedDict(
         aicp="AICP",
         Arrow="Arrow OS",
         atom="Atom OS",
@@ -212,17 +207,17 @@ class SfProjectCheck(SfCheck):
         MK="Mokee Rom",
         Stag="Stag OS",
     )
-    developer = ""
+    developer = None
 
     def __init__(self):
-        if not self.developer:
+        if self.developer is None:
             self.raise_missing_property("developer")
-        self.fullname = "New rom release by " + self.developer
+        self.fullname = "New rom release by %s" % self.developer
         super().__init__()
 
     def do_check(self):
         super().do_check()
-        for key, value in self.known_rom_project.items():
+        for key, value in self.__known_rom_project.items():
             if key.upper() in self.info_dic["LATEST_VERSION"].upper():
                 self.fullname = "%s (By %s)" % (value, self.developer)
                 break

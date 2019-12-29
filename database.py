@@ -79,7 +79,7 @@ def cleanup():
     session = DBSession()
     try:
         saved_ids = {x.ID for x in session.query(Saved).all()}
-        checklist_ids = {x.get_name() for x in CHECK_LIST}
+        checklist_ids = {x.__name__ for x in CHECK_LIST}
         drop_ids = saved_ids - checklist_ids
         for id_ in drop_ids:
             session.delete(session.query(Saved).filter(Saved.ID == id_).one())
