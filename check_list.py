@@ -144,6 +144,11 @@ class DotP(SfCheck):
     project_name = "dotos-downloads"
     sub_path = "dotp/whyred/"
 
+class DuRex(SfCheck):
+    fullname = "DU-REX Official"
+    project_name = "rafiester"
+    sub_path = "whyred/DuRex/"
+
 class EvolutionX(SfCheck):
     fullname = "EvolutionX Official"
     project_name = "evolution-x"
@@ -316,6 +321,10 @@ class Posp(SfCheck):
     project_name = "posp"
     sub_path = "whyred/"
 
+class RandomRomsProject(SfProjectCheck):
+    project_name = "randomroms"
+    developer = "Sreekanth"
+
 class Revenge(SfCheck):
     fullname = "Revenge OS Official (By srfarias)"
     project_name = "whyreddev"
@@ -427,6 +436,7 @@ CHECK_LIST = (
     CrDroid,
     CrDroidQ,
     DotP,
+    DuRex,
     EvolutionX,
     Gzosp,
     Havoc,
@@ -452,6 +462,7 @@ CHECK_LIST = (
     Pixys,
     Posp,
     Revenge,
+    RandomRomsProject,
     ResurrectionRemix,
     ResurrectionRemixU1,
     Revolution,
