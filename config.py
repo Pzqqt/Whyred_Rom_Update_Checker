@@ -16,8 +16,8 @@ LOG_FILE = "log.txt"
 # 是否启用日志
 ENABLE_LOGGER = True
 
-# 循环检查的间隔时间(360分钟)
-LOOP_CHECK_INTERVAL = 360 * 60
+# 循环检查的间隔时间(默认: 180分钟)
+LOOP_CHECK_INTERVAL = 180 * 60
 
 # 代理服务器
 PROXIES = "127.0.0.1:1080"
