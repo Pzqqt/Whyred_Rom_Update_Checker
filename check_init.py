@@ -47,9 +47,8 @@ class CheckUpdate:
     fullname = None
 
     def __init__(self):
-        if self.fullname is None:
-            self.raise_missing_property("fullname")
-        self.info_dic = OrderedDict([
+        self._raise_if_missing_property("fullname")
+        self.__info_dic = OrderedDict([
             ("LATEST_VERSION", None),
             ("BUILD_TYPE", None),
             ("BUILD_VERSION", None),
@@ -65,14 +64,26 @@ class CheckUpdate:
 
     @property
     def name(self):
-        """ 返回类的名字 """
         return self.__class__.__name__
 
-    def raise_missing_property(self, prop):
-        raise Exception(
-            "Subclasses inherited from the %s class must specify the '%s' property when defining!"
-            % (self.name, prop)
-        )
+    @property
+    def info_dic(self):
+        return self.__info_dic
+
+    def _raise_if_missing_property(self, *props):
+        if None in [getattr(self, key, None) for key in props]:
+            raise Exception(
+                "Subclasses inherited from the %s class must specify the '%s' property when defining!"
+                % (self.name, "' & '".join(props))
+            )
+
+    def update_info(self, key, value):
+        """ 更新info_dic字典, 在更新之前会对key和value进行检查和转换 """
+        if key not in self.__info_dic.keys():
+            raise KeyError("Invalid key: %s" % key)
+        if isinstance(value, (dict, list)):
+            value = json.dumps(value, ensure_ascii=False)
+        self.__info_dic[key] = str(value) if value is not None else None
 
     @staticmethod
     def request_url(url, encoding="utf-8", **kwargs):
@@ -120,25 +131,22 @@ class CheckUpdate:
     def do_check(self):
         """
         开始进行更新检查, 包括页面请求 数据清洗 info_dic更新, 都应该在此方法中完成
-        为保持一致性, 此方法不允许传入任何参数, 并且不允许返回任何值
         :return: None
         """
+        # 注意: 请不要直接修改self.__info_dic字典, 应该使用self.update_info方法
+        # 为保持一致性, 此方法不允许传入任何参数, 并且不允许返回任何值
+        # 如确实需要引用参数, 可以在继承时添加新的类属性
         raise NotImplementedError
 
     def after_check(self):
         """
         此方法将在确定检查对象有更新之后才会执行
-        比如: 将下载哈希文件并获取哈希值的代码放在这里, 可以节省一些时间
-        为保持一致性, 此方法不允许传入任何参数, 并且不允许返回任何值
-        如确实需要使用self.do_check方法中的部分变量, 可以借助self.__private_dic变量进行传递
+        比如: 将下载哈希文件并获取哈希值的代码放在这里, 可以节省一些时间(没有更新时做这些是没有意义的)
         :return: None
         """
+        # 为保持一致性, 此方法不允许传入任何参数, 并且不允许返回任何值
+        # 如确实需要使用self.do_check方法中的部分变量, 可以借助self.__private_dic变量进行传递
         pass
-
-    def update_info(self, key, value):
-        """ 更新info_dic字典, 在更新之前会对key进行检查 """
-        assert key in self.info_dic.keys()
-        self.info_dic[key] = value
 
     def __repr__(self):
         return "%s(fullname='%s', info_dic={%s})" % (
@@ -146,7 +154,7 @@ class CheckUpdate:
             self.fullname,
             ", ".join([
                 "%s='%s'" % (key, value.replace("\n", "\\n"))
-                for key, value in self.info_dic.items() if value is not None
+                for key, value in self.__info_dic.items() if value is not None
             ])
         )
 
@@ -156,8 +164,7 @@ class SfCheck(CheckUpdate):
     sub_path = ""
 
     def __init__(self):
-        if self.project_name is None:
-            self.raise_missing_property("project_name")
+        self._raise_if_missing_property("project_name")
         super().__init__()
 
     def do_check(self):
@@ -210,8 +217,7 @@ class SfProjectCheck(SfCheck):
     developer = None
 
     def __init__(self):
-        if self.developer is None:
-            self.raise_missing_property("developer")
+        self._raise_if_missing_property("developer")
         self.fullname = "New rom release by %s" % self.developer
         super().__init__()
 
@@ -228,8 +234,7 @@ class H5aiCheck(CheckUpdate):
     sub_url = None
 
     def __init__(self):
-        if self.base_url is None or self.sub_url is None:
-            self.raise_missing_property("base_url' & 'sub_url")
+        self._raise_if_missing_property("base_url", "sub_url")
         super().__init__()
 
     def do_check(self):
@@ -248,8 +253,7 @@ class AexCheck(CheckUpdate):
     sub_path = None
 
     def __init__(self):
-        if self.sub_path is None:
-            self.raise_missing_property("sub_path")
+        self._raise_if_missing_property("sub_path")
         super().__init__()
 
     def do_check(self):
@@ -282,8 +286,7 @@ class PeCheck(CheckUpdate):
     page_cache = None
 
     def __init__(self):
-        if self.index is None:
-            self.raise_missing_property("index")
+        self._raise_if_missing_property("index")
         if not (self.page_cache is None or isinstance(self.page_cache, PeCheckPageCache)):
             raise Exception(
                 "'page_cache' property must be NoneType or PeCheckPageCache object!"
@@ -334,8 +337,7 @@ class PlingCheck(CheckUpdate):
     collection_id = None
 
     def __init__(self):
-        if self.p_id is None or self.collection_id is None:
-            self.raise_missing_property("p_id' & 'collection_id")
+        self._raise_if_missing_property("p_id", "collection_id")
         super().__init__()
 
     def do_check(self):

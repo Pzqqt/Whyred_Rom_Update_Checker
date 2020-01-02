@@ -350,8 +350,7 @@ class ResurrectionRemix(CheckUpdate):
 
     def after_check(self):
         json_str = self.request_url(
-            "https://get.resurrectionremix.com/?hash=whyred/%s"
-            % self.info_dic["LATEST_VERSION"]
+            "https://get.resurrectionremix.com/?hash=whyred/%s" % self.info_dic["LATEST_VERSION"]
         )
         if json_str is not None:
             json_dic = json.loads(json_str)
