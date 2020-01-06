@@ -79,6 +79,11 @@ class AosipDf3(PlingCheck):
     p_id = 1338683
     collection_id = 1574482242
 
+class Aospa(PlingCheck):
+    fullname = "Aospa Quartz (Unofficial By orges)"
+    p_id = 1349975
+    collection_id = 1578163970
+
 class ArrowP(SfCheck):
     fullname = "Arrow OS Pie Official"
     project_name = "arrow-os"
@@ -362,18 +367,17 @@ class ResurrectionRemixU1(SfCheck):
     project_name = "whyreddev"
     sub_path = "ResurrectionRemixOS/"
 
-class Revolution(CheckUpdate):
-
+class Revolution(SfCheck):
     fullname = "Revolution OS"
+    project_name = "revolutionos-miui"
 
-    def do_check(self):
-        bs_obj = self.get_bs(self.request_url("https://os.revtechs.me/whyred/"))
-        tr_obj = bs_obj.find("tbody").find("tr")
-        version = tr_obj.find("td").get_text().strip()
-        base_version = tr_obj.find_all("td")[3].get_text().strip()
-        self.update_info("LATEST_VERSION", version)
-        self.update_info("BUILD_VERSION", "%s (base %s)" % (version, base_version))
-        self.update_info("DOWNLOAD_LINK", tr_obj.find("td").find("a")["href"])
+    @staticmethod
+    def filter_rule(string):
+        return "RedmiNote5" in string
+
+class SreekFreaksProject(SfProjectCheck):
+    project_name = "sreekfreaks-unofficial-builds"
+    developer = "SreekFreaks"
 
 class Stag(SfCheck):
     fullname = "Stag OS Pie Official"
@@ -422,6 +426,7 @@ CHECK_LIST = (
     AosipDf,
     AosipDf2,
     AosipDf3,
+    Aospa,
     ArrowP,
     ArrowQ,
     Beast,
@@ -465,6 +470,7 @@ CHECK_LIST = (
     ResurrectionRemix,
     ResurrectionRemixU1,
     Revolution,
+    SreekFreaksProject,
     Stag,
     StagQ,
     Superior,
