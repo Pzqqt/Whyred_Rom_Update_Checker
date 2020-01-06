@@ -12,6 +12,15 @@ from tgbot import send_message
 from format_text import gen_print_text
 from logger import write_log_info, write_log_warning
 
+def _safe_sleep(sleep_time=0):
+    try:
+        time.sleep(sleep_time)
+    except KeyboardInterrupt:
+        print(" - Abort by user")
+        write_log_warning("Abort by user")
+        return False
+    return True
+
 def _get_time_str(time_num=None, offset=0):
     if time_num is None:
         time_num = time.time()
@@ -66,20 +75,18 @@ def loop_check():
             result = _check_one(cls)
             if not result:
                 check_failed_list.append(cls)
-            time.sleep(2)
+            if not _safe_sleep(2):
+                return
         print(" - Check again for failed items...")
         write_log_info("Check again for failed items")
         for cls in check_failed_list:
             _check_one(cls)
-            time.sleep(2)
+            if not _safe_sleep(2):
+                return
         PE_PAGE_BS_CACHE.clear()
         print(" - The next check will start at %s\n" % _get_time_str(offset=LOOP_CHECK_INTERVAL))
         write_log_info("End of check")
-        try:
-            time.sleep(LOOP_CHECK_INTERVAL)
-        except KeyboardInterrupt:
-            print(" - Abort by user")
-            write_log_warning("Abort by user")
+        if not _safe_sleep(LOOP_CHECK_INTERVAL):
             return
 
 if __name__ == "__main__":
