@@ -10,7 +10,7 @@ PE_PAGE_BS_CACHE = PeCheckPageCache()
 
 class Linux44Y(CheckUpdate):
 
-    fullname = "Linux Kernel v4.4.y"
+    fullname = "Linux Kernel stable v4.4.y"
 
     def do_check(self):
         url = "https://www.kernel.org"
@@ -22,6 +22,9 @@ class Linux44Y(CheckUpdate):
                 break
         else:
             raise Exception("Parsing failed!")
+
+    def gen_print_text(self):
+        return "Linux Kernel stable v%s update" % self.info_dic["LATEST_VERSION"]
 
 class AexP(AexCheck):
     fullname = "AospExtended Pie Official"
@@ -260,8 +263,7 @@ class MiuiEu(SfCheck):
     project_name = "xiaomi-eu-multilang-miui-roms"
     sub_path = "xiaomi.eu/MIUI-WEEKLY-RELEASES/"
 
-    @staticmethod
-    def filter_rule(string):
+    def filter_rule(self, string):
         return "HMNote5Pro" in string
 
 class Nitrogen(SfCheck):
@@ -371,8 +373,7 @@ class Revolution(SfCheck):
     fullname = "Revolution OS"
     project_name = "revolutionos-miui"
 
-    @staticmethod
-    def filter_rule(string):
+    def filter_rule(self, string):
         return "RedmiNote5" in string
 
 class SreekFreaksProject(SfProjectCheck):

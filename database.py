@@ -31,6 +31,11 @@ class Saved(Base):
     DOWNLOAD_LINK = Column(String)
     FILE_SIZE = Column(String)
 
+    def get_kv(self):
+        dic = self.__dict__.copy()
+        dic.pop("_sa_instance_state")
+        return dic
+
 def write_to_database(check_update_obj):
     """
     将CheckUpdate实例的info_dic数据写入数据库

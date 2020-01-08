@@ -3,6 +3,7 @@
 
 import json
 import random
+import time
 from collections import OrderedDict
 from urllib.parse import unquote
 
@@ -45,6 +46,17 @@ BS4_PARSER = select_bs4_parser()
 class CheckUpdate:
 
     fullname = None
+    __KEY_TO_PRINT = {
+        "BUILD_TYPE": "Build type",
+        "BUILD_VERSION": "Build version",
+        "BUILD_DATE": "Build date",
+        "BUILD_CHANGELOG": "Changelog",
+        "FILE_MD5": "MD5",
+        "FILE_SHA1": "SHA1",
+        "FILE_SHA256": "SHA256",
+        "DOWNLOAD_LINK": "Download",
+        "FILE_SIZE": "Size",
+    }
 
     def __init__(self):
         self._raise_if_missing_property("fullname")
@@ -71,7 +83,7 @@ class CheckUpdate:
         return self.__info_dic
 
     def _raise_if_missing_property(self, *props):
-        if None in [getattr(self, key, None) for key in props]:
+        if None in (getattr(self, key, None) for key in props):
             raise Exception(
                 "Subclasses inherited from the %s class must specify the '%s' property when defining!"
                 % (self.name, "' & '".join(props))
@@ -148,6 +160,19 @@ class CheckUpdate:
         # 如确实需要使用self.do_check方法中的部分变量, 可以借助self.__private_dic变量进行传递
         pass
 
+    def get_print_text(self):
+        """ 返回更新消息文本 """
+        print_str_list = [
+            "%s Update" % self.fullname,
+            time.strftime("%Y-%m-%d", time.localtime(time.time())),
+            *[
+                "\n%s:\n%s" % (self.__KEY_TO_PRINT[key], value)
+                for key, value in self.info_dic.items()
+                if key != "LATEST_VERSION" and value is not None
+            ],
+        ]
+        return "\n".join(print_str_list)
+
     def __repr__(self):
         return "%s(fullname='%s', info_dic={%s})" % (
             self.name,
@@ -188,8 +213,7 @@ class SfCheck(CheckUpdate):
                 self.update_info("FILE_SIZE", "%0.1f MB" % file_size_mb)
                 break
 
-    @staticmethod
-    def filter_rule(string):
+    def filter_rule(self, string):
         """ 文件名过滤规则 """
         return string.endswith(".zip")
 
@@ -227,6 +251,12 @@ class SfProjectCheck(SfCheck):
             if key.upper() in self.info_dic["LATEST_VERSION"].upper():
                 self.fullname = "%s (By %s)" % (value, self.developer)
                 break
+
+    def get_print_text(self):
+        print_str = super().get_print_text()
+        if self.fullname.startswith("New rom release by"):
+            print_str = print_str.replace(" Update", "")
+        return print_str
 
 class H5aiCheck(CheckUpdate):
 
