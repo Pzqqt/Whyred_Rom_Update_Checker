@@ -332,11 +332,6 @@ class RandomRomsProject(SfProjectCheck):
     project_name = "randomroms"
     developer = "Sreekanth"
 
-class Revenge(SfCheck):
-    fullname = "Revenge OS Official (By srfarias)"
-    project_name = "whyreddev"
-    sub_path = "RevengeOS/"
-
 class ResurrectionRemix(CheckUpdate):
 
     fullname = "Resurrection Remix OS Pie Official"
@@ -364,11 +359,6 @@ class ResurrectionRemix(CheckUpdate):
             self.update_info("FILE_MD5", json_dic.get("md5"))
             self.update_info("FILE_SHA1", json_dic.get("sha1"))
 
-class ResurrectionRemixU1(SfCheck):
-    fullname = "Resurrection Remix OS (Unofficial By srfarias)"
-    project_name = "whyreddev"
-    sub_path = "ResurrectionRemixOS/"
-
 class Revolution(SfCheck):
     fullname = "Revolution OS"
     project_name = "revolutionos-miui"
@@ -379,6 +369,10 @@ class Revolution(SfCheck):
 class SreekFreaksProject(SfProjectCheck):
     project_name = "sreekfreaks-unofficial-builds"
     developer = "SreekFreaks"
+
+class SrfariasProject(SfProjectCheck):
+    project_name = "whyreddev"
+    developer = "srfarias"
 
 class Stag(SfCheck):
     fullname = "Stag OS Pie Official"
@@ -466,12 +460,11 @@ CHECK_LIST = (
     PePPe,
     Pixys,
     Posp,
-    Revenge,
     RandomRomsProject,
     ResurrectionRemix,
-    ResurrectionRemixU1,
     Revolution,
     SreekFreaksProject,
+    SrfariasProject,
     Stag,
     StagQ,
     Superior,
