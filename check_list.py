@@ -147,6 +147,11 @@ class CrDroidQ(SfCheck):
     project_name = "crdroid"
     sub_path = "whyred/v6.x/"
 
+class Cygnus(SfCheck):
+    fullname = "CygnusOS Official"
+    project_name = "cygnus-android"
+    sub_path = "whyred/"
+
 class DotP(SfCheck):
     fullname = "DotOS Pie Official"
     project_name = "dotos-downloads"
@@ -328,9 +333,18 @@ class Posp(SfCheck):
     project_name = "posp"
     sub_path = "whyred/"
 
+class RaghuVarmaProject(SfProjectCheck):
+    project_name = "whyred-rv"
+    developer = "Raghu Varma"
+
 class RandomRomsProject(SfProjectCheck):
     project_name = "randomroms"
     developer = "Sreekanth"
+
+class Rebellion(SfCheck):
+    fullname = "RebellionOS Official"
+    project_name = "rebellion-os"
+    sub_path = "whyred/"
 
 class ResurrectionRemix(CheckUpdate):
 
@@ -434,6 +448,7 @@ CHECK_LIST = (
     Cosmic,
     CrDroid,
     CrDroidQ,
+    Cygnus,
     DotP,
     DuRex,
     EvolutionX,
@@ -460,7 +475,9 @@ CHECK_LIST = (
     PePPe,
     Pixys,
     Posp,
+    RaghuVarmaProject,
     RandomRomsProject,
+    Rebellion,
     ResurrectionRemix,
     Revolution,
     SreekFreaksProject,
