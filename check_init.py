@@ -25,6 +25,18 @@ UAS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1"
 ]
 
+_KEY_TO_PRINT = {
+    "BUILD_TYPE": "Build type",
+    "BUILD_VERSION": "Build version",
+    "BUILD_DATE": "Build date",
+    "BUILD_CHANGELOG": "Changelog",
+    "FILE_MD5": "MD5",
+    "FILE_SHA1": "SHA1",
+    "FILE_SHA256": "SHA256",
+    "DOWNLOAD_LINK": "Download",
+    "FILE_SIZE": "Size",
+}
+
 def select_bs4_parser():
     try:
         import lxml
@@ -46,17 +58,6 @@ BS4_PARSER = select_bs4_parser()
 class CheckUpdate:
 
     fullname = None
-    __KEY_TO_PRINT = {
-        "BUILD_TYPE": "Build type",
-        "BUILD_VERSION": "Build version",
-        "BUILD_DATE": "Build date",
-        "BUILD_CHANGELOG": "Changelog",
-        "FILE_MD5": "MD5",
-        "FILE_SHA1": "SHA1",
-        "FILE_SHA256": "SHA256",
-        "DOWNLOAD_LINK": "Download",
-        "FILE_SIZE": "Size",
-    }
 
     def __init__(self):
         self._raise_if_missing_property("fullname")
@@ -166,7 +167,7 @@ class CheckUpdate:
             "%s Update" % self.fullname,
             time.strftime("%Y-%m-%d", time.localtime(time.time())),
             *[
-                "\n%s:\n%s" % (self.__KEY_TO_PRINT[key], value)
+                "\n%s:\n%s" % (_KEY_TO_PRINT[key], value)
                 for key, value in self.info_dic.items()
                 if key != "LATEST_VERSION" and value is not None
             ],
@@ -220,7 +221,7 @@ class SfCheck(CheckUpdate):
 class SfProjectCheck(SfCheck):
 
     # file name keyword: full name
-    __known_rom_project = OrderedDict(
+    __KNOWN_ROM = OrderedDict(
         aicp="AICP",
         Arrow="Arrow OS",
         atom="Atom OS",
@@ -233,6 +234,7 @@ class SfProjectCheck(SfCheck):
         EvolutionX="EvolutionX",
         Havoc="Havoc OS",
         Legion="Legion OS",
+        lineage="Lineage OS",
         Rebellion="Rebellion OS",
         ion="ION",
         MK="Mokee Rom",
@@ -247,7 +249,7 @@ class SfProjectCheck(SfCheck):
 
     def do_check(self):
         super().do_check()
-        for key, value in self.__known_rom_project.items():
+        for key, value in self.__KNOWN_ROM.items():
             if key.upper() in self.info_dic["LATEST_VERSION"].upper():
                 self.fullname = "%s (By %s)" % (value, self.developer)
                 break
