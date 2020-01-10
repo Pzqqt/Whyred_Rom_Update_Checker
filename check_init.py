@@ -221,25 +221,25 @@ class SfCheck(CheckUpdate):
 class SfProjectCheck(SfCheck):
 
     # file name keyword: full name
-    __KNOWN_ROM = OrderedDict(
-        aicp="AICP",
-        Arrow="Arrow OS",
-        atom="Atom OS",
-        Bootleggers="Bootleggers Rom",
-        Blaze="Blaze-AOSP Rom",
-        CleanDroidOS="CleanDroid OS",
-        crDroid="CrDroid",
-        DerpFest="AOSiP DerpFest",
-        ExtendedUI="ExtendedUI",
-        EvolutionX="EvolutionX",
-        Havoc="Havoc OS",
-        Legion="Legion OS",
-        lineage="Lineage OS",
-        Rebellion="Rebellion OS",
-        ion="ION",
-        MK="Mokee Rom",
-        Stag="Stag OS",
-    )
+    __KNOWN_ROM = OrderedDict([
+        ("aicp", "AICP"),
+        ("Arrow", "Arrow OS"),
+        ("atom", "Atom OS"),
+        ("Bootleggers", "Bootleggers Rom"),
+        ("Blaze", "Blaze-AOSP Rom"),
+        ("CleanDroidOS", "CleanDroid OS"),
+        ("crDroid", "CrDroid"),
+        ("DerpFest", "AOSiP DerpFest"),
+        ("ExtendedUI", "ExtendedUI"),
+        ("EvolutionX", "EvolutionX"),
+        ("Havoc", "Havoc OS"),
+        ("Legion", "Legion OS"),
+        ("lineage", "Lineage OS"),
+        ("Rebellion", "Rebellion OS"),
+        ("ion", "ION"),
+        ("MK", "Mokee Rom"),
+        ("Stag", "Stag OS"),
+    ])
     developer = None
 
     def __init__(self):
