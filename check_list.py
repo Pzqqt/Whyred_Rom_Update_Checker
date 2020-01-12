@@ -23,7 +23,7 @@ class Linux44Y(CheckUpdate):
         else:
             raise Exception("Parsing failed!")
 
-    def gen_print_text(self):
+    def get_print_text(self):
         return "Linux Kernel stable v%s update" % self.info_dic["LATEST_VERSION"]
 
 class AexP(AexCheck):
