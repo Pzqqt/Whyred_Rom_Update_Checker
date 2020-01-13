@@ -52,6 +52,7 @@ class Aicp(CheckUpdate):
         self.update_info("BUILD_CHANGELOG", json_dic["url"] + ".html")
 
 class Aosip(H5aiCheck):
+
     fullname = "AOSiP Official"
     base_url = "https://get.aosip.dev"
     sub_url = "/whyred/"
@@ -127,10 +128,10 @@ class Cerberus(SfCheck):
     project_name = "cerberusos"
     sub_path = "builds/whyred/"
 
-class Cosp(H5aiCheck):
-    fullname = "COSP Official"
-    base_url = "https://mirror.codebucket.de"
-    sub_url = "/cosp/whyred/"
+class Colt(SfCheck):
+    fullname = "Colt OS Official"
+    project_name = "coltos"
+    sub_path = "Whyred/"
 
 class Cosmic(SfCheck):
     fullname = "Cosmic OS Official"
@@ -324,9 +325,18 @@ class PePPe(PeCheck):
     index = 2
 
 class Pixys(SfCheck):
-    fullname = "Pixys OS Official"
+    fullname = "Pixys OS Pie Official"
     project_name = "pixys-os"
     sub_path = "pie/whyred/"
+
+class PixysQ(SfCheck):
+
+    fullname = "Pixys OS Q Official"
+    project_name = "pixys-os"
+    sub_path = "ten/whyred/"
+
+    def filter_rule(self, string):
+        return string.endswith(".zip") and "GAPP" not in string.upper()
 
 class Posp(SfCheck):
     fullname = "POSP Official"
@@ -444,7 +454,7 @@ CHECK_LIST = (
     CandyP,
     CandyQ,
     Cerberus,
-    Cosp,
+    Colt,
     Cosmic,
     CrDroid,
     CrDroidQ,
@@ -474,6 +484,7 @@ CHECK_LIST = (
     PeP,
     PePPe,
     Pixys,
+    PixysQ,
     Posp,
     RaghuVarmaProject,
     RandomRomsProject,
