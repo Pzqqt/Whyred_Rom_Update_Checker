@@ -104,9 +104,14 @@ class Beast(SfCheck):
     sub_path = "whyred/"
 
 class Bliss(H5aiCheck):
-    fullname = "Bliss Rom Official"
+    fullname = "Bliss Rom Pie Official"
     base_url = "https://downloads.blissroms.com"
     sub_url = "/BlissRoms/Pie/whyred/"
+
+class BlissQ(H5aiCheck):
+    fullname = "Bliss Rom Q Official"
+    base_url = "https://downloads.blissroms.com"
+    sub_url = "/BlissRoms/Q/Whyred/"
 
 class Bootleggers(SfCheck):
     fullname = "Bootleggers Rom Official"
@@ -193,7 +198,7 @@ class HavocU3(SfCheck):
     sub_path = "HavocOS/Havoc-alpha/"
 
 class Ion(SfCheck):
-    fullname = "ION Pie Official"
+    fullname = "ION Official"
     project_name = "i-o-n"
     sub_path = "device/xiaomi/whyred/"
 
@@ -271,6 +276,11 @@ class MiuiEu(SfCheck):
 
     def filter_rule(self, string):
         return "HMNote5Pro" in string
+
+class Neon(SfCheck):
+    fullname = "Neon OS Official"
+    project_name = "neonrelease"
+    sub_path = "whyred/"
 
 class Nitrogen(SfCheck):
     fullname = "Nitrogen OS Official"
@@ -450,6 +460,7 @@ CHECK_LIST = (
     ArrowQ,
     Beast,
     Bliss,
+    BlissQ,
     Bootleggers,
     CandyP,
     CandyQ,
@@ -477,6 +488,7 @@ CHECK_LIST = (
     MiuiChinaBeta,
     MiuiGlobalStable,
     MiuiEu,
+    Neon,
     Nitrogen,
     NitrogenU1,
     Omni,
