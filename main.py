@@ -1,15 +1,36 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+from argparse import ArgumentParser
 import time
 import traceback
 import sys
 
 from config import DEBUG_ENABLE, ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL
 from check_list import CHECK_LIST, PE_PAGE_BS_CACHE
-from database import write_to_database, cleanup, is_updated
+from database import DBSession, Saved
 from tgbot import send_message
 from logger import write_log_info, write_log_warning
+
+FORCE_POST = False
+DONT_POST = False
+
+def database_cleanup():
+    """
+    将数据库中存在于数据库但不存在于CHECK_LIST的项目删除掉
+    :return: 被删除的项目名字的集合
+    """
+    session = DBSession()
+    try:
+        saved_ids = {x.ID for x in session.query(Saved).all()}
+        checklist_ids = {x.__name__ for x in CHECK_LIST}
+        drop_ids = saved_ids - checklist_ids
+        for id_ in drop_ids:
+            session.delete(session.query(Saved).filter(Saved.ID == id_).one())
+        session.commit()
+        return drop_ids
+    finally:
+        session.close()
 
 def _abort_by_user():
     print(" - Abort by user")
@@ -25,9 +46,16 @@ def _sleep(sleep_time=0):
 def _get_time_str(time_num=None, offset=0):
     if time_num is None:
         time_num = time.time()
-    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_num + offset))
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_num+offset))
 
 def check_one(cls):
+    if isinstance(cls, str):
+        for item in CHECK_LIST:
+            if item.__name__ == cls:
+                cls = item
+                break
+        else:
+            raise Exception("Can not found '%s' from CHECK_LIST!" % cls)
     cls_obj = cls()
     print("- Checking", cls_obj.fullname, "...", end="")
     try:
@@ -41,7 +69,7 @@ def check_one(cls):
             if input("* Continue?(Y/N) ").upper() != "Y":
                 _abort_by_user()
         return False
-    if is_updated(cls_obj):
+    if cls_obj.is_updated() or FORCE_POST:
         print("\n> New build:", cls_obj.info_dic["LATEST_VERSION"])
         write_log_info("%s has updates: %s" % (cls_obj.fullname, cls_obj.info_dic["LATEST_VERSION"]))
         try:
@@ -51,8 +79,8 @@ def check_one(cls):
             print("\n%s\n! Something wrong when running after_check!" % traceback_string)
             write_log_warning(*traceback_string.splitlines())
             write_log_warning("%s: Something wrong when running after_check!" % cls_obj.fullname)
-        write_to_database(cls_obj)
-        if ENABLE_SENDMESSAGE:
+        cls_obj.write_to_database()
+        if (ENABLE_SENDMESSAGE and not DONT_POST) or FORCE_POST:
             send_message(cls_obj.get_print_text())
     else:
         print(" no update")
@@ -61,7 +89,7 @@ def check_one(cls):
 
 def loop_check():
     write_log_info("Run database cleanup before start")
-    drop_ids = cleanup()
+    drop_ids = database_cleanup()
     write_log_info("Abandoned items: {%s}" % ", ".join(drop_ids))
     while True:
         check_failed_list = []
@@ -86,4 +114,19 @@ def loop_check():
         _sleep(LOOP_CHECK_INTERVAL)
 
 if __name__ == "__main__":
-    loop_check()
+    parser = ArgumentParser()
+    parser.add_argument("--forcepost", help="Force send message to Telegram", action="store_true")
+    parser.add_argument("--dontpost", help="Don't send message to Telegram", action="store_true")
+    parser.add_argument("-a", "--auto", help="Automatically loop check all items", action="store_true")
+    parser.add_argument("-c", "--check", help="Check one item")
+
+    args = parser.parse_args()
+
+    if args.forcepost:
+        FORCE_POST = True
+    elif args.dontpost:
+        DONT_POST = True
+    if args.auto:
+        loop_check()
+    elif args.check:
+        check_one(args.check)

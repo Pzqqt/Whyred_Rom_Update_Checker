@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 from requests.packages import urllib3
 
 from config import _PROXIES_DIC, TIMEOUT
+from database import DBSession, Saved, get_saved_info
 
 # 禁用安全请求警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -160,6 +161,37 @@ class CheckUpdate:
         # 为保持一致性, 此方法不允许传入任何参数, 并且不允许返回任何值
         # 如确实需要使用self.do_check方法中的部分变量, 可以借助self.__private_dic变量进行传递
         pass
+
+    def write_to_database(self):
+        """ 将CheckUpdate实例的info_dic数据写入数据库 """
+        session = DBSession()
+        try:
+            if self.name in {x.ID for x in session.query(Saved).all()}:
+                saved_data = session.query(Saved).filter(Saved.ID == self.name).one()
+                saved_data.FULL_NAME = self.fullname
+                for key, value in self.__info_dic.items():
+                    setattr(saved_data, key, value)
+            else:
+                new_data = Saved(
+                    ID=self.name,
+                    FULL_NAME=self.fullname,
+                    **self.__info_dic
+                )
+                session.add(new_data)
+            session.commit()
+        finally:
+            session.close()
+
+    def is_updated(self):
+        """ 与数据库中已存储的数据进行比对, 如果有更新, 则返回True, 否则返回False """
+        if self.__info_dic["LATEST_VERSION"] is None:
+            return False
+        saved_info = get_saved_info(self.name)
+        if saved_info is None:
+            return True
+        if self.__info_dic["LATEST_VERSION"] == saved_info.LATEST_VERSION:
+            return False
+        return True
 
     def get_print_text(self):
         """ 返回更新消息文本 """
