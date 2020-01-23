@@ -400,10 +400,6 @@ class Revolution(SfCheck):
     def filter_rule(self, string):
         return "RedmiNote5" in string
 
-class SkylarkAuroraProject(SfProjectCheck):
-    project_name = "skylarkaurora"
-    developer = "SkylarkAurora"
-
 class SreekFreaksProject(SfProjectCheck):
     project_name = "sreekfreaks-unofficial-builds"
     developer = "SreekFreaks"
@@ -507,7 +503,6 @@ CHECK_LIST = (
     Rebellion,
     ResurrectionRemix,
     Revolution,
-    SkylarkAuroraProject,
     SreekFreaksProject,
     SrfariasProject,
     Stag,
