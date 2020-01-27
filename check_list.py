@@ -111,7 +111,7 @@ class Bliss(H5aiCheck):
 class BlissQ(H5aiCheck):
     fullname = "Bliss Rom Q Official"
     base_url = "https://downloads.blissroms.com"
-    sub_url = "/BlissRoms/Q/Whyred/"
+    sub_url = "/BlissRoms/Q/whyred/"
 
 class Bootleggers(SfCheck):
     fullname = "Bootleggers Rom Official"
