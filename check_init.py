@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from requests.packages import urllib3
 
 from config import _PROXIES_DIC, TIMEOUT
-from database import DBSession, Saved, get_saved_info
+from database import DBSession, Saved
 
 # 禁用安全请求警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -186,7 +186,7 @@ class CheckUpdate:
         """ 与数据库中已存储的数据进行比对, 如果有更新, 则返回True, 否则返回False """
         if self.__info_dic["LATEST_VERSION"] is None:
             return False
-        saved_info = get_saved_info(self.name)
+        saved_info = Saved.get_saved_info(self.name)
         if saved_info is None:
             return True
         if self.__info_dic["LATEST_VERSION"] == saved_info.LATEST_VERSION:
@@ -255,11 +255,13 @@ class SfProjectCheck(SfCheck):
     # file name keyword: full name
     __KNOWN_ROM = OrderedDict([
         ("aicp", "AICP"),
+        ("AOSiP", "AOSiP"),
         ("Arrow", "Arrow OS"),
         ("atom", "Atom OS"),
+        ("Bliss", "Bliss Rom"),
         ("Bootleggers", "Bootleggers Rom"),
         ("Blaze", "Blaze-AOSP Rom"),
-        ("CleanDroidOS", "CleanDroid OS"),
+        ("CleanDroid", "CleanDroid OS"),
         ("crDroid", "CrDroid"),
         ("DerpFest", "AOSiP DerpFest"),
         ("ExtendedUI", "ExtendedUI"),
@@ -268,6 +270,7 @@ class SfProjectCheck(SfCheck):
         ("Legion", "Legion OS"),
         ("lineage", "Lineage OS"),
         ("Rebellion", "Rebellion OS"),
+        ("Titanium", "Titanium OS"),
         ("ion", "ION"),
         ("MK", "Mokee Rom"),
         ("Stag", "Stag OS"),

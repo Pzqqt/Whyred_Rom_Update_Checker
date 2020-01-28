@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+from collections import OrderedDict
+
 from sqlalchemy import create_engine, Column, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, exc
 
 from config import SQLITE_FILE
 
-Base = declarative_base()
-Engine = create_engine("sqlite:///%s" % SQLITE_FILE)
-DBSession = sessionmaker(bind=Engine)
-Base.metadata.create_all(Engine)
+_Base = declarative_base()
+_Engine = create_engine("sqlite:///%s" % SQLITE_FILE)
+_Base.metadata.create_all(_Engine)
+DBSession = sessionmaker(bind=_Engine)
 
-class Saved(Base):
+class Saved(_Base):
 
     __tablename__ = "saved"
     ID = Column(String, primary_key=True, nullable=False)
@@ -29,21 +31,28 @@ class Saved(Base):
     FILE_SIZE = Column(String)
 
     def get_kv(self):
-        dic = self.__dict__.copy()
-        dic.pop("_sa_instance_state")
-        return dic
+        """ 返回Saved对象存储的键值字典 """
+        return OrderedDict([
+            (k, self.__dict__[k])
+            for k in (
+                "ID FULL_NAME LATEST_VERSION BUILD_TYPE BUILD_VERSION "
+                "BUILD_DATE BUILD_CHANGELOG FILE_MD5 FILE_SHA1 FILE_SHA256 "
+                "DOWNLOAD_LINK FILE_SIZE"
+            ).split()
+        ])
 
-def get_saved_info(name):
-    """
-    根据name查询并返回数据库中已存储的数据
-    如果数据不存在, 则返回None
-    :param name: CheckUpdate子类的类名
-    :return: Saved对象或None
-    """
-    session = DBSession()
-    try:
-        return session.query(Saved).filter(Saved.ID == name).one()
-    except exc.NoResultFound:
-        return None
-    finally:
-        session.close()
+    @classmethod
+    def get_saved_info(cls, name):
+        """
+        根据name查询并返回数据库中已存储的数据
+        如果数据不存在, 则返回None
+        :param name: CheckUpdate子类的类名
+        :return: Saved对象或None
+        """
+        session = DBSession()
+        try:
+            return session.query(cls).filter(cls.ID == name).one()
+        except exc.NoResultFound:
+            return None
+        finally:
+            session.close()

@@ -12,7 +12,7 @@ from database import DBSession, Saved
 from tgbot import send_message
 from logger import write_log_info, write_log_warning
 
-FORCE_POST = False
+FORCE_UPDATE = False
 DONT_POST = False
 
 def database_cleanup():
@@ -69,7 +69,7 @@ def check_one(cls):
             if input("* Continue?(Y/N) ").upper() != "Y":
                 _abort_by_user()
         return False
-    if cls_obj.is_updated() or FORCE_POST:
+    if cls_obj.is_updated() or FORCE_UPDATE:
         print("\n> New build:", cls_obj.info_dic["LATEST_VERSION"])
         write_log_info("%s has updates: %s" % (cls_obj.fullname, cls_obj.info_dic["LATEST_VERSION"]))
         try:
@@ -80,7 +80,7 @@ def check_one(cls):
             write_log_warning(*traceback_string.splitlines())
             write_log_warning("%s: Something wrong when running after_check!" % cls_obj.fullname)
         cls_obj.write_to_database()
-        if (ENABLE_SENDMESSAGE and not DONT_POST) or FORCE_POST:
+        if (ENABLE_SENDMESSAGE and not DONT_POST) or FORCE_UPDATE:
             send_message(cls_obj.get_print_text())
     else:
         print(" no update")
@@ -115,14 +115,14 @@ def loop_check():
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--forcepost", help="Force send message to Telegram", action="store_true")
-    parser.add_argument("--dontpost", help="Don't send message to Telegram", action="store_true")
+    parser.add_argument("--force", help="Force save to database & send message to Telegram", action="store_true")
+    parser.add_argument("--dontpost", help="Do not send message to Telegram", action="store_true")
     parser.add_argument("-a", "--auto", help="Automatically loop check all items", action="store_true")
     parser.add_argument("-c", "--check", help="Check one item")
 
     args = parser.parse_args()
 
-    if args.forcepost:
+    if args.force:
         FORCE_POST = True
     elif args.dontpost:
         DONT_POST = True
@@ -130,3 +130,5 @@ if __name__ == "__main__":
         loop_check()
     elif args.check:
         check_one(args.check)
+    else:
+        parser.print_usage()
