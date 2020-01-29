@@ -337,6 +337,7 @@ class AexCheck(CheckUpdate):
         self.update_info("LATEST_VERSION", json_dic["file_name"])
         self.update_info("FILE_SIZE", "%0.2f MB" % (int(json_dic["file_size"]) / 1048576,))
         self.update_info("DOWNLOAD_LINK", json_dic["download_link"])
+        self.update_info("FILE_MD5", json_dic["md5"])
         self.update_info("BUILD_DATE", json_dic["timestamp"])
         self.update_info("BUILD_CHANGELOG", json_dic.get("changelog"))
 
