@@ -30,6 +30,18 @@ class AexP(AexCheck):
     fullname = "AospExtended Pie Official"
     sub_path = "whyred/pie"
 
+class AexPGapps(AexCheck):
+    fullname = "AospExtended Pie (with Gapps) Official"
+    sub_path = "whyred/pie_gapps"
+
+class AexQ(AexCheck):
+    fullname = "AospExtended Q Official"
+    sub_path = "whyred/q"
+
+class AexQGapps(AexCheck):
+    fullname = "AospExtended Q (with Gapps) Official"
+    sub_path = "whyred/q_gapps"
+
 class Aicp(CheckUpdate):
 
     fullname = "AICP Official"
@@ -450,6 +462,9 @@ class XyzuanProject(SfProjectCheck):
 CHECK_LIST = (
     Linux44Y,
     AexP,
+    AexPGapps,
+    AexQ,
+    AexQGapps,
     Aicp,
     Aosip,
     AosipDf,
