@@ -125,6 +125,11 @@ class BlissQ(H5aiCheck):
     base_url = "https://downloads.blissroms.com"
     sub_url = "/BlissRoms/Q/whyred/"
 
+class BlissU1(PlingCheck):
+    fullname = "Bliss Rom (Unofficial By srfarias)"
+    p_id = 1354155
+    collection_id = 1579789983
+
 class Bootleggers(SfCheck):
     fullname = "Bootleggers Rom Official"
     project_name = "bootleggersrom"
@@ -476,6 +481,7 @@ CHECK_LIST = (
     Beast,
     Bliss,
     BlissQ,
+    BlissU1,
     Bootleggers,
     CandyP,
     CandyQ,
