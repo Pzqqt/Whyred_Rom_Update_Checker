@@ -32,10 +32,13 @@ def database_cleanup():
     finally:
         session.close()
 
-def _abort_by_user():
-    print(" - Abort by user")
-    write_log_warning("Abort by user")
+def _abort(text):
+    print(" - %s" % text)
+    write_log_warning(str(text))
     sys.exit(1)
+
+def _abort_by_user():
+    return _abort("Abort by user")
 
 def _sleep(sleep_time=0):
     try:
@@ -91,6 +94,7 @@ def loop_check():
     write_log_info("Run database cleanup before start")
     drop_ids = database_cleanup()
     write_log_info("Abandoned items: {%s}" % ", ".join(drop_ids))
+    req_failed_flag = 0
     while True:
         check_failed_list = []
         start_time = _get_time_str()
@@ -101,7 +105,12 @@ def loop_check():
         for cls in CHECK_LIST:
             result = check_one(cls)
             if not result:
+                req_failed_flag += 1
                 check_failed_list.append(cls)
+            else:
+                req_failed_flag = 0
+            if req_failed_flag == 5:
+                _abort("Network or proxy error! Abort...")
             _sleep(2)
         print(" - Check again for failed items...")
         write_log_info("Check again for failed items")
