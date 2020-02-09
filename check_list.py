@@ -421,6 +421,11 @@ class ResurrectionRemix(CheckUpdate):
             self.update_info("FILE_MD5", json_dic.get("md5"))
             self.update_info("FILE_SHA1", json_dic.get("sha1"))
 
+class Revenge(PlingCheck):
+    fullname = "Revenge OS Official"
+    p_id = 1358218
+    collection_id = 1581174106
+
 class Revolution(SfCheck):
     fullname = "Revolution OS"
     project_name = "revolutionos-miui"
@@ -534,6 +539,7 @@ CHECK_LIST = (
     RandomRomsProject,
     Rebellion,
     ResurrectionRemix,
+    Revenge,
     Revolution,
     SreekFreaksProject,
     SrfariasProject,
