@@ -13,11 +13,11 @@ telebot.apihelper.proxy = _PROXIES_DIC
 
 def send_message(text, user=TG_SENDTO):
     try:
-        BOT.send_message(user, text)
+        BOT.send_message(user, text, parse_mode="Markdown")
     except:
         # try again
         try:
-            BOT.send_message(user, text)
+            BOT.send_message(user, text, parse_mode="Markdown")
         except:
             traceback_string = traceback.format_exc()
             print(traceback_string)

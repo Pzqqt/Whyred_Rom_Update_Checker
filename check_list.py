@@ -19,12 +19,23 @@ class Linux44Y(CheckUpdate):
             kernel_version = tr_obj.find_all("td")[1].get_text()
             if kernel_version.startswith("4.4."):
                 self.update_info("LATEST_VERSION", kernel_version)
+                self.update_info(
+                    "DOWNLOAD_LINK",
+                    "https://git.kernel.org/stable/h/v%s" % kernel_version
+                )
+                self.update_info(
+                    "BUILD_CHANGELOG",
+                    "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=v%s" % kernel_version
+                )
                 break
         else:
             raise Exception("Parsing failed!")
 
     def get_print_text(self):
-        return "Linux Kernel stable v%s update" % self.info_dic["LATEST_VERSION"]
+        return "Linux Kernel stable %s update\n\n%s" % (
+            "[v%s](%s)" % (self.info_dic["LATEST_VERSION"], self.info_dic["DOWNLOAD_LINK"]),
+            "[Commits](%s)" % self.info_dic["BUILD_CHANGELOG"]
+        )
 
 class AexP(AexCheck):
     fullname = "AospExtended Pie Official"

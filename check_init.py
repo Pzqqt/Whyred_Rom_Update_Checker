@@ -196,14 +196,16 @@ class CheckUpdate:
     def get_print_text(self):
         """ 返回更新消息文本 """
         print_str_list = [
-            "%s Update" % self.fullname,
+            "*%s Update*" % self.fullname,
             time.strftime("%Y-%m-%d", time.localtime(time.time())),
-            *[
-                "\n%s:\n%s" % (_KEY_TO_PRINT[key], value)
-                for key, value in self.info_dic.items()
-                if key != "LATEST_VERSION" and value is not None
-            ],
         ]
+        for key, value in self.info_dic.items():
+            if key != "LATEST_VERSION" and value is not None:
+                if key in {"BUILD_CHANGELOG", "FILE_MD5", "FILE_SHA1", "FILE_SHA256"}:
+                    value = "`%s`" % value
+                if key == "DOWNLOAD_LINK":
+                    value = "[%s](%s)" % (self.info_dic.get("LATEST_VERSION", ""), value)
+                print_str_list.append("\n%s:\n%s" % (_KEY_TO_PRINT[key], value))
         return "\n".join(print_str_list)
 
     def __repr__(self):
