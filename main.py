@@ -132,7 +132,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.force:
-        FORCE_POST = True
+        FORCE_UPDATE = True
     elif args.dontpost:
         DONT_POST = True
     if args.auto:
