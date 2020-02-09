@@ -5,7 +5,7 @@ import json
 import random
 import time
 from collections import OrderedDict
-from urllib.parse import unquote
+from urllib.parse import unquote, urlencode
 
 import requests
 from bs4 import BeautifulSoup
@@ -426,4 +426,19 @@ class PlingCheck(CheckUpdate):
             self.update_info("LATEST_VERSION", latest_build["name"])
             self.update_info("BUILD_DATE", latest_build["updated_timestamp"])
             self.update_info("FILE_MD5", latest_build["md5sum"])
-            self.update_info("DOWNLOAD_LINK", unquote(latest_build["tags"]).replace("link##", ""))
+            if latest_build["tags"] is None:
+                self.update_info(
+                    "DOWNLOAD_LINK",
+                    "https://www.pling.com/p/%s/startdownload?%s" % (
+                        self.p_id,
+                        urlencode({
+                            "file_id": latest_build["id"],
+                            "file_name": latest_build["name"],
+                            "file_type": latest_build["type"],
+                            "file_size": latest_build["size"],
+                        })
+                    )
+                )
+                self.update_info("FILE_SIZE", "%0.2f MB" % (int(latest_build["size"]) / 1048576,))
+            else:
+                self.update_info("DOWNLOAD_LINK", unquote(latest_build["tags"]).replace("link##", ""))
