@@ -56,6 +56,9 @@ def select_bs4_parser():
 
 BS4_PARSER = select_bs4_parser()
 
+class ErrorCode(requests.exceptions.RequestException):
+    """ 自定义异常, 当requests请求结果返回错误代码时抛出 """
+
 class CheckUpdate:
 
     fullname = None
@@ -116,7 +119,7 @@ class CheckUpdate:
             url, timeout=timeout, headers=headers, proxies=proxies, **kwargs
         )
         if not req.ok:
-            raise Exception("Request failed, code: %s" % req.status_code)
+            raise ErrorCode(req.status_code)
         req.encoding = encoding
         return req.text
 

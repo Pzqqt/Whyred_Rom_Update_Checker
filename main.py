@@ -6,7 +6,10 @@ import time
 import traceback
 import sys
 
+from requests import exceptions
+
 from config import DEBUG_ENABLE, ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL
+from check_init import ErrorCode
 from check_list import CHECK_LIST, PE_PAGE_BS_CACHE
 from database import DBSession, Saved
 from tgbot import send_message
@@ -63,11 +66,21 @@ def check_one(cls):
     print("- Checking", cls_obj.fullname, "...", end="")
     try:
         cls_obj.do_check()
-    except:
-        traceback_string = traceback.format_exc()
-        print("\n%s\n! Check failed!" % traceback_string)
-        write_log_warning(*traceback_string.splitlines())
-        write_log_warning("%s check failed!" % cls_obj.fullname)
+    except Exception as error:
+        if isinstance(error, exceptions.ReadTimeout):
+            print("\n! Check failed! Timeout.")
+            write_log_warning("%s check failed! Timeout." % cls_obj.fullname)
+        elif isinstance(error, (exceptions.SSLError, exceptions.ProxyError)):
+            print("\n! Check failed! Proxy error.")
+            write_log_warning("%s check failed! Proxy error." % cls_obj.fullname)
+        elif isinstance(error, ErrorCode):
+            print("\n! Check failed! Error code: %s." % error)
+            write_log_warning("%s check failed! Error code: %s." % (cls_obj.fullname, error))
+        else:
+            traceback_string = traceback.format_exc()
+            print("\n%s\n! Check failed!" % traceback_string)
+            write_log_warning(*traceback_string.splitlines())
+            write_log_warning("%s check failed!" % cls_obj.fullname)
         if DEBUG_ENABLE:
             if input("* Continue?(Y/N) ").upper() != "Y":
                 _abort_by_user()
