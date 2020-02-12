@@ -37,6 +37,51 @@ class Linux44Y(CheckUpdate):
             "[Commits](%s)" % self.info_dic["BUILD_CHANGELOG"]
         )
 
+class GoogleClangPrebuilt(CheckUpdate):
+
+    fullname = "Google Clang Prebuilt"
+
+    def do_check(self):
+        base_url = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
+        bs_obj = self.get_bs(self.request_url(base_url + "/+log"))
+        commits = bs_obj.find("ol", {"class": "CommitLog"}).find_all("li")
+        for commit in commits:
+            a_tag = commit.find_all("a")[1]
+            commit_title = a_tag.get_text()
+            if commit_title.startswith("Update prebuilt Clang to"):
+                commit_url = "https://android.googlesource.com" + a_tag["href"]
+                commit_id = a_tag["href"].split("/")[-1]
+                r_tag = commit_title.split()[-1]
+                assert r_tag.startswith("r")
+                if r_tag[-1] == ".":
+                    r_tag = r_tag[:-1]
+                self.update_info("LATEST_VERSION", commit_id)
+                self.update_info("BUILD_CHANGELOG", commit_url)
+                self.update_info(
+                    "DOWNLOAD_LINK",
+                    "%s/+archive/%s/clang-%s.tar.gz" % (base_url, commit_id, r_tag)
+                )
+                break
+        else:
+            raise Exception("Parsing failed!")
+
+    def after_check(self):
+        bs_obj_2 = self.get_bs(self.request_url(self.info_dic["BUILD_CHANGELOG"]))
+        commit_text = bs_obj_2.find("pre").get_text().splitlines()[2]
+        if commit_text[-1] == ".":
+            commit_text = commit_text[:-1]
+        self.update_info("BUILD_VERSION", commit_text)
+
+    def get_print_text(self):
+        return "*%s Update*\n\n%s\n\nDownload tar.gz:\n%s" % (
+            self.fullname,
+            "[Commit](%s)" % self.info_dic["BUILD_CHANGELOG"],
+            "[%s](%s)" % (
+                self.info_dic.get("BUILD_VERSION", self.info_dic["DOWNLOAD_LINK"].split("/")[-1]),
+                self.info_dic["DOWNLOAD_LINK"]
+            )
+        )
+
 class AexP(AexCheck):
     fullname = "AospExtended Pie Official"
     sub_path = "whyred/pie"
@@ -482,6 +527,7 @@ class XyzuanProject(SfProjectCheck):
 
 CHECK_LIST = (
     Linux44Y,
+    GoogleClangPrebuilt,
     AexP,
     AexPGapps,
     AexQ,
