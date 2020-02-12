@@ -77,7 +77,7 @@ class CheckUpdate:
             ("DOWNLOAD_LINK", None),
             ("FILE_SIZE", None),
         ])
-        self.__private_dic = {}  # 私有变量 不存储 不显示 只是为了方便实例内部进行数据交互
+        self._private_dic = {}
 
     @property
     def name(self):
@@ -162,7 +162,7 @@ class CheckUpdate:
         :return: None
         """
         # 为保持一致性, 此方法不允许传入任何参数, 并且不允许返回任何值
-        # 如确实需要使用self.do_check方法中的部分变量, 可以借助self.__private_dic变量进行传递
+        # 如确实需要使用self.do_check方法中的部分变量, 可以借助self._private_dic进行传递
         pass
 
     def write_to_database(self):
@@ -387,7 +387,7 @@ class PeCheck(CheckUpdate):
                 self.update_info("FILE_MD5", line.strip().split(": ")[1])
             if "File size: " in line:
                 self.update_info("FILE_SIZE", line.strip().split(": ")[1])
-        self.__private_dic = {
+        self._private_dic = {
             "fake_download_link": "".join([
                 url, "/download/", build_info_sp_div.find("a")["data-file-uid"]
             ]),
@@ -396,9 +396,9 @@ class PeCheck(CheckUpdate):
 
     def after_check(self):
         real_download_link = self.request_url(
-            self.__private_dic["fake_download_link"],
+            self._private_dic["fake_download_link"],
             headers={
-                "referer": self.__private_dic["request_headers_referer"],
+                "referer": self._private_dic["request_headers_referer"],
                 "user-agent": UAS[0],
             }
         )

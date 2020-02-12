@@ -326,7 +326,7 @@ class Omni(CheckUpdate):
 
     def do_check(self):
         url = "http://dl.omnirom.org/whyred/"
-        self.__private_dic = {"url": url}
+        self._private_dic = {"url": url}
         bs_obj = self.get_bs(self.request_url(url))
         files = bs_obj.find("div", {"id": "fallback"}).find("table").find_all("tr")[2:]
         files.sort(key=lambda x: x.find_all("td")[2].get_text(), reverse=True)
@@ -343,7 +343,7 @@ class Omni(CheckUpdate):
         self.update_info(
             "FILE_MD5",
             self.get_hash_from_file(
-                self.__private_dic["url"] + self.info_dic["LATEST_VERSION"] + ".md5sum"
+                self._private_dic["url"] + self.info_dic["LATEST_VERSION"] + ".md5sum"
             )
         )
 
