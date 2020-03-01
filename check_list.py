@@ -32,7 +32,7 @@ class Linux44Y(CheckUpdate):
             raise Exception("Parsing failed!")
 
     def get_print_text(self):
-        return "Linux Kernel stable %s update\n\n%s" % (
+        return "*Linux Kernel stable %s update*\n\n%s" % (
             "[v%s](%s)" % (self.info_dic["LATEST_VERSION"], self.info_dic["DOWNLOAD_LINK"]),
             "[Commits](%s)" % self.info_dic["BUILD_CHANGELOG"]
         )

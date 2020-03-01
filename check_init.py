@@ -204,7 +204,9 @@ class CheckUpdate:
         ]
         for key, value in self.info_dic.items():
             if key != "LATEST_VERSION" and value is not None:
-                if key in {"BUILD_CHANGELOG", "FILE_MD5", "FILE_SHA1", "FILE_SHA256"}:
+                if key in {"FILE_MD5", "FILE_SHA1", "FILE_SHA256", "BUILD_DATE"}:
+                    value = "`%s`" % value
+                if key == "BUILD_CHANGELOG" and not value.startswith("http"):
                     value = "`%s`" % value
                 if key == "DOWNLOAD_LINK":
                     value = "[%s](%s)" % (self.info_dic.get("LATEST_VERSION", ""), value)
