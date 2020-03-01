@@ -206,6 +206,11 @@ class Cerberus(SfCheck):
     project_name = "cerberusos"
     sub_path = "builds/whyred/"
 
+class Cesium(SfCheck):
+    fullname = "Cesium OS Official"
+    project_name = "cesiumos"
+    sub_path = "whyred/"
+
 class Colt(SfCheck):
     fullname = "Colt OS Official"
     project_name = "coltos"
@@ -473,7 +478,7 @@ class Revenge(PlingCheck):
 
 class Revolution(SfCheck):
     fullname = "Revolution OS"
-    project_name = "revolutionos-miui"
+    project_name = "revos"
 
     def filter_rule(self, string):
         return "RedmiNote5" in string
@@ -548,6 +553,7 @@ CHECK_LIST = (
     CandyP,
     CandyQ,
     Cerberus,
+    Cesium,
     Colt,
     Cosmic,
     CrDroid,
