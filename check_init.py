@@ -209,7 +209,11 @@ class CheckUpdate:
                 if key == "BUILD_CHANGELOG" and not value.startswith("http"):
                     value = "`%s`" % value
                 if key == "DOWNLOAD_LINK":
-                    value = "[%s](%s)" % (self.info_dic.get("LATEST_VERSION", ""), value)
+                    assert value[0] != "{"
+                    if value[0] == "[":
+                        value = "\n".join(["# %s\n%s" % (k, v) for k, v in json.loads(value)])
+                    else:
+                        value = "[%s](%s)" % (self.info_dic.get("LATEST_VERSION", ""), value)
                 print_str_list.append("\n%s:\n%s" % (_KEY_TO_PRINT[key], value))
         return "\n".join(print_str_list)
 

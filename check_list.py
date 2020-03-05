@@ -51,7 +51,7 @@ class GoogleClangPrebuilt(CheckUpdate):
             if commit_title.startswith("Update prebuilt Clang to"):
                 commit_url = "https://android.googlesource.com" + a_tag["href"]
                 commit_id = a_tag["href"].split("/")[-1]
-                r_tag = commit_title.split()[-1]
+                r_tag = commit_title.split()[4]
                 assert r_tag.startswith("r")
                 if r_tag[-1] == ".":
                     r_tag = r_tag[:-1]
@@ -497,9 +497,24 @@ class Stag(SfCheck):
     sub_path = "Whyred/"
 
 class StagQ(SfCheck):
+
     fullname = "Stag OS Q Official"
     project_name = "stagos-10"
     sub_path = "whyred/"
+
+    def do_check(self):
+        super().do_check()
+        self.update_info(
+            "DOWNLOAD_LINK",
+            [
+                ("SourceForge", self.info_dic["DOWNLOAD_LINK"]),
+                (
+                    "Mirror",
+                    "https://downloads.stag.workers.dev/whyred/%s"
+                    % self.info_dic["LATEST_VERSION"]
+                )
+            ]
+        )
 
 class Superior(SfCheck):
     fullname = "Superior OS Official"
