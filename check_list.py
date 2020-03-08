@@ -229,7 +229,7 @@ class CrDroid(SfCheck):
 class CrDroidQ(SfCheck):
     fullname = "CrDroid Q Official"
     project_name = "crdroid"
-    sub_path = "whyred/v6.x/"
+    sub_path = "whyred/6.x/"
 
 class Cygnus(SfCheck):
     fullname = "CygnusOS Official"
