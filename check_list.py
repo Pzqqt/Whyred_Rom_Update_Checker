@@ -32,7 +32,7 @@ class Linux44Y(CheckUpdate):
             raise Exception("Parsing failed!")
 
     def get_print_text(self):
-        return "*Linux Kernel stable %s update*\n\n%s" % (
+        return "*Linux Kernel stable* %s *update*\n\n%s" % (
             "[v%s](%s)" % (self.info_dic["LATEST_VERSION"], self.info_dic["DOWNLOAD_LINK"]),
             "[Commits](%s)" % self.info_dic["BUILD_CHANGELOG"]
         )
@@ -177,9 +177,20 @@ class Bliss(H5aiCheck):
     sub_url = "/BlissRoms/Pie/whyred/"
 
 class BlissQ(H5aiCheck):
+
     fullname = "Bliss Rom Q Official"
     base_url = "https://downloads.blissroms.com"
     sub_url = "/BlissRoms/Q/whyred/"
+
+    def after_check(self):
+        self.update_info(
+            "FILE_MD5", self.get_hash_from_file(self.info_dic["DOWNLOAD_LINK"] + ".md5")
+        )
+        self.update_info(
+            "BUILD_CHANGELOG",
+            self.info_dic["DOWNLOAD_LINK"] \
+                .replace(self.sub_url, self.sub_url + "Changelog-").replace(".zip", ".txt")
+        )
 
 class BlissU1(PlingCheck):
     fullname = "Bliss Rom (Unofficial By srfarias)"
@@ -229,7 +240,7 @@ class CrDroid(SfCheck):
 class CrDroidQ(SfCheck):
     fullname = "CrDroid Q Official"
     project_name = "crdroid"
-    sub_path = "whyred/6.x/"
+    sub_path = "whyred"
 
 class Cygnus(SfCheck):
     fullname = "CygnusOS Official"
