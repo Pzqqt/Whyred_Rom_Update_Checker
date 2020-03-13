@@ -123,7 +123,8 @@ class CheckUpdate:
         req.encoding = encoding
         return req.text
 
-    def get_hash_from_file(self, url, **kwargs):
+    @classmethod
+    def get_hash_from_file(cls, url, **kwargs):
         """
         请求哈希校验文件的url, 返回文件中的哈希值
         请求过程中发生任何异常都允许忽略
@@ -132,7 +133,7 @@ class CheckUpdate:
         :return: 哈希值字符串或None
         """
         try:
-            return self.request_url(url, **kwargs).strip().split()[0]
+            return cls.request_url(url, **kwargs).strip().split()[0]
         except:
             return None
 
