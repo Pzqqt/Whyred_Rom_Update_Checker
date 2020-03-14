@@ -5,7 +5,7 @@ import traceback
 
 import telebot
 
-from config import TG_TOKEN, TG_SENDTO, _PROXIES_DIC
+from config import TG_TOKEN, TG_SENDTO, TIMEOUT, _PROXIES_DIC
 from logger import write_log_warning
 
 BOT = telebot.TeleBot(TG_TOKEN)
@@ -13,11 +13,11 @@ telebot.apihelper.proxy = _PROXIES_DIC
 
 def send_message(text, user=TG_SENDTO):
     try:
-        BOT.send_message(user, text, parse_mode="Markdown")
+        BOT.send_message(user, text, parse_mode="Markdown", timeout=TIMEOUT)
     except:
         # try again
         try:
-            BOT.send_message(user, text, parse_mode="Markdown")
+            BOT.send_message(user, text, parse_mode="Markdown", timeout=TIMEOUT)
         except:
             traceback_string = traceback.format_exc()
             print(traceback_string)
