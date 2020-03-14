@@ -425,6 +425,8 @@ class PeCheck(CheckUpdate):
             bs_obj = self.page_cache.cache
         builds = bs_obj.find_all("div", {"class": "version__item"})[self.index]
         build = builds.find("div", {"class": "build__item"})
+        if build is None:
+            return
         self.update_info("LATEST_VERSION", build["data-build-version"])
         self.update_info("BUILD_DATE", build.find("span", {"class": "date"}).get_text().strip())
         self.update_info("DOWNLOAD_LINK", url + build.find("a", {"class": "download__btn"})["href"])
