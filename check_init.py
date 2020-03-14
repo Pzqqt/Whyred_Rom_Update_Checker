@@ -417,29 +417,28 @@ class PeCheck(CheckUpdate):
     def do_check(self):
         url = "https://download.pixelexperience.org"
         if self.page_cache is None:
-            bs_obj = self.get_bs(self.request_url(url + "/whyred"))
+            bs_obj = self.get_bs(self.request_url(url + "/whyred", timeout=60))
         elif self.page_cache.cache is None:
-            bs_obj = self.get_bs(self.request_url(url + "/whyred"))
+            bs_obj = self.get_bs(self.request_url(url + "/whyred", timeout=60))
             self.page_cache.cache = bs_obj
         else:
             bs_obj = self.page_cache.cache
-        build = bs_obj.find_all("div", {"class": "panel panel-collapse"})[self.index]
-        build_info = build.find("tbody").find("tr").find_all("td")
-        self.update_info("BUILD_DATE", build_info[0].get_text())
-        self.update_info("LATEST_VERSION", build_info[1].get_text().strip())
-        build_id = build_info[1].find("a")["data-modal-id"]
-        build_info_sp_div = bs_obj.find("div", {"id": build_id})
-        self.update_info("BUILD_CHANGELOG", build_info_sp_div.find("pre").get_text())
-        for line in build_info_sp_div.get_text().splitlines():
-            if "MD5 hash: " in line:
-                self.update_info("FILE_MD5", line.strip().split(": ")[1])
-            if "File size: " in line:
-                self.update_info("FILE_SIZE", line.strip().split(": ")[1])
+        builds = bs_obj.find_all("div", {"class": "version__item"})[self.index]
+        build = builds.find("div", {"class": "build__item"})
+        self.update_info("LATEST_VERSION", build["data-build-version"])
+        self.update_info("BUILD_DATE", build.find("span", {"class": "date"}).get_text().strip())
+        self.update_info("DOWNLOAD_LINK", url + build.find("a", {"class": "download__btn"})["href"])
+        build_id = build.find("a", {"class": "download__btn"})["data-file-uid"]
+        for li in build.find("ul", {"class": "download__meta"}).find_all("li"):
+            if "MD5 hash:" in li.get_text():
+                self.update_info("FILE_MD5", li.get_text().split(":")[1].strip())
+        self.update_info(
+            "BUILD_CHANGELOG",
+            build.find("textarea", {"class": "changelogs__list"}).get_text().strip()
+        )
         self._private_dic = {
-            "fake_download_link": "".join([
-                url, "/download/", build_info_sp_div.find("a")["data-file-uid"]
-            ]),
-            "request_headers_referer": url + build_info_sp_div.find("a")["href"],
+            "fake_download_link": "".join([url, "/download/", build_id]),
+            "request_headers_referer": url + "/whyred",
         }
 
     def after_check(self):
@@ -448,7 +447,8 @@ class PeCheck(CheckUpdate):
             headers={
                 "referer": self._private_dic["request_headers_referer"],
                 "user-agent": UAS[0],
-            }
+            },
+            timeout=60,
         )
         self.update_info("DOWNLOAD_LINK", real_download_link)
 
