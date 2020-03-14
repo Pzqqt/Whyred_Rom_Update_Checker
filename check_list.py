@@ -413,15 +413,10 @@ class PeQ(PeCheck):
     page_cache = PE_PAGE_BS_CACHE
     index = 0
 
-class PeP(PeCheck):
-    fullname = "Pixel Experience Pie Official"
+class PeQPe(PeCheck):
+    fullname = "Pixel Experience Q (Plus edition) Official"
     page_cache = PE_PAGE_BS_CACHE
     index = 1
-
-class PePPe(PeCheck):
-    fullname = "Pixel Experience Pie (Plus edition) Official"
-    page_cache = PE_PAGE_BS_CACHE
-    index = 2
 
 class Pixys(SfCheck):
     fullname = "Pixys OS Pie Official"
@@ -608,8 +603,7 @@ CHECK_LIST = (
     NitrogenU1,
     Omni,
     PeQ,
-    PeP,
-    PePPe,
+    PeQPe,
     Pixys,
     PixysQ,
     Posp,
