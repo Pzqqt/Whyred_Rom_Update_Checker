@@ -502,23 +502,24 @@ class Stag(SfCheck):
     project_name = "stag-os"
     sub_path = "Whyred/"
 
-class StagQ(SfCheck):
+class StagQ(CheckUpdate):
 
     fullname = "Stag OS Q Official"
-    project_name = "stagos-10"
-    sub_path = "whyred/"
 
     def do_check(self):
-        super().do_check()
+        base_url = "https://downloads.stag.workers.dev/whyred/"
+        default_root_id = "1eTpnilGg2GMH135GYRTWdLnKEBxsKez1"
+        json_text = self.request_url(base_url, method="post", params={"rootId": default_root_id})
+        json_dic = json.loads(json_text)
+        build_info = json_dic["files"][-1]
+        self.update_info("BUILD_DATE", build_info["modifiedTime"])
+        self.update_info("LATEST_VERSION", build_info["name"])
+        self.update_info("FILE_SIZE", "%0.2f MB" % (int(build_info["size"]) / 1048576,))
         self.update_info(
             "DOWNLOAD_LINK",
             [
-                ("SourceForge", self.info_dic["DOWNLOAD_LINK"]),
-                (
-                    "Mirror",
-                    "https://downloads.stag.workers.dev/whyred/%s"
-                    % self.info_dic["LATEST_VERSION"]
-                )
+                ("Official", base_url + build_info["name"]),
+                ("SourceForge", "https://sourceforge.net/projects/stagos-10/files/whyred/" + build_info["name"]),
             ]
         )
 
@@ -536,6 +537,10 @@ class Syberia(SfCheck):
     fullname = "Syberia OS Official"
     project_name = "syberiaos"
     sub_path = "whyred/"
+
+class SyberiaU1(SfCheck):
+    fullname = "Syberia OS (Unofficial By Orges)"
+    project_name = "syberia-whyded"
 
 class Viper(SfCheck):
     fullname = "Viper OS Official"
@@ -620,6 +625,7 @@ CHECK_LIST = (
     Superior,
     SuperiorU1,
     Syberia,
+    SyberiaU1,
     Viper,
     Xtended,
     XyzuanProject,

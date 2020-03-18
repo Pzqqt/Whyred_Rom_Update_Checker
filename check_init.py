@@ -103,19 +103,26 @@ class CheckUpdate:
         self.__info_dic[key] = str(value) if value is not None else None
 
     @staticmethod
-    def request_url(url, encoding="utf-8", **kwargs):
+    def request_url(url, method="get", encoding="utf-8", **kwargs):
         """
         对requests.get方法进行了简单的包装
         timeout, headers, proxies这三个参数有默认值, 也可以根据需要自定义这些参数
         :param url: 要请求的url
+        :param method: 请求方法, 可选: "get"(默认)或"post"
         :param encoding: 文本编码, 默认为utf-8
         :param kwargs: 需要传递给requests.get方法的参数
         :return: url页面的源码
         """
+        if method == "get":
+            requests_func = requests.get
+        elif method == "post":
+            requests_func = requests.post
+        else:
+            raise Exception("Unknown request method: %s" % method)
         timeout = kwargs.pop("timeout", TIMEOUT)
         headers = kwargs.pop("headers", {"user-agent": random.choice(UAS)})
         proxies = kwargs.pop("proxies", _PROXIES_DIC)
-        req = requests.get(
+        req = requests_func(
             url, timeout=timeout, headers=headers, proxies=proxies, **kwargs
         )
         if not req.ok:
