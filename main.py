@@ -123,13 +123,17 @@ def loop_check():
             else:
                 req_failed_flag = 0
             if req_failed_flag == 5:
-                _abort("Network or proxy error! Abort...")
+                req_failed_flag = 0
+                print(" - Network or proxy error! Sleep...")
+                write_log_warning("Network or proxy error! Sleep...")
+                break
             _sleep(2)
-        print(" - Check again for failed items...")
-        write_log_info("Check again for failed items")
-        for cls in check_failed_list:
-            check_one(cls)
-            _sleep(2)
+        else:
+            print(" - Check again for failed items...")
+            write_log_info("Check again for failed items")
+            for cls in check_failed_list:
+                check_one(cls)
+                _sleep(2)
         PE_PAGE_BS_CACHE.clear()
         print(" - The next check will start at %s\n" % _get_time_str(offset=LOOP_CHECK_INTERVAL))
         write_log_info("End of check")
