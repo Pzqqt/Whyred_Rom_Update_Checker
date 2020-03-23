@@ -107,9 +107,9 @@ def loop_check():
     write_log_info("Run database cleanup before start")
     drop_ids = database_cleanup()
     write_log_info("Abandoned items: {%s}" % ", ".join(drop_ids))
+    check_failed_list = []
     req_failed_flag = 0
     while True:
-        check_failed_list = []
         start_time = _get_time_str()
         print(" - " + start_time)
         print(" - Start...")
@@ -134,6 +134,7 @@ def loop_check():
             for cls in check_failed_list:
                 check_one(cls)
                 _sleep(2)
+        check_failed_list.clear()
         PE_PAGE_BS_CACHE.clear()
         print(" - The next check will start at %s\n" % _get_time_str(offset=LOOP_CHECK_INTERVAL))
         write_log_info("End of check")
