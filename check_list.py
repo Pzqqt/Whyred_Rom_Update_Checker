@@ -5,6 +5,7 @@ import json
 
 from check_init import UAS, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, \
                        AexCheck, PeCheck, PlingCheck, PeCheckPageCache
+from database import Saved
 
 PE_PAGE_BS_CACHE = PeCheckPageCache()
 
@@ -156,15 +157,32 @@ class Aospa(PlingCheck):
     p_id = 1349975
     collection_id = 1578163970
 
-class ArrowP(SfCheck):
-    fullname = "Arrow OS Pie Official"
-    project_name = "arrow-os"
-    sub_path = "arrow-9.x/whyred/"
-
 class ArrowQ(SfCheck):
+
     fullname = "Arrow OS Q Official"
     project_name = "arrow-os"
     sub_path = "arrow-10.0/whyred/"
+
+    def is_updated(self):
+        result = super().is_updated()
+        if not result:
+            return False
+        saved_info = Saved.get_saved_info(self.name)
+        build_date_saved = saved_info.LATEST_VERSION.split("-")[-1]
+        build_date_latest = self.info_dic["LATEST_VERSION"].split("-")[-1]
+        return build_date_saved != build_date_latest
+
+    def after_check(self):
+        if any([self.info_dic["LATEST_VERSION"].endswith("GAPPS.zip"),
+                self.info_dic["LATEST_VERSION"].endswith("VANILLA.zip")]):
+            self.update_info("FILE_MD5", None)
+            self.update_info(
+                "DOWNLOAD_LINK",
+                [
+                    ("Vanilla", self.info_dic["DOWNLOAD_LINK"].replace("GAPPS.zip", "VANILLA.zip")),
+                    ("Gapps", self.info_dic["DOWNLOAD_LINK"].replace("VANILLA.zip", "GAPPS.zip")),
+                ]
+            )
 
 class Beast(SfCheck):
     fullname = "Beast Rom Pie Official"
@@ -574,7 +592,6 @@ CHECK_LIST = (
     AosipDf2,
     AosipDf3,
     Aospa,
-    ArrowP,
     ArrowQ,
     Beast,
     Bliss,
