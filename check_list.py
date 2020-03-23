@@ -418,6 +418,11 @@ class PeQPe(PeCheck):
     page_cache = PE_PAGE_BS_CACHE
     index = 1
 
+class PeU1(PlingCheck):
+    fullname = "Pixel Experience Q (Unofficial By Srfarias)"
+    p_id = 1369478
+    collection_id = 1584939374
+
 class Pixys(SfCheck):
     fullname = "Pixys OS Pie Official"
     project_name = "pixys-os"
@@ -609,6 +614,7 @@ CHECK_LIST = (
     Omni,
     PeQ,
     PeQPe,
+    PeU1,
     Pixys,
     PixysQ,
     Posp,
