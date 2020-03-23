@@ -306,9 +306,9 @@ class SfCheck(CheckUpdate):
         saved_info = Saved.get_saved_info(self.name)
         if saved_info is None:
             return True
-        latest_data = self.date_transform(self.info_dic["BUILD_DATE"])
-        saved_data = self.date_transform(saved_info.BUILD_DATE)
-        return latest_data > saved_data
+        latest_date = self.date_transform(self.info_dic["BUILD_DATE"])
+        saved_date = self.date_transform(saved_info.BUILD_DATE)
+        return latest_date > saved_date
 
 class SfProjectCheck(SfCheck):
 
