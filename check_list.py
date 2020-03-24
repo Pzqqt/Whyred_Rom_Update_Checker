@@ -5,7 +5,6 @@ import json
 
 from check_init import UAS, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, \
                        AexCheck, PeCheck, PlingCheck, PeCheckPageCache
-from database import Saved
 
 PE_PAGE_BS_CACHE = PeCheckPageCache()
 
@@ -163,19 +162,12 @@ class ArrowQ(SfCheck):
     project_name = "arrow-os"
     sub_path = "arrow-10.0/whyred/"
 
-    def is_updated(self):
-        result = super().is_updated()
-        if not result:
-            return False
-        saved_info = Saved.get_saved_info(self.name)
-        build_date_saved = saved_info.LATEST_VERSION.split("-")[-1]
-        build_date_latest = self.info_dic["LATEST_VERSION"].split("-")[-1]
-        return build_date_saved != build_date_latest
-
-    def after_check(self):
-        if any([self.info_dic["LATEST_VERSION"].endswith("GAPPS.zip"),
-                self.info_dic["LATEST_VERSION"].endswith("VANILLA.zip")]):
+    def do_check(self):
+        super().do_check()
+        self.update_info("LATEST_VERSION", self.info_dic["LATEST_VERSION"].split("-")[-2])
+        if "GAPPS.zip" in self.info_dic["DOWNLOAD_LINK"] or "VANILLA.zip" in self.info_dic["DOWNLOAD_LINK"]:
             self.update_info("FILE_MD5", None)
+            self.update_info("FILE_SIZE", None)
             self.update_info(
                 "DOWNLOAD_LINK",
                 [
@@ -291,7 +283,7 @@ class Havoc(SfCheck):
     sub_path = "whyred/"
 
 class HavocU1(SfCheck):
-    fullname = "Havoc OS (Unofficial By Ikaros)(Include gapps)"
+    fullname = "Havoc OS (Unofficial By Ikaros)(Include Gapps)"
     project_name = "ikarosdev"
     sub_path = "HavocOS/whyred-gapps/"
 
@@ -377,12 +369,21 @@ class MiuiGlobalStable(CheckUpdate):
         self.update_info("DOWNLOAD_LINK", rom_info["rom_url"])
 
 class MiuiEu(SfCheck):
+
     fullname = "Xiaomi.eu Multilang Developer ROM"
     project_name = "xiaomi-eu-multilang-miui-roms"
     sub_path = "xiaomi.eu/MIUI-WEEKLY-RELEASES/"
 
     def filter_rule(self, string):
         return "HMNote5Pro" in string
+
+class MiRoom(SfCheck):
+
+    fullname = "MiRoom ROM"
+    project_name = "miroom"
+
+    def filter_rule(self, string):
+        return "RedmiNote5" in string
 
 class Neon(SfCheck):
     fullname = "Neon OS Official"
@@ -506,6 +507,7 @@ class Revenge(PlingCheck):
     collection_id = 1581174106
 
 class Revolution(SfCheck):
+
     fullname = "Revolution OS"
     project_name = "revos"
 
@@ -564,6 +566,22 @@ class Syberia(SfCheck):
 class SyberiaU1(SfCheck):
     fullname = "Syberia OS (Unofficial By Orges)"
     project_name = "syberia-whyded"
+
+class Titanium(SfCheck):
+
+    fullname = "Titanium OS Official"
+    project_name = "titaniumos"
+    sub_path = "whyred/"
+
+    def filter_rule(self, string):
+        return string.endswith(".zip") and "GAPPS" not in string.upper()
+
+class TitaniumGapps(Titanium):
+
+    fullname = "Titanium OS Official (Include Gapps)"
+
+    def filter_rule(self, string):
+        return string.endswith(".zip") and "GAPPS" in string.upper()
 
 class Viper(SfCheck):
     fullname = "Viper OS Official"
@@ -625,6 +643,7 @@ CHECK_LIST = (
     MiuiChinaBeta,
     MiuiGlobalStable,
     MiuiEu,
+    MiRoom,
     Neon,
     Nitrogen,
     NitrogenU1,
@@ -649,6 +668,8 @@ CHECK_LIST = (
     SuperiorU1,
     Syberia,
     SyberiaU1,
+    Titanium,
+    TitaniumGapps,
     Viper,
     Xtended,
     XyzuanProject,
