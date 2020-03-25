@@ -4,7 +4,7 @@
 import json
 import random
 import time
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from urllib.parse import unquote, urlencode
 
 import requests
@@ -61,24 +61,30 @@ class ErrorCode(requests.exceptions.RequestException):
 
 class PageCache:
 
-    """ 一个保存了页面源码的类, 对字典进行了一个简单的包装
-    以"<请求方式>##<请求url>"为键, 以页面源码为值
+    """ 一个保存了页面源码的类
+    键为url, 值为一个列表, 列表内每个元素为: (<请求方法>, <url参数>, <页面源码>)
     将PageCache对象嵌入到CheckUpdate.request_url方法中
-    可以在请求之前检查是否已经请求过
-    如果否, 则继续请求, 并在请求成功之后将源码保存至本对象
+    可以在请求之前检查是否已经请求过 (将检查三个要素: url, 请求方法, url参数)
+    如果否, 则继续请求, 并在请求成功之后将请求方法, url参数, 页面源码保存至本对象
     如果是, 则从本对象中取出之前请求得到的源码, 可以避免重复请求
     """
 
     def __init__(self):
-        self.__page_cache = {}
+        # TODO:
+        # 虽然我很想使用defaultdict(set), 但是params要么是None要么是字典
+        # 而字典对象是不可散列的, 不能添加到集合里面, 所以我只能先放弃这一想法
+        # 以后再想想别的办法来解决
+        self.__page_cache = defaultdict(list)
 
-    def get(self, url):
-        return self.__page_cache.get(url)
+    def read(self, request_method, url, params):
+        for result in self.__page_cache[url]:
+            _request_method, _params, page_source = result
+            if _request_method == request_method and _params == params:
+                return page_source
 
-    def set(self, url, request_method, page_source):
+    def save(self, request_method, url, params, page_source):
         assert request_method in ("get", "post")
-        assert isinstance(page_source, str)
-        self.__page_cache["%s##%s" % (request_method, url)] = page_source
+        self.__page_cache[url].append((request_method, params, page_source))
 
     clear = __init__
 
@@ -144,7 +150,8 @@ class CheckUpdate:
             requests_func = requests.post
         else:
             raise Exception("Unknown request method: %s" % method)
-        saved_page_cache = PAGE_CACHE.get("%s##%s" % (method, url))
+        params = kwargs.get("params")
+        saved_page_cache = PAGE_CACHE.read(method, url, params)
         if saved_page_cache is not None:
             return saved_page_cache
         timeout = kwargs.pop("timeout", TIMEOUT)
@@ -157,7 +164,7 @@ class CheckUpdate:
             raise ErrorCode(req.status_code)
         req.encoding = encoding
         req_text = req.text
-        PAGE_CACHE.set(url, method, req_text)
+        PAGE_CACHE.save(method, url, params, req_text)
         return req_text
 
     @classmethod
