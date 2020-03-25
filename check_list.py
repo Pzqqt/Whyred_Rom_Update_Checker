@@ -568,6 +568,7 @@ class Titanium(SfCheck):
     fullname = "Titanium OS Official"
     project_name = "titaniumos"
     sub_path = "whyred/"
+    __enable_pagecache = True
 
     def filter_rule(self, string):
         return string.endswith(".zip") and "GAPPS" not in string.upper()

@@ -93,6 +93,7 @@ PAGE_CACHE = PageCache()
 class CheckUpdate:
 
     fullname = None
+    __enable_pagecache = False
 
     def __init__(self):
         self._raise_if_missing_property("fullname")
@@ -133,8 +134,8 @@ class CheckUpdate:
             value = json.dumps(value, ensure_ascii=False)
         self.__info_dic[key] = str(value) if value is not None else None
 
-    @staticmethod
-    def request_url(url, method="get", encoding="utf-8", **kwargs):
+    @classmethod
+    def request_url(cls, url, method="get", encoding="utf-8", **kwargs):
         """
         对requests.get方法进行了简单的包装
         timeout, headers, proxies这三个参数有默认值, 也可以根据需要自定义这些参数
@@ -151,9 +152,10 @@ class CheckUpdate:
         else:
             raise Exception("Unknown request method: %s" % method)
         params = kwargs.get("params")
-        saved_page_cache = PAGE_CACHE.read(method, url, params)
-        if saved_page_cache is not None:
-            return saved_page_cache
+        if cls.__enable_pagecache:
+            saved_page_cache = PAGE_CACHE.read(method, url, params)
+            if saved_page_cache is not None:
+                return saved_page_cache
         timeout = kwargs.pop("timeout", TIMEOUT)
         headers = kwargs.pop("headers", {"user-agent": random.choice(UAS)})
         proxies = kwargs.pop("proxies", _PROXIES_DIC)
@@ -164,7 +166,8 @@ class CheckUpdate:
             raise ErrorCode(req.status_code)
         req.encoding = encoding
         req_text = req.text
-        PAGE_CACHE.save(method, url, params, req_text)
+        if cls.__enable_pagecache:
+            PAGE_CACHE.save(method, url, params, req_text)
         return req_text
 
     @classmethod
@@ -442,6 +445,7 @@ class PeCheck(CheckUpdate):
 
     index = None
     page_cache = None
+    __enable_pagecache = True
 
     def __init__(self):
         self._raise_if_missing_property("index")
