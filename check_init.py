@@ -59,6 +59,31 @@ BS4_PARSER = select_bs4_parser()
 class ErrorCode(requests.exceptions.RequestException):
     """ 自定义异常, 当requests请求结果返回错误代码时抛出 """
 
+class PageCache:
+
+    """ 一个保存了页面源码的类, 对字典进行了一个简单的包装
+    以"<请求方式>##<请求url>"为键, 以页面源码为值
+    将PageCache对象嵌入到CheckUpdate.request_url方法中
+    可以在请求之前检查是否已经请求过
+    如果否, 则继续请求, 并在请求成功之后将源码保存至本对象
+    如果是, 则从本对象中取出之前请求得到的源码, 可以避免重复请求
+    """
+
+    def __init__(self):
+        self.__page_cache = {}
+
+    def get(self, url):
+        return self.__page_cache.get(url)
+
+    def set(self, url, request_method, page_source):
+        assert request_method in ("get", "post")
+        assert isinstance(page_source, str)
+        self.__page_cache["%s##%s" % (request_method, url)] = page_source
+
+    clear = __init__
+
+PAGE_CACHE = PageCache()
+
 class CheckUpdate:
 
     fullname = None
@@ -119,6 +144,9 @@ class CheckUpdate:
             requests_func = requests.post
         else:
             raise Exception("Unknown request method: %s" % method)
+        saved_page_cache = PAGE_CACHE.get("%s##%s" % (method, url))
+        if saved_page_cache is not None:
+            return saved_page_cache
         timeout = kwargs.pop("timeout", TIMEOUT)
         headers = kwargs.pop("headers", {"user-agent": random.choice(UAS)})
         proxies = kwargs.pop("proxies", _PROXIES_DIC)
@@ -128,7 +156,9 @@ class CheckUpdate:
         if not req.ok:
             raise ErrorCode(req.status_code)
         req.encoding = encoding
-        return req.text
+        req_text = req.text
+        PAGE_CACHE.set(url, method, req_text)
+        return req_text
 
     @classmethod
     def get_hash_from_file(cls, url, **kwargs):
@@ -401,13 +431,6 @@ class AexCheck(CheckUpdate):
         self.update_info("BUILD_DATE", json_dic["timestamp"])
         self.update_info("BUILD_CHANGELOG", json_dic.get("changelog"))
 
-class PeCheckPageCache:
-
-    def __init__(self):
-        self.cache = None
-
-    clear = __init__
-
 class PeCheck(CheckUpdate):
 
     index = None
@@ -415,21 +438,11 @@ class PeCheck(CheckUpdate):
 
     def __init__(self):
         self._raise_if_missing_property("index")
-        if not (self.page_cache is None or isinstance(self.page_cache, PeCheckPageCache)):
-            raise Exception(
-                "'page_cache' property must be NoneType or PeCheckPageCache object!"
-            )
         super().__init__()
 
     def do_check(self):
         url = "https://download.pixelexperience.org"
-        if self.page_cache is None:
-            bs_obj = self.get_bs(self.request_url(url + "/whyred", timeout=60))
-        elif self.page_cache.cache is None:
-            bs_obj = self.get_bs(self.request_url(url + "/whyred", timeout=60))
-            self.page_cache.cache = bs_obj
-        else:
-            bs_obj = self.page_cache.cache
+        bs_obj = self.get_bs(self.request_url(url + "/whyred", timeout=60))
         builds = bs_obj.find_all("div", {"class": "version__item"})[self.index]
         build = builds.find("div", {"class": "build__item"})
         if build is None:

@@ -9,8 +9,8 @@ import sys
 from requests import exceptions
 
 from config import DEBUG_ENABLE, ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL
-from check_init import ErrorCode
-from check_list import CHECK_LIST, PE_PAGE_BS_CACHE
+from check_init import ErrorCode, PAGE_CACHE
+from check_list import CHECK_LIST
 from database import DBSession, Saved
 from tgbot import send_message
 from logger import write_log_info, write_log_warning
@@ -135,7 +135,7 @@ def loop_check():
                 check_one(cls)
                 _sleep(2)
         check_failed_list.clear()
-        PE_PAGE_BS_CACHE.clear()
+        PAGE_CACHE.clear()
         print(" - The next check will start at %s\n" % _get_time_str(offset=LOOP_CHECK_INTERVAL))
         write_log_info("End of check")
         _sleep(LOOP_CHECK_INTERVAL)
