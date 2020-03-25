@@ -159,7 +159,7 @@ class ArrowQ(SfCheck):
     fullname = "Arrow OS Q Official"
     project_name = "arrow-os"
     sub_path = "arrow-10.0/whyred/"
-    __enable_pagecache = True
+    _enable_pagecache = True
 
     def filter_rule(self, string):
         return string.endswith(".zip") and "GAPPS" not in string.upper()
@@ -272,7 +272,7 @@ class Havoc(SfCheck):
     fullname = "Havoc OS Official"
     project_name = "havoc-os"
     sub_path = "whyred/"
-    __enable_pagecache = True
+    _enable_pagecache = True
 
     def filter_rule(self, string):
         return string.endswith(".zip") and "GAPPS" not in string.upper()
@@ -572,7 +572,7 @@ class Titanium(SfCheck):
     fullname = "Titanium OS Official"
     project_name = "titaniumos"
     sub_path = "whyred/"
-    __enable_pagecache = True
+    _enable_pagecache = True
 
     def filter_rule(self, string):
         return string.endswith(".zip") and "GAPPS" not in string.upper()

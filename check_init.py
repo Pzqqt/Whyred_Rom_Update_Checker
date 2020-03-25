@@ -93,7 +93,7 @@ PAGE_CACHE = PageCache()
 class CheckUpdate:
 
     fullname = None
-    __enable_pagecache = False
+    _enable_pagecache = False
 
     def __init__(self):
         self._raise_if_missing_property("fullname")
@@ -152,7 +152,7 @@ class CheckUpdate:
         else:
             raise Exception("Unknown request method: %s" % method)
         params = kwargs.get("params")
-        if cls.__enable_pagecache:
+        if cls._enable_pagecache:
             saved_page_cache = PAGE_CACHE.read(method, url, params)
             if saved_page_cache is not None:
                 return saved_page_cache
@@ -166,7 +166,7 @@ class CheckUpdate:
             raise ErrorCode(req.status_code)
         req.encoding = encoding
         req_text = req.text
-        if cls.__enable_pagecache:
+        if cls._enable_pagecache:
             PAGE_CACHE.save(method, url, params, req_text)
         return req_text
 
@@ -280,7 +280,7 @@ class SfCheck(CheckUpdate):
     project_name = None
     sub_path = ""
 
-    __MONTH_TO_NUMBER = {
+    _MONTH_TO_NUMBER = {
         "Jan": "01",
         "Feb": "02",
         "Mar": "03",
@@ -336,7 +336,7 @@ class SfCheck(CheckUpdate):
         """
         date_str_ = date_str[5:-3]
         date_str_month = date_str[8:8+3]
-        date_str_ = date_str_.replace(date_str_month, cls.__MONTH_TO_NUMBER[date_str_month])
+        date_str_ = date_str_.replace(date_str_month, cls._MONTH_TO_NUMBER[date_str_month])
         return time.strptime(date_str_, "%d %m %Y %H:%M:%S")
 
     def is_updated(self):
@@ -353,7 +353,7 @@ class SfCheck(CheckUpdate):
 class SfProjectCheck(SfCheck):
 
     # file name keyword: full name
-    __KNOWN_ROM = OrderedDict([
+    _KNOWN_ROM = OrderedDict([
         ("aicp", "AICP"),
         ("AOSiP", "AOSiP"),
         ("Arrow", "Arrow OS"),
@@ -384,7 +384,7 @@ class SfProjectCheck(SfCheck):
 
     def do_check(self):
         super().do_check()
-        for key, value in self.__KNOWN_ROM.items():
+        for key, value in self._KNOWN_ROM.items():
             if key.upper() in self.info_dic["LATEST_VERSION"].upper():
                 self.fullname = "%s (By %s)" % (value, self.developer)
                 break
@@ -445,7 +445,7 @@ class PeCheck(CheckUpdate):
 
     index = None
     page_cache = None
-    __enable_pagecache = True
+    _enable_pagecache = True
 
     def __init__(self):
         self._raise_if_missing_property("index")
