@@ -159,20 +159,17 @@ class ArrowQ(SfCheck):
     fullname = "Arrow OS Q Official"
     project_name = "arrow-os"
     sub_path = "arrow-10.0/whyred/"
+    __enable_pagecache = True
 
-    def do_check(self):
-        super().do_check()
-        self.update_info("LATEST_VERSION", self.info_dic["LATEST_VERSION"].split("-")[-2])
-        if "GAPPS.zip" in self.info_dic["DOWNLOAD_LINK"] or "VANILLA.zip" in self.info_dic["DOWNLOAD_LINK"]:
-            self.update_info("FILE_MD5", None)
-            self.update_info("FILE_SIZE", None)
-            self.update_info(
-                "DOWNLOAD_LINK",
-                [
-                    ("Vanilla", self.info_dic["DOWNLOAD_LINK"].replace("GAPPS.zip", "VANILLA.zip")),
-                    ("Gapps", self.info_dic["DOWNLOAD_LINK"].replace("VANILLA.zip", "GAPPS.zip")),
-                ]
-            )
+    def filter_rule(self, string):
+        return string.endswith(".zip") and "GAPPS" not in string.upper()
+
+class ArrowQGapps(ArrowQ):
+
+    fullname = "Arrow OS Q Official (Include Gapps)"
+
+    def filter_rule(self, string):
+        return string.endswith(".zip") and "GAPPS" in string.upper()
 
 class Beast(SfCheck):
     fullname = "Beast Rom Pie Official"
@@ -209,11 +206,6 @@ class Bootleggers(SfCheck):
     fullname = "Bootleggers Rom Official"
     project_name = "bootleggersrom"
     sub_path = "builds/whyred/"
-
-class CandyP(SfCheck):
-    fullname = "Candy Rom Pie Official"
-    project_name = "candyroms"
-    sub_path = "Official/Pie/whyred/"
 
 class CandyQ(SfCheck):
     fullname = "Candy Rom Q Official"
@@ -276,9 +268,21 @@ class Gzosp(SfCheck):
     sub_path = "gzosp/"
 
 class Havoc(SfCheck):
+
     fullname = "Havoc OS Official"
     project_name = "havoc-os"
     sub_path = "whyred/"
+    __enable_pagecache = True
+
+    def filter_rule(self, string):
+        return string.endswith(".zip") and "GAPPS" not in string.upper()
+
+class HavocGapps(Havoc):
+
+    fullname = "Havoc OS Official (Include Gapps)"
+
+    def filter_rule(self, string):
+        return string.endswith(".zip") and "GAPPS" in string.upper()
 
 class HavocU1(SfCheck):
     fullname = "Havoc OS (Unofficial By Ikaros)(Include Gapps)"
@@ -608,12 +612,12 @@ CHECK_LIST = (
     AosipDf3,
     Aospa,
     ArrowQ,
+    ArrowQGapps,
     Beast,
     Bliss,
     BlissQ,
     BlissU1,
     Bootleggers,
-    CandyP,
     CandyQ,
     Cerberus,
     Cesium,
@@ -627,6 +631,7 @@ CHECK_LIST = (
     EvolutionX,
     Gzosp,
     Havoc,
+    HavocGapps,
     HavocU1,
     HavocU2,
     HavocU3,
