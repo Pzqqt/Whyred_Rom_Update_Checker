@@ -15,7 +15,9 @@ from database import DBSession, Saved
 from tgbot import send_message
 from logger import write_log_info, write_log_warning
 
+# 为True时将强制将数据保存至数据库并发送消息
 FORCE_UPDATE = False
+# 为True时将强制禁止发送消息(注意: 优先级低于FORCE_UPDATE)
 DONT_POST = False
 
 def database_cleanup():

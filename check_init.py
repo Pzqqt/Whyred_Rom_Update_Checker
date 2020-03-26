@@ -65,7 +65,7 @@ class PageCache:
     键为url, 值为一个列表, 列表内每个元素为: (<请求方法>, <url参数>, <页面源码>)
     将PageCache对象嵌入到CheckUpdate.request_url方法中
     可以在请求之前检查是否已经请求过 (将检查三个要素: url, 请求方法, url参数)
-    如果否, 则继续请求, 并在请求成功之后将请求方法, url参数, 页面源码保存至本对象
+    如果否, 则继续请求, 并在请求成功之后将请求方法, url, url参数, 页面源码保存至本对象
     如果是, 则从本对象中取出之前请求得到的源码, 可以避免重复请求
     """
 
@@ -463,9 +463,9 @@ class PeCheck(CheckUpdate):
         self.update_info("BUILD_DATE", build.find("span", {"class": "date"}).get_text().strip())
         self.update_info("DOWNLOAD_LINK", url + build.find("a", {"class": "download__btn"})["href"])
         build_id = build.find("a", {"class": "download__btn"})["data-file-uid"]
-        for li in build.find("ul", {"class": "download__meta"}).find_all("li"):
-            if "MD5 hash:" in li.get_text():
-                self.update_info("FILE_MD5", li.get_text().split(":")[1].strip())
+        for li_obj in build.find("ul", {"class": "download__meta"}).find_all("li"):
+            if "MD5 hash:" in li_obj.get_text():
+                self.update_info("FILE_MD5", li_obj.get_text().split(":")[1].strip())
         self.update_info(
             "BUILD_CHANGELOG",
             build.find("textarea", {"class": "changelogs__list"}).get_text().strip()
