@@ -431,9 +431,11 @@ class Omni(CheckUpdate):
 
 class PeQ(PeCheck):
     fullname = "Pixel Experience Q Official"
+    model = "whyred"
     index = 0
+    _enable_pagecache = True
 
-class PeQPe(PeCheck):
+class PeQPe(PeQ):
     fullname = "Pixel Experience Q (Plus edition) Official"
     index = 1
 

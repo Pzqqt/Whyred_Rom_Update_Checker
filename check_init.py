@@ -443,17 +443,17 @@ class AexCheck(CheckUpdate):
 
 class PeCheck(CheckUpdate):
 
+    model = None
     index = None
-    page_cache = None
-    _enable_pagecache = True
 
     def __init__(self):
+        self._raise_if_missing_property("model")
         self._raise_if_missing_property("index")
         super().__init__()
 
     def do_check(self):
         url = "https://download.pixelexperience.org"
-        bs_obj = self.get_bs(self.request_url(url + "/whyred", timeout=60))
+        bs_obj = self.get_bs(self.request_url("%s/%s" % (url, self.model), timeout=60))
         builds = bs_obj.find_all("div", {"class": "version__item"})[self.index]
         build = builds.find("div", {"class": "build__item"})
         if build is None:
@@ -471,7 +471,7 @@ class PeCheck(CheckUpdate):
         )
         self._private_dic = {
             "fake_download_link": "".join([url, "/download/", build_id]),
-            "request_headers_referer": url + "/whyred",
+            "request_headers_referer": "%s/%s" % (url, self.model),
         }
 
     def after_check(self):
