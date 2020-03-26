@@ -431,7 +431,8 @@ class AexCheck(CheckUpdate):
                 "origin": "https://downloads.aospextended.com",
                 "referer": "https://downloads.aospextended.com/" + self.sub_path.split("/")[0],
                 "user-agent": UAS[0]
-            }
+            },
+            timeout=30,
         )
         json_dic = json.loads(json_text)[0]
         self.update_info("LATEST_VERSION", json_dic["file_name"])
