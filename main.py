@@ -11,7 +11,7 @@ from requests import exceptions
 from config import DEBUG_ENABLE, ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL
 from check_init import ErrorCode, PAGE_CACHE
 from check_list import CHECK_LIST
-from database import DBSession, Saved
+from database import create_dbsession, Saved
 from tgbot import send_message
 from logger import write_log_info, write_log_warning
 
@@ -26,8 +26,7 @@ def database_cleanup():
     将数据库中存在于数据库但不存在于CHECK_LIST的项目删除掉
     :return: 被删除的项目名字的集合
     """
-    session = DBSession()
-    try:
+    with create_dbsession() as session:
         saved_ids = {x.ID for x in session.query(Saved).all()}
         checklist_ids = {x.__name__ for x in CHECK_LIST}
         drop_ids = saved_ids - checklist_ids
@@ -35,8 +34,6 @@ def database_cleanup():
             session.delete(session.query(Saved).filter(Saved.ID == id_).one())
         session.commit()
         return drop_ids
-    finally:
-        session.close()
 
 def _abort(text):
     print(" - %s" % text)

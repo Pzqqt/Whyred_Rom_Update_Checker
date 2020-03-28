@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 from collections import OrderedDict
+from contextlib import contextmanager
 
 from sqlalchemy import create_engine, Column, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -12,7 +13,15 @@ from config import SQLITE_FILE
 _Base = declarative_base()
 _Engine = create_engine("sqlite:///%s" % SQLITE_FILE)
 _Base.metadata.create_all(_Engine)
-DBSession = sessionmaker(bind=_Engine)
+_DBSession = sessionmaker(bind=_Engine)
+
+@contextmanager
+def create_dbsession(**kw):
+    session = _DBSession(**kw)
+    try:
+        yield session
+    finally:
+        session.close()
 
 class Saved(_Base):
 
@@ -49,10 +58,8 @@ class Saved(_Base):
         :param name: CheckUpdate子类的类名
         :return: Saved对象或None
         """
-        session = DBSession()
-        try:
-            return session.query(cls).filter(cls.ID == name).one()
-        except exc.NoResultFound:
-            return None
-        finally:
-            session.close()
+        with create_dbsession() as session:
+            try:
+                return session.query(cls).filter(cls.ID == name).one()
+            except exc.NoResultFound:
+                return None

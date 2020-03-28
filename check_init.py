@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from requests.packages import urllib3
 
 from config import _PROXIES_DIC, TIMEOUT
-from database import DBSession, Saved
+from database import create_dbsession, Saved
 
 # 禁用安全请求警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -215,8 +215,7 @@ class CheckUpdate:
 
     def write_to_database(self):
         """ 将CheckUpdate实例的info_dic数据写入数据库 """
-        session = DBSession()
-        try:
+        with create_dbsession() as session:
             if self.name in {x.ID for x in session.query(Saved).all()}:
                 saved_data = session.query(Saved).filter(Saved.ID == self.name).one()
                 saved_data.FULL_NAME = self.fullname
@@ -230,8 +229,6 @@ class CheckUpdate:
                 )
                 session.add(new_data)
             session.commit()
-        finally:
-            session.close()
 
     def is_updated(self):
         """ 与数据库中已存储的数据进行比对, 如果有更新, 则返回True, 否则返回False """
