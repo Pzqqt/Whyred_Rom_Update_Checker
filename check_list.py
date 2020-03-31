@@ -117,6 +117,11 @@ class Aicp(CheckUpdate):
         self.update_info("FILE_MD5", json_dic["md5"])
         self.update_info("BUILD_CHANGELOG", json_dic["url"] + ".html")
 
+class Ancient(SfCheck):
+    fullname = "Ancient Rom"
+    project_name = "ancientrom"
+    sub_path = "whyred"
+
 class Aosip(H5aiCheck):
 
     fullname = "AOSiP Official"
@@ -454,9 +459,17 @@ class PixysQ(SfCheck):
     fullname = "Pixys OS Q Official"
     project_name = "pixys-os"
     sub_path = "ten/whyred/"
+    _enable_pagecache = True
 
     def filter_rule(self, string):
-        return string.endswith(".zip") and "GAPP" not in string.upper()
+        return string.endswith(".zip") and "GAPPS" not in string.upper()
+
+class PixysQGapps(PixysQ):
+
+    fullname = "Pixys OS Q Official (Include Gapps)"
+
+    def filter_rule(self, string):
+        return string.endswith(".zip") and "GAPPS" in string.upper()
 
 class Posp(SfCheck):
     fullname = "POSP Official"
@@ -507,6 +520,11 @@ class Revenge(PlingCheck):
     fullname = "Revenge OS Official"
     p_id = 1358218
     collection_id = 1581174106
+
+class RevengeU1(SfCheck):
+    fullname = "Revenge OS (By SebaUbuntu)"
+    project_name = "sebaubuntu-s-projects"
+    sub_path = "ROMs/whyred/RevengeOS-Q/"
 
 class Revolution(SfCheck):
 
@@ -608,6 +626,7 @@ CHECK_LIST = (
     AexQ,
     AexQGapps,
     Aicp,
+    Ancient,
     Aosip,
     AosipDf,
     AosipDf2,
@@ -657,12 +676,14 @@ CHECK_LIST = (
     PeU1,
     Pixys,
     PixysQ,
+    PixysQGapps,
     Posp,
     RaghuVarmaProject,
     RandomRomsProject,
     Rebellion,
     ResurrectionRemix,
     Revenge,
+    RevengeU1,
     Revolution,
     SreekFreaksProject,
     SrfariasProject,
