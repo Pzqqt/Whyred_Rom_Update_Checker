@@ -4,7 +4,7 @@
 import json
 
 from check_init import UAS, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, \
-                       AexCheck, PeCheck, PlingCheck
+                       AexCheck, PeCheck, PlingCheck, MiuiChinaCheck
 
 class Linux44Y(CheckUpdate):
 
@@ -333,35 +333,15 @@ class Lotus(SfCheck):
     project_name = "lotus-os"
     sub_path = "whyred/"
 
-class MiuiChinaStable(CheckUpdate):
-
+class MiuiChinaStable(MiuiChinaCheck):
     fullname = "MIUI China Stable"
+    device_id = 341
+    index = 0
+    _enable_pagecache = True
 
-    def do_check(self):
-        url = "http://www.miui.com/download-341.html"
-        bs_obj = self.get_bs(self.request_url(url, proxies={}))
-        build = bs_obj.find("div", {"class": "content current_content"}) \
-                      .find("div", {"class": "block"})
-        self.update_info("DOWNLOAD_LINK", build.find("div", {"class": "to_miroute"}).find("a")["href"])
-        rom_info = build.find("div", {"class": "supports"}).find("p").get_text() \
-                        .replace("\n", "").replace("（", "(").replace("）", ")").split("：")
-        self.update_info("FILE_SIZE", rom_info[-1])
-        self.update_info("LATEST_VERSION", rom_info[2][:-2])
-
-class MiuiChinaBeta(CheckUpdate):
-
+class MiuiChinaBeta(MiuiChinaStable):
     fullname = "MIUI China Developer"
-
-    def do_check(self):
-        url = "http://www.miui.com/download-341.html"
-        bs_obj = self.get_bs(self.request_url(url, proxies={}))
-        build = bs_obj.find("div", {"class": "content current_content"}) \
-                      .find_all("div", {"class": "block"})[1]
-        self.update_info("DOWNLOAD_LINK", build.find("div", {"class": "to_miroute"}).find("a")["href"])
-        rom_info = build.find("div", {"class": "supports"}).find("p").get_text() \
-                        .replace("\n", "").replace("（", "(").replace("）", ")").split("：")
-        self.update_info("FILE_SIZE", rom_info[-1])
-        self.update_info("LATEST_VERSION", rom_info[2][:-2])
+    index = 1
 
 class MiuiGlobalStable(CheckUpdate):
 

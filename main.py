@@ -17,9 +17,6 @@ from logger import write_log_info, write_log_warning
 
 # 为True时将强制将数据保存至数据库并发送消息
 FORCE_UPDATE = False
-# 为True时将强制禁止发送消息
-DONT_POST = False
-# 若FORCE_UPDATE和DONT_POST同时为True, 则将数据保存至数据库但不发送消息
 
 def database_cleanup():
     """
@@ -96,7 +93,7 @@ def check_one(cls):
             write_log_warning(*traceback_string.splitlines())
             write_log_warning("%s: Something wrong when running after_check!" % cls_obj.fullname)
         cls_obj.write_to_database()
-        if ENABLE_SENDMESSAGE and not DONT_POST:
+        if ENABLE_SENDMESSAGE:
             send_message(cls_obj.get_print_text())
     else:
         print(" no update")
@@ -152,7 +149,7 @@ if __name__ == "__main__":
     if args.force:
         FORCE_UPDATE = True
     if args.dontpost:
-        DONT_POST = True
+        ENABLE_SENDMESSAGE = False
     if args.auto:
         loop_check()
     elif args.check:
