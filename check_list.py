@@ -377,11 +377,6 @@ class Neon(SfCheck):
     project_name = "neonrelease"
     sub_path = "whyred/"
 
-class Nitrogen(SfCheck):
-    fullname = "Nitrogen OS Official"
-    project_name = "nitrogen-project"
-    sub_path = "whyred/"
-
 class NitrogenU1(SfCheck):
     fullname = "Nitrogen OS (Unofficial By Bagaskara815)"
     project_name = "nangis"
@@ -655,7 +650,6 @@ CHECK_LIST = (
     MiuiEu,
     MiRoom,
     Neon,
-    Nitrogen,
     NitrogenU1,
     Omni,
     PeR,
