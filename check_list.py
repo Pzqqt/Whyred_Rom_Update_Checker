@@ -409,21 +409,16 @@ class Omni(CheckUpdate):
             )
         )
 
-class PeR(PeCheck):
-    fullname = "Pixel Experience 11 Official"
+class PeQ(PeCheck):
+    fullname = "Pixel Experience Q Official"
     model = "whyred"
     index = 0
-    tag_name = "11"
+    tag_name = "10"
     _enable_pagecache = True
 
-class PeQ(PeR):
-    fullname = "Pixel Experience Q Official"
-    index = 1
-    tag_name = "10"
-
-class PeQPe(PeR):
+class PeQPe(PeQ):
     fullname = "Pixel Experience Q (Plus edition) Official"
-    index = 2
+    index = 1
     tag_name = "10 (Plus edition)"
 
 class PeU1(PlingCheck):
@@ -652,7 +647,6 @@ CHECK_LIST = (
     Neon,
     NitrogenU1,
     Omni,
-    PeR,
     PeQ,
     PeQPe,
     PeU1,
