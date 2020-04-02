@@ -443,16 +443,19 @@ class PeCheck(CheckUpdate):
 
     model = None
     index = None
+    tag_name = None
 
     def __init__(self):
         self._raise_if_missing_property("model")
         self._raise_if_missing_property("index")
+        self._raise_if_missing_property("tag_name")
         super().__init__()
 
     def do_check(self):
         url = "https://download.pixelexperience.org"
         bs_obj = self.get_bs(self.request_url("%s/%s" % (url, self.model), timeout=60))
         builds = bs_obj.find_all("div", {"class": "version__item"})[self.index]
+        assert builds.find("button").get_text().strip() == self.tag_name
         build = builds.find("div", {"class": "build__item"})
         if build is None:
             return
