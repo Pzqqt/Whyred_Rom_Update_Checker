@@ -382,33 +382,6 @@ class NitrogenU1(SfCheck):
     project_name = "nangis"
     sub_path = "NitrogenOS/Whyred/10/"
 
-class Omni(CheckUpdate):
-
-    fullname = "Omni Official"
-
-    def do_check(self):
-        url = "http://dl.omnirom.org/whyred/"
-        self._private_dic = {"url": url}
-        bs_obj = self.get_bs(self.request_url(url))
-        files = bs_obj.find("div", {"id": "fallback"}).find("table").find_all("tr")[2:]
-        files.sort(key=lambda x: x.find_all("td")[2].get_text(), reverse=True)
-        for file in files:
-            file_name = file.find("a").get_text()
-            if file_name.endswith(".zip"):
-                self.update_info("LATEST_VERSION", file_name)
-                self.update_info("DOWNLOAD_LINK", url + file_name)
-                self.update_info("BUILD_DATE", file.find_all("td")[2].get_text())
-                self.update_info("FILE_SIZE", file.find_all("td")[3].get_text())
-                break
-
-    def after_check(self):
-        self.update_info(
-            "FILE_MD5",
-            self.get_hash_from_file(
-                self._private_dic["url"] + self.info_dic["LATEST_VERSION"] + ".md5sum"
-            )
-        )
-
 class PeQ(PeCheck):
     fullname = "Pixel Experience Q Official"
     model = "whyred"
@@ -646,7 +619,6 @@ CHECK_LIST = (
     MiRoom,
     Neon,
     NitrogenU1,
-    Omni,
     PeQ,
     PeQPe,
     PeU1,
