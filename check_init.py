@@ -267,7 +267,7 @@ class CheckUpdate:
             self.name,
             self.fullname,
             ", ".join([
-                "%s='%s'" % (key, value.replace("\n", "\\n"))
+                "%s='%s'" % (key, str(value).replace("\n", "\\n"))
                 for key, value in self.__info_dic.items() if value is not None
             ])
         )
@@ -382,7 +382,7 @@ class SfProjectCheck(SfCheck):
     def do_check(self):
         super().do_check()
         for key, value in self._KNOWN_ROM.items():
-            if key.upper() in self.info_dic["LATEST_VERSION"].upper():
+            if key.upper() in str(self.info_dic["LATEST_VERSION"]).upper():
                 self.fullname = "%s (By %s)" % (value, self.developer)
                 break
 
