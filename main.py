@@ -70,6 +70,9 @@ def check_one(cls):
         elif isinstance(error, (exceptions.SSLError, exceptions.ProxyError)):
             print("\n! Check failed! Proxy error.")
             write_log_warning("%s check failed! Proxy error." % cls_obj.fullname)
+        elif isinstance(error, exceptions.ConnectionError):
+            print("\n! Check failed! Connection error.")
+            write_log_warning("%s check failed! Connection error." % cls_obj.fullname)
         elif isinstance(error, ErrorCode):
             print("\n! Check failed! Error code: %s." % error)
             write_log_warning("%s check failed! Error code: %s." % (cls_obj.fullname, error))
