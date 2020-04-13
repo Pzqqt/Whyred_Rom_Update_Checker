@@ -217,6 +217,15 @@ class CandyQ(SfCheck):
     project_name = "candyroms"
     sub_path = "Official/ten/whyred/"
 
+class CarbonU1(SfCheck):
+
+    fullname = "Carbon Rom (Unofficial By fakeyato)"
+    project_name = "fakecarbon"
+    sub_path = "carbon/"
+
+    def filter_rule(self, string):
+        return string.endswith(".zip") and "whyred" in string.lower()
+
 class Cerberus(SfCheck):
     fullname = "Cerberus OS Official"
     project_name = "cerberusos"
@@ -322,6 +331,11 @@ class LineageU1(PlingCheck):
     fullname = "Lineage OS (Unofficial By srfarias)"
     p_id = 1336266
     collection_id = 1573678199
+
+class LineageU2(SfCheck):
+    fullname = "Lineage OS (Unofficial By SubhrajyotiSen)"
+    project_name = "whyred-los"
+    sub_path = "rom/"
 
 class Liquid(SfCheck):
     fullname = "Liquid Remix Official"
@@ -590,6 +604,7 @@ CHECK_LIST = (
     BlissU1,
     Bootleggers,
     CandyQ,
+    CarbonU1,
     Cerberus,
     Cesium,
     Colt,
@@ -610,6 +625,7 @@ CHECK_LIST = (
     KubilProject,
     Legion,
     LineageU1,
+    LineageU2,
     Liquid,
     Lotus,
     MiuiChinaStable,
