@@ -527,24 +527,3 @@ class PlingCheck(CheckUpdate):
                 self.update_info("FILE_SIZE", "%0.2f MB" % (int(latest_build["size"]) / 1048576,))
             else:
                 self.update_info("DOWNLOAD_LINK", unquote(latest_build["tags"]).replace("link##", ""))
-
-class MiuiChinaCheck(CheckUpdate):
-
-    device_id = None
-    index = None
-
-    def __init__(self):
-        self._raise_if_missing_property("device_id")
-        self._raise_if_missing_property("index")
-        super().__init__()
-
-    def do_check(self):
-        url = "http://www.miui.com/download-%s.html" % self.device_id
-        bs_obj = self.get_bs(self.request_url(url, proxies={}))
-        build = bs_obj.find("div", {"class": "content current_content"}) \
-                      .find_all("div", {"class": "block"})[self.index]
-        self.update_info("DOWNLOAD_LINK", build.find("div", {"class": "to_miroute"}).find("a")["href"])
-        rom_info = build.find("div", {"class": "supports"}).find("p").get_text() \
-                        .replace("\n", "").replace("（", "(").replace("）", ")").split("：")
-        self.update_info("FILE_SIZE", rom_info[-1])
-        self.update_info("LATEST_VERSION", rom_info[2][:-2])

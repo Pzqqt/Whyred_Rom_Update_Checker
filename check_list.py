@@ -4,7 +4,7 @@
 import json
 
 from check_init import UAS, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, \
-                       AexCheck, PeCheck, PlingCheck, MiuiChinaCheck
+                       AexCheck, PeCheck, PlingCheck
 
 class Linux44Y(CheckUpdate):
 
@@ -347,28 +347,6 @@ class Lotus(SfCheck):
     project_name = "lotus-os"
     sub_path = "whyred/"
 
-class MiuiChinaStable(MiuiChinaCheck):
-    fullname = "MIUI China Stable"
-    device_id = 341
-    index = 0
-    _enable_pagecache = True
-
-class MiuiChinaBeta(MiuiChinaStable):
-    fullname = "MIUI China Developer"
-    index = 1
-
-class MiuiGlobalStable(CheckUpdate):
-
-    fullname = "MIUI Global Stable"
-
-    def do_check(self):
-        url = "http://c.mi.com/oc/rom/getdevicelist?phone_id=1700341"
-        json_dic = json.loads(self.request_url(url))
-        rom_info = json_dic["data"]["device_data"]["device_list"]["Redmi Note 5 Pro India"]["stable_rom"]
-        self.update_info("LATEST_VERSION", rom_info["version"])
-        self.update_info("FILE_SIZE", rom_info["size"])
-        self.update_info("DOWNLOAD_LINK", rom_info["rom_url"])
-
 class MiuiEu(SfCheck):
 
     fullname = "Xiaomi.eu Multilang Developer ROM"
@@ -628,9 +606,6 @@ CHECK_LIST = (
     LineageU2,
     Liquid,
     Lotus,
-    MiuiChinaStable,
-    MiuiChinaBeta,
-    MiuiGlobalStable,
     MiuiEu,
     MiRoom,
     Neon,
