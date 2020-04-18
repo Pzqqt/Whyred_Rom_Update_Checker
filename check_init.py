@@ -86,7 +86,8 @@ class PageCache:
         assert request_method in ("get", "post")
         self.__page_cache[url].append((request_method, params, page_source))
 
-    clear = __init__
+    def clear(self):
+        self.__page_cache.clear()
 
 PAGE_CACHE = PageCache()
 

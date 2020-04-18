@@ -40,7 +40,7 @@ def _abort(text):
 def _abort_by_user():
     return _abort("Abort by user")
 
-def _sleep(sleep_time=0):
+def _sleep(sleep_time):
     try:
         time.sleep(sleep_time)
     except KeyboardInterrupt:
@@ -116,17 +116,16 @@ def loop_check():
         write_log_info("=" * 64)
         write_log_info("Start checking at %s" % start_time)
         for cls in CHECK_LIST:
-            result = check_one(cls)
-            if not result:
+            if not check_one(cls):
                 req_failed_flag += 1
                 check_failed_list.append(cls)
+                if req_failed_flag == 5:
+                    req_failed_flag = 0
+                    print(" - Network or proxy error! Sleep...")
+                    write_log_warning("Network or proxy error! Sleep...")
+                    break
             else:
                 req_failed_flag = 0
-            if req_failed_flag == 5:
-                req_failed_flag = 0
-                print(" - Network or proxy error! Sleep...")
-                write_log_warning("Network or proxy error! Sleep...")
-                break
             _sleep(2)
         else:
             print(" - Check again for failed items...")
