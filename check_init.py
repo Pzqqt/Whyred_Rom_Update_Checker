@@ -303,7 +303,7 @@ class SfCheck(CheckUpdate):
         builds = list(bs_obj.find_all("item"))
         if not builds:
             return
-        builds.sort(key=lambda x: -int(x.find("files:sf-file-id").get_text()))
+        builds.sort(key=lambda x: self.date_transform(x.pubdate.string), reverse=True)
         for build in builds:
             file_size_mb = int(build.find("media:content")["filesize"]) / 1000 / 1000
             # 过滤小于500MB的文件
