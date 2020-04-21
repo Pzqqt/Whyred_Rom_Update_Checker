@@ -118,9 +118,21 @@ class Aicp(CheckUpdate):
         self.update_info("BUILD_CHANGELOG", json_dic["url"] + ".html")
 
 class Ancient(SfCheck):
+
     fullname = "Ancient Rom"
     project_name = "ancientrom"
     sub_path = "whyred"
+    _enable_pagecache = True
+
+    def filter_rule(self, string):
+        return string.endswith(".zip") and "GAPPS" not in string.upper()
+
+class AncientGapps(Ancient):
+
+    fullname = "Ancient Rom (Include Gapps)"
+
+    def filter_rule(self, string):
+        return string.endswith(".zip") and "GAPPS" in string.upper()
 
 class Aosip(H5aiCheck):
 
@@ -241,6 +253,11 @@ class Colt(SfCheck):
     project_name = "coltos"
     sub_path = "Whyred/"
 
+class Corvus(SfCheck):
+    fullname = "Corvus OS Official"
+    project_name = "corvus-os"
+    sub_path = "whyred/"
+
 class Cosmic(SfCheck):
     fullname = "Cosmic OS Official"
     project_name = "cosmic-os"
@@ -275,6 +292,11 @@ class EvolutionX(SfCheck):
     fullname = "EvolutionX Official"
     project_name = "evolution-x"
     sub_path = "whyred/"
+
+class ExtendedU1(PlingCheck):
+    fullname = "ExtendedUI (Unofficial By Nesquirt)"
+    p_id = 1374700
+    collection_id = 1586685069
 
 class Gzosp(SfCheck):
     fullname = "Gzosp Official"
@@ -574,6 +596,7 @@ CHECK_LIST = (
     AexQGapps,
     Aicp,
     Ancient,
+    AncientGapps,
     Aosip,
     AosipDf,
     AosipDf2,
@@ -591,6 +614,7 @@ CHECK_LIST = (
     Cerberus,
     Cesium,
     Colt,
+    Corvus,
     Cosmic,
     CrDroid,
     CrDroidQ,
@@ -598,6 +622,7 @@ CHECK_LIST = (
     DotP,
     DuRex,
     EvolutionX,
+    ExtendedU1,
     Gzosp,
     Havoc,
     HavocGapps,
