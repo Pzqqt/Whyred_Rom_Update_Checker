@@ -297,6 +297,25 @@ class SfCheck(CheckUpdate):
         self._raise_if_missing_property("project_name")
         super().__init__()
 
+    @classmethod
+    def date_transform(cls, date_str):
+        """
+        将sf站rss中的日期字符串转为time.struct_time类型, 以便于比较
+        例： "Wed, 12 Feb 2020 12:34:56 UT"
+        返回: time.struct_time(
+            tm_year=2020, tm_mon=2, tm_mday=12, tm_hour=12, tm_min=34, tm_sec=56,
+            tm_wday=0, tm_yday=48, tm_isdst=-1
+        )
+        """
+        date_str_ = date_str[5:-3]
+        date_str_month = date_str[8:8+3]
+        date_str_ = date_str_.replace(date_str_month, cls._MONTH_TO_NUMBER[date_str_month])
+        return time.strptime(date_str_, "%d %m %Y %H:%M:%S")
+
+    def filter_rule(self, string):
+        """ 文件名过滤规则 """
+        return string.endswith(".zip")
+
     def do_check(self):
         url = "https://sourceforge.net/projects/%s/rss" % self.project_name
         bs_obj = self.get_bs(self.request_url(url, params={"path": "/"+self.sub_path}))
@@ -317,25 +336,6 @@ class SfCheck(CheckUpdate):
                 self.update_info("FILE_MD5", build.find("media:hash", {"algo": "md5"}).string)
                 self.update_info("FILE_SIZE", "%0.1f MB" % file_size_mb)
                 break
-
-    def filter_rule(self, string):
-        """ 文件名过滤规则 """
-        return string.endswith(".zip")
-
-    @classmethod
-    def date_transform(cls, date_str):
-        """
-        将sf站rss中的日期字符串转为time.struct_time类型, 以便于比较
-        例： "Wed, 12 Feb 2020 12:34:56 UT"
-        返回: time.struct_time(
-            tm_year=2020, tm_mon=2, tm_mday=12, tm_hour=12, tm_min=34, tm_sec=56,
-            tm_wday=0, tm_yday=48, tm_isdst=-1
-        )
-        """
-        date_str_ = date_str[5:-3]
-        date_str_month = date_str[8:8+3]
-        date_str_ = date_str_.replace(date_str_month, cls._MONTH_TO_NUMBER[date_str_month])
-        return time.strptime(date_str_, "%d %m %Y %H:%M:%S")
 
     def is_updated(self):
         result = super().is_updated()
