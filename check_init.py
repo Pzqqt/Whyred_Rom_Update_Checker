@@ -380,6 +380,9 @@ class SfProjectCheck(SfCheck):
         self.fullname = "New rom release by %s" % self.developer
         super().__init__()
 
+    def filter_rule(self, string):
+        return string.endswith(".zip") and "whyred" in string.lower()
+
     def do_check(self):
         super().do_check()
         for key, value in self._KNOWN_ROM.items():
