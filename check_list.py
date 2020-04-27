@@ -339,6 +339,11 @@ class Ion(SfCheck):
     project_name = "i-o-n"
     sub_path = "device/xiaomi/whyred/"
 
+class Komodo(SfCheck):
+    fullname = "Komodo OS Official"
+    project_name = "komodos-rom"
+    sub_path = "whyred/"
+
 class KubilProject(SfProjectCheck):
     project_name = "kubilproject"
     sub_path = "Whyred/"
@@ -578,6 +583,35 @@ class Viper(SfCheck):
     project_name = "viper-project"
     sub_path = "whyred/"
 
+class WireGuard(CheckUpdate):
+
+    fullname = "WireGuard for Linux 3.10 - 5.5"
+
+    def do_check(self):
+        base_url = "https://git.zx2c4.com/wireguard-linux-compat"
+        bs_obj = self.get_bs(self.request_url(base_url + "/log/"))
+        trs = bs_obj.find("table", {"class": "list nowrap"}).find_all("tr")[1:]
+        for tr in trs:
+            tag_obj = tr.find_all("td")[1].find("a", {"class": "tag-annotated-deco"})
+            if tag_obj:
+                latest_version = tag_obj.get_text().strip()
+                self.update_info("LATEST_VERSION", latest_version)
+                self.update_info(
+                    "DOWNLOAD_LINK",
+                    "%s/snapshot/wireguard-linux-compat-%s.tar.xz" % (base_url, latest_version[1:])
+                )
+                self.update_info("BUILD_CHANGELOG", "%s/log/?h=%s" % (base_url, latest_version))
+                break
+        else:
+            raise Exception("Parsing failed!")
+
+    def get_print_text(self):
+        return "*%s update*\n\n%s\n\nDownload tar.gz:\n%s" % (
+            self.fullname,
+            "[Commits](%s)" % self.info_dic["BUILD_CHANGELOG"],
+            "[%s](%s)" % (self.info_dic["DOWNLOAD_LINK"].split("/")[-1], self.info_dic["DOWNLOAD_LINK"])
+        )
+
 class Xtended(SfCheck):
     fullname = "Xtended Official"
     project_name = "xtended"
@@ -630,6 +664,7 @@ CHECK_LIST = (
     HavocU2,
     HavocU3,
     Ion,
+    Komodo,
     KubilProject,
     Legion,
     LineageU1,
@@ -666,6 +701,7 @@ CHECK_LIST = (
     Titanium,
     TitaniumGapps,
     Viper,
+    WireGuard,
     Xtended,
     XyzuanProject,
 )
