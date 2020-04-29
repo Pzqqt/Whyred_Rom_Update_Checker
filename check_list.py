@@ -80,6 +80,35 @@ class GoogleClangPrebuilt(CheckUpdate):
             )
         )
 
+class WireGuard(CheckUpdate):
+
+    fullname = "WireGuard for Linux 3.10 - 5.5"
+
+    def do_check(self):
+        base_url = "https://git.zx2c4.com/wireguard-linux-compat"
+        bs_obj = self.get_bs(self.request_url(base_url + "/log/"))
+        trs = bs_obj.find("table", {"class": "list nowrap"}).find_all("tr")[1:]
+        for tr in trs:
+            tag_obj = tr.find_all("td")[1].find("a", {"class": "tag-annotated-deco"})
+            if tag_obj:
+                latest_version = tag_obj.get_text().strip()
+                self.update_info("LATEST_VERSION", latest_version)
+                self.update_info(
+                    "DOWNLOAD_LINK",
+                    "%s/snapshot/wireguard-linux-compat-%s.tar.xz" % (base_url, latest_version[1:])
+                )
+                self.update_info("BUILD_CHANGELOG", "%s/log/?h=%s" % (base_url, latest_version))
+                break
+        else:
+            raise Exception("Parsing failed!")
+
+    def get_print_text(self):
+        return "*%s update*\n\n%s\n\nDownload tar.gz:\n%s" % (
+            self.fullname,
+            "[Commits](%s)" % self.info_dic["BUILD_CHANGELOG"],
+            "[%s](%s)" % (self.info_dic["DOWNLOAD_LINK"].split("/")[-1], self.info_dic["DOWNLOAD_LINK"])
+        )
+
 class AexP(AexCheck):
     fullname = "AospExtended Pie Official"
     sub_path = "whyred/pie"
@@ -293,6 +322,11 @@ class EvolutionX(SfCheck):
     project_name = "evolution-x"
     sub_path = "whyred/"
 
+class Extended(SfCheck):
+    fullname = "ExtendedUI Official"
+    project_name = "extendedui"
+    sub_path = "whyred/"
+
 class ExtendedU1(PlingCheck):
     fullname = "ExtendedUI (Unofficial By Nesquirt)"
     p_id = 1374700
@@ -458,6 +492,20 @@ class RandomRomsProject(SfProjectCheck):
     project_name = "randomroms"
     developer = "Sreekanth"
 
+class RandomStuffProject(SfProjectCheck):
+
+    project_name = "random-stuff-for-whyred"
+    developer = "James"
+
+    def is_updated(self):
+        result = super().is_updated()
+        if not result:
+            return False
+        # Ignore test builds
+        if "/test/" in self.info_dic["DOWNLOAD_LINK"]:
+            return False
+        return True
+
 class Rebellion(SfCheck):
     fullname = "RebellionOS Official"
     project_name = "rebellion-os"
@@ -583,35 +631,6 @@ class Viper(SfCheck):
     project_name = "viper-project"
     sub_path = "whyred/"
 
-class WireGuard(CheckUpdate):
-
-    fullname = "WireGuard for Linux 3.10 - 5.5"
-
-    def do_check(self):
-        base_url = "https://git.zx2c4.com/wireguard-linux-compat"
-        bs_obj = self.get_bs(self.request_url(base_url + "/log/"))
-        trs = bs_obj.find("table", {"class": "list nowrap"}).find_all("tr")[1:]
-        for tr in trs:
-            tag_obj = tr.find_all("td")[1].find("a", {"class": "tag-annotated-deco"})
-            if tag_obj:
-                latest_version = tag_obj.get_text().strip()
-                self.update_info("LATEST_VERSION", latest_version)
-                self.update_info(
-                    "DOWNLOAD_LINK",
-                    "%s/snapshot/wireguard-linux-compat-%s.tar.xz" % (base_url, latest_version[1:])
-                )
-                self.update_info("BUILD_CHANGELOG", "%s/log/?h=%s" % (base_url, latest_version))
-                break
-        else:
-            raise Exception("Parsing failed!")
-
-    def get_print_text(self):
-        return "*%s update*\n\n%s\n\nDownload tar.gz:\n%s" % (
-            self.fullname,
-            "[Commits](%s)" % self.info_dic["BUILD_CHANGELOG"],
-            "[%s](%s)" % (self.info_dic["DOWNLOAD_LINK"].split("/")[-1], self.info_dic["DOWNLOAD_LINK"])
-        )
-
 class Xtended(SfCheck):
     fullname = "Xtended Official"
     project_name = "xtended"
@@ -624,6 +643,7 @@ class XyzuanProject(SfProjectCheck):
 CHECK_LIST = (
     Linux44Y,
     GoogleClangPrebuilt,
+    WireGuard,
     AexP,
     AexPGapps,
     AexQ,
@@ -656,6 +676,7 @@ CHECK_LIST = (
     DotP,
     DuRex,
     EvolutionX,
+    Extended,
     ExtendedU1,
     Gzosp,
     Havoc,
@@ -685,6 +706,7 @@ CHECK_LIST = (
     Posp,
     RaghuVarmaProject,
     RandomRomsProject,
+    RandomStuffProject,
     Rebellion,
     ResurrectionRemix,
     Revenge,
@@ -701,7 +723,6 @@ CHECK_LIST = (
     Titanium,
     TitaniumGapps,
     Viper,
-    WireGuard,
     Xtended,
     XyzuanProject,
 )
