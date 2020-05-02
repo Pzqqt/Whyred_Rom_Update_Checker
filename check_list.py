@@ -86,18 +86,20 @@ class WireGuard(CheckUpdate):
 
     def do_check(self):
         base_url = "https://git.zx2c4.com/wireguard-linux-compat"
-        bs_obj = self.get_bs(self.request_url(base_url + "/log/"))
-        trs = bs_obj.find("table", {"class": "list nowrap"}).find_all("tr")[1:]
-        for tr in trs:
-            tag_obj = tr.find_all("td")[1].find("a", {"class": "tag-annotated-deco"})
-            if tag_obj:
-                latest_version = tag_obj.get_text().strip()
-                self.update_info("LATEST_VERSION", latest_version)
+        fetch_url = "https://build.wireguard.com/distros.txt"
+        fetch_text = self.request_url(fetch_url)
+        for line in fetch_text.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            distro, package, version = line.split()[:3]
+            if distro == "upstream" and package == "linuxcompat":
+                self.update_info("LATEST_VERSION", "v"+version)
                 self.update_info(
                     "DOWNLOAD_LINK",
-                    "%s/snapshot/wireguard-linux-compat-%s.tar.xz" % (base_url, latest_version[1:])
+                    "%s/snapshot/wireguard-linux-compat-%s.tar.xz" % (base_url, version)
                 )
-                self.update_info("BUILD_CHANGELOG", "%s/log/?h=%s" % (base_url, latest_version))
+                self.update_info("BUILD_CHANGELOG", "%s/log/?h=%s" % (base_url, "v"+version))
                 break
         else:
             raise Exception("Parsing failed!")
