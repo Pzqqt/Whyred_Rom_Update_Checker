@@ -12,7 +12,6 @@ from config import SQLITE_FILE
 
 _Base = declarative_base()
 _Engine = create_engine("sqlite:///%s" % SQLITE_FILE)
-_Base.metadata.create_all(_Engine)
 _DBSession = sessionmaker(bind=_Engine)
 
 @contextmanager
@@ -63,3 +62,5 @@ class Saved(_Base):
                 return session.query(cls).filter(cls.ID == name).one()
             except exc.NoResultFound:
                 return None
+
+_Base.metadata.create_all(_Engine)
