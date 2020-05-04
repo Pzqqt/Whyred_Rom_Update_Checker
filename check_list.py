@@ -460,6 +460,10 @@ class PeU1(PlingCheck):
     p_id = 1369478
     collection_id = 1584939374
 
+class PixelPlusUI(SfCheck):
+    fullname = "PixelPlusUI Official"
+    project_name = "pixelplusui-project"
+
 class Pixys(SfCheck):
     fullname = "Pixys OS Pie Official"
     project_name = "pixys-os"
@@ -704,6 +708,7 @@ CHECK_LIST = (
     PeQ,
     PeQPe,
     PeU1,
+    PixelPlusUI,
     Pixys,
     PixysQ,
     PixysQGapps,
