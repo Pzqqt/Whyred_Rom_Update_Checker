@@ -219,6 +219,11 @@ class ArrowQGapps(ArrowQ):
     def filter_rule(self, string):
         return string.endswith(".zip") and "GAPPS" in string.upper()
 
+class Atom(SfCheck):
+    fullname = "Atom OS Official"
+    project_name = "atom-os-project"
+    sub_path = "whyred/"
+
 class Beast(SfCheck):
     fullname = "Beast Rom Pie Official"
     project_name = "beastroms"
@@ -660,6 +665,7 @@ CHECK_LIST = (
     Aospa,
     ArrowQ,
     ArrowQGapps,
+    Atom,
     Beast,
     Bliss,
     BlissQ,
