@@ -314,7 +314,7 @@ class SfCheck(CheckUpdate):
 
     def filter_rule(self, string):
         """ 文件名过滤规则 """
-        return string.endswith(".zip")
+        return string.endswith(".zip") and "whyred" in string.lower()
 
     def do_check(self):
         url = "https://sourceforge.net/projects/%s/rss" % self.project_name
@@ -379,9 +379,6 @@ class SfProjectCheck(SfCheck):
         self._raise_if_missing_property("developer")
         self.fullname = "New rom release by %s" % self.developer
         super().__init__()
-
-    def filter_rule(self, string):
-        return string.endswith(".zip") and "whyred" in string.lower()
 
     def do_check(self):
         super().do_check()
