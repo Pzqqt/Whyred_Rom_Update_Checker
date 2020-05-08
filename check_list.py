@@ -286,9 +286,21 @@ class Colt(SfCheck):
     sub_path = "Whyred/"
 
 class Corvus(SfCheck):
+
     fullname = "Corvus OS Official"
     project_name = "corvus-os"
     sub_path = "whyred/"
+    _enable_pagecache = True
+
+    def filter_rule(self, string):
+        return super().filter_rule(string) and "GAPPS" not in string.upper()
+
+class CorvusGapps(Corvus):
+
+    fullname = "Corvus OS Official (Include Gapps)"
+
+    def filter_rule(self, string):
+        return super().filter_rule(string) and "GAPPS" in string.upper()
 
 class Cosmic(SfCheck):
     fullname = "Cosmic OS Official"
@@ -677,6 +689,7 @@ CHECK_LIST = (
     Cesium,
     Colt,
     Corvus,
+    CorvusGapps,
     Cosmic,
     CrDroid,
     CrDroidQ,
