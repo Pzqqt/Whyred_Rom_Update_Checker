@@ -27,3 +27,14 @@ if ENABLE_LOGGER:
 else:
     def write_log_info(*text): pass
     def write_log_warning(*text): pass
+
+_PREFIX_FUNC_DIC = {
+    "info": ("-", write_log_info),
+    "warning": ("!", write_log_warning),
+}
+
+def print_and_log(string, level="info", custom_prefix=""):
+    prefix = custom_prefix if custom_prefix else _PREFIX_FUNC_DIC.get(level, ("-",))[0]
+    log_func = _PREFIX_FUNC_DIC.get(level, (None, write_log_info))[1]
+    print(prefix, string)
+    log_func(string)

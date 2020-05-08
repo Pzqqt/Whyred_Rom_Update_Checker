@@ -15,7 +15,7 @@ from check_init import ErrorCode, PAGE_CACHE
 from check_list import CHECK_LIST
 from database import create_dbsession, Saved
 from tgbot import send_message
-from logger import write_log_info, write_log_warning
+from logger import write_log_info, write_log_warning, print_and_log
 
 # 为True时将强制将数据保存至数据库并发送消息
 FORCE_UPDATE = False
@@ -66,29 +66,27 @@ def check_one(cls, debug_enable=DEBUG_ENABLE):
         cls_obj.do_check()
     except Exception as error:
         if isinstance(error, exceptions.ReadTimeout):
-            print("! %s check failed! Timeout." % cls_obj.fullname)
-            write_log_warning("%s check failed! Timeout." % cls_obj.fullname)
+            print_and_log("%s check failed! Timeout." % cls_obj.fullname, level="warning")
         elif isinstance(error, (exceptions.SSLError, exceptions.ProxyError)):
-            print("! %s check failed! Proxy error." % cls_obj.fullname)
-            write_log_warning("%s check failed! Proxy error." % cls_obj.fullname)
+            print_and_log("%s check failed! Proxy error." % cls_obj.fullname, level="warning")
         elif isinstance(error, exceptions.ConnectionError):
-            print("! %s check failed! Connection error." % cls_obj.fullname)
-            write_log_warning("%s check failed! Connection error." % cls_obj.fullname)
+            print_and_log("%s check failed! Connection error." % cls_obj.fullname, level="warning")
         elif isinstance(error, ErrorCode):
-            print("! %s check failed! Error code: %s." % (cls_obj.fullname, error))
-            write_log_warning("%s check failed! Error code: %s." % (cls_obj.fullname, error))
+            print_and_log("%s check failed! Error code: %s." % (cls_obj.fullname, error), level="warning")
         else:
             traceback_string = traceback.format_exc()
-            print("\n%s\n! %s check failed!" % (traceback_string, cls_obj.fullname))
+            print(traceback_string)
             write_log_warning(*traceback_string.splitlines())
-            write_log_warning("%s check failed!" % cls_obj.fullname)
+            print_and_log("%s check failed!" % cls_obj.fullname, level="warning")
         if debug_enable:
             if input("* Continue?(Y/N) ").upper() != "Y":
                 _abort_by_user()
         return False
     if cls_obj.is_updated() or FORCE_UPDATE:
-        print("> %s has update: %s" % (cls_obj.fullname, cls_obj.info_dic["LATEST_VERSION"]))
-        write_log_info("%s has update: %s" % (cls_obj.fullname, cls_obj.info_dic["LATEST_VERSION"]))
+        print_and_log(
+            "%s has update: %s" % (cls_obj.fullname, cls_obj.info_dic["LATEST_VERSION"]),
+            custom_prefix=">",
+        )
         try:
             cls_obj.after_check()
         except:
@@ -100,8 +98,7 @@ def check_one(cls, debug_enable=DEBUG_ENABLE):
         if ENABLE_SENDMESSAGE:
             send_message(cls_obj.get_print_text())
     else:
-        print("- %s no update" % cls_obj.fullname)
-        write_log_info("%s no update" % cls_obj.fullname)
+        print_and_log("%s no update" % cls_obj.fullname)
     _sleep(2)
     return True
 
@@ -144,11 +141,9 @@ def loop_check():
         write_log_info("Start checking at %s" % start_time)
         check_failed_list, is_network_error = loop_check_func()
         if is_network_error:
-            print(" - Network or proxy error! Sleep...")
-            write_log_warning("Network or proxy error! Sleep...")
+            print_and_log("Network or proxy error! Sleep...", level="warning")
         else:
-            print(" - Check again for failed items...")
-            write_log_info("Check again for failed items")
+            print_and_log("Check again for failed items")
             for cls in check_failed_list:
                 check_one(cls)
         PAGE_CACHE.clear()
