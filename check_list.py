@@ -156,14 +156,14 @@ class Ancient(SfCheck):
     _enable_pagecache = True
 
     def filter_rule(self, string):
-        return super().filter_rule(string) and "GAPPS" not in string.upper()
+        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
 
 class AncientGapps(Ancient):
 
     fullname = "Ancient Rom (Include Gapps)"
 
     def filter_rule(self, string):
-        return super().filter_rule(string) and "GAPPS" in string.upper()
+        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
 class Aosip(H5aiCheck):
 
@@ -210,14 +210,14 @@ class ArrowQ(SfCheck):
     _enable_pagecache = True
 
     def filter_rule(self, string):
-        return super().filter_rule(string) and "GAPPS" not in string.upper()
+        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
 
 class ArrowQGapps(ArrowQ):
 
     fullname = "Arrow OS Q Official (Include Gapps)"
 
     def filter_rule(self, string):
-        return super().filter_rule(string) and "GAPPS" in string.upper()
+        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
 class Atom(SfCheck):
     fullname = "Atom OS Official"
@@ -293,14 +293,14 @@ class Corvus(SfCheck):
     _enable_pagecache = True
 
     def filter_rule(self, string):
-        return super().filter_rule(string) and "GAPPS" not in string.upper()
+        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
 
 class CorvusGapps(Corvus):
 
     fullname = "Corvus OS Official (Include Gapps)"
 
     def filter_rule(self, string):
-        return super().filter_rule(string) and "GAPPS" in string.upper()
+        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
 class Cosmic(SfCheck):
     fullname = "Cosmic OS Official"
@@ -360,14 +360,14 @@ class Havoc(SfCheck):
     _enable_pagecache = True
 
     def filter_rule(self, string):
-        return super().filter_rule(string) and "GAPPS" not in string.upper()
+        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
 
 class HavocGapps(Havoc):
 
     fullname = "Havoc OS Official (Include Gapps)"
 
     def filter_rule(self, string):
-        return super().filter_rule(string) and "GAPPS" in string.upper()
+        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
 class HavocU1(SfCheck):
     fullname = "Havoc OS (Unofficial By Ikaros)(Include Gapps)"
@@ -489,14 +489,14 @@ class PixysQ(SfCheck):
     _enable_pagecache = True
 
     def filter_rule(self, string):
-        return super().filter_rule(string) and "GAPPS" not in string.upper()
+        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
 
 class PixysQGapps(PixysQ):
 
     fullname = "Pixys OS Q Official (Include Gapps)"
 
     def filter_rule(self, string):
-        return super().filter_rule(string) and "GAPPS" in string.upper()
+        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
 class Posp(SfCheck):
     fullname = "POSP Official"
@@ -636,14 +636,14 @@ class Titanium(SfCheck):
     _enable_pagecache = True
 
     def filter_rule(self, string):
-        return super().filter_rule(string) and "GAPPS" not in string.upper()
+        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
 
 class TitaniumGapps(Titanium):
 
     fullname = "Titanium OS Official (Include Gapps)"
 
     def filter_rule(self, string):
-        return super().filter_rule(string) and "GAPPS" in string.upper()
+        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
 class Viper(SfCheck):
     fullname = "Viper OS Official"

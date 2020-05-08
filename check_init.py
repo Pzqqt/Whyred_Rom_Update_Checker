@@ -329,7 +329,8 @@ class SfCheck(CheckUpdate):
         date_str_ = date_str_.replace(date_str_month, cls._MONTH_TO_NUMBER[date_str_month])
         return time.strptime(date_str_, "%d %m %Y %H:%M:%S")
 
-    def filter_rule(self, string):
+    @classmethod
+    def filter_rule(cls, string):
         """ 文件名过滤规则 """
         return string.endswith(".zip") and "whyred" in string.lower()
 
