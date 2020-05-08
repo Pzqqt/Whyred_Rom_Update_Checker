@@ -4,6 +4,7 @@
 import json
 import random
 import time
+import threading
 from collections import OrderedDict, defaultdict
 from urllib.parse import unquote, urlencode
 
@@ -11,7 +12,7 @@ import requests
 from bs4 import BeautifulSoup
 from requests.packages import urllib3
 
-from config import _PROXIES_DIC, TIMEOUT
+from config import ENABLE_MULTI_THREAD, _PROXIES_DIC, TIMEOUT
 from database import create_dbsession, Saved
 
 # 禁用安全请求警告
@@ -75,16 +76,32 @@ class PageCache:
         # 而字典对象是不可散列的, 不能添加到集合里面, 所以我只能先放弃这一想法
         # 以后再想想别的办法来解决
         self.__page_cache = defaultdict(list)
+        if ENABLE_MULTI_THREAD:
+            # 设置一个线程锁, 当其他线程在写入时阻止其他线程进行读写
+            self.lock = threading.Lock()
 
     def read(self, request_method, url, params):
+        if ENABLE_MULTI_THREAD:
+            while not self.lock.locked():
+                return self.__read(request_method, url, params)
+        return self.__read(request_method, url, params)
+
+    def __read(self, request_method, url, params):
         for result in self.__page_cache[url]:
             _request_method, _params, page_source = result
             if _request_method == request_method and _params == params:
                 return page_source
+        return None
 
     def save(self, request_method, url, params, page_source):
         assert request_method in ("get", "post")
-        self.__page_cache[url].append((request_method, params, page_source))
+        if ENABLE_MULTI_THREAD:
+            self.lock.acquire()
+        try:
+            self.__page_cache[url].append((request_method, params, page_source))
+        finally:
+            if ENABLE_MULTI_THREAD:
+                self.lock.release()
 
     def clear(self):
         self.__page_cache.clear()

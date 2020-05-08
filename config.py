@@ -13,6 +13,12 @@ SQLITE_FILE = "saved.db"
 # 日志文件名
 LOG_FILE = "log.txt"
 
+# 是否启用多线程模式
+ENABLE_MULTI_THREAD = True
+
+# 多线程模式时使用的线程数(默认: 4, 建议不要超过8)
+MAX_THREADS_NUM = 4
+
 # 是否启用日志
 ENABLE_LOGGER = True
 

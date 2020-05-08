@@ -5,10 +5,12 @@ from argparse import ArgumentParser
 import time
 import traceback
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
 from requests import exceptions
 
-from config import DEBUG_ENABLE, ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL
+from config import DEBUG_ENABLE, ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, \
+                   ENABLE_MULTI_THREAD, MAX_THREADS_NUM
 from check_init import ErrorCode, PAGE_CACHE
 from check_list import CHECK_LIST
 from database import create_dbsession, Saved
@@ -51,7 +53,7 @@ def _get_time_str(time_num=None, offset=0):
         time_num = time.time()
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_num+offset))
 
-def check_one(cls):
+def check_one(cls, debug_enable=DEBUG_ENABLE):
     if isinstance(cls, str):
         for item in CHECK_LIST:
             if item.__name__ == cls:
@@ -60,34 +62,33 @@ def check_one(cls):
         else:
             raise Exception("Can not found '%s' from CHECK_LIST!" % cls)
     cls_obj = cls()
-    print("- Checking", cls_obj.fullname, "...", end="")
     try:
         cls_obj.do_check()
     except Exception as error:
         if isinstance(error, exceptions.ReadTimeout):
-            print("\n! Check failed! Timeout.")
+            print("! %s check failed! Timeout." % cls_obj.fullname)
             write_log_warning("%s check failed! Timeout." % cls_obj.fullname)
         elif isinstance(error, (exceptions.SSLError, exceptions.ProxyError)):
-            print("\n! Check failed! Proxy error.")
+            print("! %s check failed! Proxy error." % cls_obj.fullname)
             write_log_warning("%s check failed! Proxy error." % cls_obj.fullname)
         elif isinstance(error, exceptions.ConnectionError):
-            print("\n! Check failed! Connection error.")
+            print("! %s check failed! Connection error." % cls_obj.fullname)
             write_log_warning("%s check failed! Connection error." % cls_obj.fullname)
         elif isinstance(error, ErrorCode):
-            print("\n! Check failed! Error code: %s." % error)
+            print("! %s check failed! Error code: %s." % (cls_obj.fullname, error))
             write_log_warning("%s check failed! Error code: %s." % (cls_obj.fullname, error))
         else:
             traceback_string = traceback.format_exc()
-            print("\n%s\n! Check failed!" % traceback_string)
+            print("\n%s\n! %s check failed!" % (traceback_string, cls_obj.fullname))
             write_log_warning(*traceback_string.splitlines())
             write_log_warning("%s check failed!" % cls_obj.fullname)
-        if DEBUG_ENABLE:
+        if debug_enable:
             if input("* Continue?(Y/N) ").upper() != "Y":
                 _abort_by_user()
         return False
     if cls_obj.is_updated() or FORCE_UPDATE:
-        print("\n> New build:", cls_obj.info_dic["LATEST_VERSION"])
-        write_log_info("%s has updates: %s" % (cls_obj.fullname, cls_obj.info_dic["LATEST_VERSION"]))
+        print("> %s has update: %s" % (cls_obj.fullname, cls_obj.info_dic["LATEST_VERSION"]))
+        write_log_info("%s has update: %s" % (cls_obj.fullname, cls_obj.info_dic["LATEST_VERSION"]))
         try:
             cls_obj.after_check()
         except:
@@ -99,41 +100,57 @@ def check_one(cls):
         if ENABLE_SENDMESSAGE:
             send_message(cls_obj.get_print_text())
     else:
-        print(" no update")
+        print("- %s no update" % cls_obj.fullname)
         write_log_info("%s no update" % cls_obj.fullname)
+    _sleep(2)
     return True
+
+def single_thread_check():
+    req_failed_flag = 0
+    check_failed_list = []
+    is_network_error = False
+    for cls in CHECK_LIST:
+        if not check_one(cls):
+            req_failed_flag += 1
+            check_failed_list.append(cls)
+            if req_failed_flag == 5:
+                is_network_error = True
+                break
+        else:
+            req_failed_flag = 0
+    return check_failed_list, is_network_error
+
+def multi_thread_check():
+
+    def _check_one(cls_):
+        return cls_, check_one(cls_, debug_enable=False)
+
+    with ThreadPoolExecutor(MAX_THREADS_NUM) as executor:
+        results = executor.map(_check_one, CHECK_LIST)
+    check_failed_list = [cls for cls, result in list(results) if not result]
+    is_network_error = len(check_failed_list) > 10
+    return check_failed_list, is_network_error
 
 def loop_check():
     write_log_info("Run database cleanup before start")
     drop_ids = database_cleanup()
     write_log_info("Abandoned items: {%s}" % ", ".join(drop_ids))
-    check_failed_list = []
-    req_failed_flag = 0
+    loop_check_func = multi_thread_check if ENABLE_MULTI_THREAD else single_thread_check
     while True:
         start_time = _get_time_str()
         print(" - " + start_time)
         print(" - Start...")
         write_log_info("=" * 64)
         write_log_info("Start checking at %s" % start_time)
-        for cls in CHECK_LIST:
-            if not check_one(cls):
-                req_failed_flag += 1
-                check_failed_list.append(cls)
-                if req_failed_flag == 5:
-                    req_failed_flag = 0
-                    print(" - Network or proxy error! Sleep...")
-                    write_log_warning("Network or proxy error! Sleep...")
-                    break
-            else:
-                req_failed_flag = 0
-            _sleep(2)
+        check_failed_list, is_network_error = loop_check_func()
+        if is_network_error:
+            print(" - Network or proxy error! Sleep...")
+            write_log_warning("Network or proxy error! Sleep...")
         else:
             print(" - Check again for failed items...")
             write_log_info("Check again for failed items")
             for cls in check_failed_list:
                 check_one(cls)
-                _sleep(2)
-        check_failed_list.clear()
         PAGE_CACHE.clear()
         print(" - The next check will start at %s\n" % _get_time_str(offset=LOOP_CHECK_INTERVAL))
         write_log_info("End of check")

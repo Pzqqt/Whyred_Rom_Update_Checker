@@ -22,6 +22,10 @@ def create_dbsession(**kw):
     finally:
         session.close()
 
+# 多线程模式下各个线程会同时对数据库进行读写
+# 但是一个线程只对数据库中的一条数据进行读写, 与其他线程并不相互冲突
+# 所以不需要加锁
+
 class Saved(_Base):
 
     __tablename__ = "saved"
