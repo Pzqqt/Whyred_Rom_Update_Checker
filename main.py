@@ -124,7 +124,7 @@ def multi_thread_check():
 
     with ThreadPoolExecutor(MAX_THREADS_NUM) as executor:
         results = executor.map(_check_one, CHECK_LIST)
-    check_failed_list = [cls for cls, result in list(results) if not result]
+    check_failed_list = [cls for cls, result in results if not result]
     is_network_error = len(check_failed_list) > 10
     return check_failed_list, is_network_error
 
@@ -139,10 +139,13 @@ def loop_check():
         print(" - Start...")
         write_log_info("=" * 64)
         write_log_info("Start checking at %s" % start_time)
+        # loop_check_func必须返回两个值,
+        # 检查失败的项目的列表, 以及是否为网络错误或代理错误的Bool值
         check_failed_list, is_network_error = loop_check_func()
         if is_network_error:
             print_and_log("Network or proxy error! Sleep...", level="warning")
         else:
+            # 对于检查失败的项目, 强制单线程检查
             print_and_log("Check again for failed items")
             for cls in check_failed_list:
                 check_one(cls)

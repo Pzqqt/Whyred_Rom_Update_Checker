@@ -80,19 +80,19 @@ class PageCache:
             # 设置一个线程锁, 当其他线程在写入时阻止其他线程进行读写
             self.lock = threading.Lock()
 
-    def read(self, *args):
-        if ENABLE_MULTI_THREAD:
-            while True:
-                if not self.lock.locked():
-                    return self.__read(*args)
-        return self.__read(*args)
-
     def __read(self, request_method, url, params):
         for result in self.__page_cache[url]:
             _request_method, _params, page_source = result
             if _request_method == request_method and _params == params:
                 return page_source
         return None
+
+    def read(self, *args):
+        if ENABLE_MULTI_THREAD:
+            while True:
+                if not self.lock.locked():
+                    return self.__read(*args)
+        return self.__read(*args)
 
     def save(self, request_method, url, params, page_source):
         assert request_method in ("get", "post")
