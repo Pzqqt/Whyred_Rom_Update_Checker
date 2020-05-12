@@ -6,6 +6,7 @@ import random
 import time
 import threading
 from collections import OrderedDict, defaultdict
+from contextlib import contextmanager
 from urllib.parse import unquote, urlencode
 
 import requests
@@ -57,8 +58,18 @@ def select_bs4_parser():
 
 BS4_PARSER = select_bs4_parser()
 
-class ErrorCode(requests.exceptions.RequestException):
-    """ 自定义异常, 当requests请求结果返回错误代码时抛出 """
+__THREADING_LOCK = threading.Lock() if ENABLE_MULTI_THREAD else None
+
+@contextmanager
+def hook_threading_lock():
+    if __THREADING_LOCK is None:
+        yield None
+        return
+    __THREADING_LOCK.acquire()
+    try:
+        yield None
+    finally:
+        __THREADING_LOCK.release()
 
 class PageCache:
 
@@ -76,38 +87,26 @@ class PageCache:
         # 而字典对象是不可散列的, 不能添加到集合里面, 所以我只能先放弃这一想法
         # 以后再想想别的办法来解决
         self.__page_cache = defaultdict(list)
-        if ENABLE_MULTI_THREAD:
-            # 设置一个线程锁, 当其他线程在写入时阻止其他线程进行读写
-            self.lock = threading.Lock()
 
-    def __read(self, request_method, url, params):
+    def read(self, request_method, url, params):
         for result in self.__page_cache[url]:
             _request_method, _params, page_source = result
             if _request_method == request_method and _params == params:
                 return page_source
         return None
 
-    def read(self, *args):
-        if ENABLE_MULTI_THREAD:
-            while True:
-                if not self.lock.locked():
-                    return self.__read(*args)
-        return self.__read(*args)
-
     def save(self, request_method, url, params, page_source):
         assert request_method in ("get", "post")
-        if ENABLE_MULTI_THREAD:
-            self.lock.acquire()
-        try:
-            self.__page_cache[url].append((request_method, params, page_source))
-        finally:
-            if ENABLE_MULTI_THREAD:
-                self.lock.release()
+        self.__page_cache[url].append((request_method, params, page_source))
 
     def clear(self):
-        self.__page_cache.clear()
+        with hook_threading_lock():
+            self.__page_cache.clear()
 
 PAGE_CACHE = PageCache()
+
+class ErrorCode(requests.exceptions.RequestException):
+    """ 自定义异常, 当requests请求结果返回错误代码时抛出 """
 
 class CheckUpdate:
 
@@ -161,33 +160,41 @@ class CheckUpdate:
         :param url: 要请求的url
         :param method: 请求方法, 可选: "get"(默认)或"post"
         :param encoding: 文本编码, 默认为utf-8
-        :param kwargs: 需要传递给requests.get方法的参数
+        :param kwargs: 其他需要传递给requests的参数
         :return: url页面的源码
         """
-        if method == "get":
-            requests_func = requests.get
-        elif method == "post":
-            requests_func = requests.post
-        else:
-            raise Exception("Unknown request method: %s" % method)
-        params = kwargs.get("params")
-        if cls._enable_pagecache:
-            saved_page_cache = PAGE_CACHE.read(method, url, params)
-            if saved_page_cache is not None:
-                return saved_page_cache
-        timeout = kwargs.pop("timeout", TIMEOUT)
-        headers = kwargs.pop("headers", {"user-agent": random.choice(UAS)})
-        proxies = kwargs.pop("proxies", _PROXIES_DIC)
-        req = requests_func(
-            url, timeout=timeout, headers=headers, proxies=proxies, **kwargs
-        )
-        if not req.ok:
-            raise ErrorCode(req.status_code)
-        req.encoding = encoding
-        req_text = req.text
-        if cls._enable_pagecache:
-            PAGE_CACHE.save(method, url, params, req_text)
-        return req_text
+        def _request_url(url, method, encoding, **kwargs):
+            if method == "get":
+                requests_func = requests.get
+            elif method == "post":
+                requests_func = requests.post
+            else:
+                raise Exception("Unknown request method: %s" % method)
+            params = kwargs.get("params")
+            if cls._enable_pagecache:
+                saved_page_cache = PAGE_CACHE.read(method, url, params)
+                if saved_page_cache is not None:
+                    return saved_page_cache
+            timeout = kwargs.pop("timeout", TIMEOUT)
+            headers = kwargs.pop("headers", {"user-agent": random.choice(UAS)})
+            proxies = kwargs.pop("proxies", _PROXIES_DIC)
+            req = requests_func(
+                url, timeout=timeout, headers=headers, proxies=proxies, **kwargs
+            )
+            if not req.ok:
+                raise ErrorCode(req.status_code)
+            req.encoding = encoding
+            req_text = req.text
+            if cls._enable_pagecache:
+                PAGE_CACHE.save(method, url, params, req_text)
+            return req_text
+        # 在多线程模式下, 同时只允许一个_enable_pagecache属性为True的CheckUpdate对象进行请求
+        # 在其他线程上的_enable_pagecache属性为True的CheckUpdate对象必须等待
+        # 这样才能避免重复请求, 同时避免了PAGE_CACHE的读写冲突
+        if cls._enable_pagecache and ENABLE_MULTI_THREAD:
+            with hook_threading_lock():
+                return _request_url(url, method, encoding, **kwargs)
+        return _request_url(url, method, encoding, **kwargs)
 
     @classmethod
     def get_hash_from_file(cls, url, **kwargs):
