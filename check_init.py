@@ -82,13 +82,11 @@ class PageCache:
     """
 
     def __init__(self):
-        # TODO:
-        # 虽然我很想使用defaultdict(set), 但是params要么是None要么是字典
-        # 而字典对象是不可散列的, 不能添加到集合里面, 所以我只能先放弃这一想法
-        # 以后再想想别的办法来解决
-        self.__page_cache = defaultdict(list)
+        self.__page_cache = defaultdict(set)
 
     def read(self, request_method, url, params):
+        if params is not None:
+            params = params.items()
         for result in self.__page_cache[url]:
             _request_method, _params, page_source = result
             if _request_method == request_method and _params == params:
@@ -97,7 +95,9 @@ class PageCache:
 
     def save(self, request_method, url, params, page_source):
         assert request_method in ("get", "post")
-        self.__page_cache[url].append((request_method, params, page_source))
+        if params is not None:
+            params = frozenset(params.items())
+        self.__page_cache[url].add((request_method, params, page_source))
 
     def clear(self):
         with hook_threading_lock():
