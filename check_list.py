@@ -184,14 +184,6 @@ class Aosip(H5aiCheck):
             self.get_hash_from_file(self.info_dic["DOWNLOAD_LINK"] + ".md5sum")
         )
 
-class AosipDf(SfCheck):
-    fullname = "AOSiP DerpFest (By Adi)"
-    project_name = "aosipderp-fest4whyred"
-
-class AosipDf2(SfCheck):
-    fullname = "AOSiP DerpFest (By xawlw)"
-    project_name = "df4whyred"
-
 class AosipDf3(PlingCheck):
     fullname = "AOSiP DerpFest (By srfarias)"
     p_id = 1338683
@@ -222,11 +214,6 @@ class ArrowQGapps(ArrowQ):
 class Atom(SfCheck):
     fullname = "Atom OS Official"
     project_name = "atom-os-project"
-    sub_path = "whyred/"
-
-class Beast(SfCheck):
-    fullname = "Beast Rom Pie Official"
-    project_name = "beastroms"
     sub_path = "whyred/"
 
 class Bliss(H5aiCheck):
@@ -269,11 +256,6 @@ class CarbonU1(SfCheck):
     fullname = "Carbon Rom (Unofficial By fakeyato)"
     project_name = "fakecarbon"
     sub_path = "carbon/"
-
-class Cerberus(SfCheck):
-    fullname = "Cerberus OS Official"
-    project_name = "cerberusos"
-    sub_path = "builds/whyred/"
 
 class Cesium(SfCheck):
     fullname = "Cesium OS Official"
@@ -322,11 +304,6 @@ class Cygnus(SfCheck):
     project_name = "cygnus-android"
     sub_path = "whyred/"
 
-class DotP(SfCheck):
-    fullname = "DotOS Pie Official"
-    project_name = "dotos-downloads"
-    sub_path = "dotp/whyred/"
-
 class DuRex(SfCheck):
     fullname = "DU-REX Official"
     project_name = "rafiester"
@@ -346,11 +323,6 @@ class ExtendedU1(PlingCheck):
     fullname = "ExtendedUI (Unofficial By Nesquirt)"
     p_id = 1374700
     collection_id = 1586685069
-
-class Gzosp(SfCheck):
-    fullname = "Gzosp Official"
-    project_name = "gzosp-whyred"
-    sub_path = "gzosp/"
 
 class Havoc(SfCheck):
 
@@ -413,16 +385,6 @@ class LineageU2(SfCheck):
     project_name = "whyred-los"
     sub_path = "rom/"
 
-class Liquid(SfCheck):
-    fullname = "Liquid Remix Official"
-    project_name = "liquid-remix"
-    sub_path = "whyred/"
-
-class Lotus(SfCheck):
-    fullname = "Lotus OS Official"
-    project_name = "lotus-os"
-    sub_path = "whyred/"
-
 class MiuiEu(SfCheck):
 
     fullname = "Xiaomi.eu Multilang Developer ROM"
@@ -476,11 +438,6 @@ class PixelPlusUI(SfCheck):
     fullname = "PixelPlusUI Official"
     project_name = "pixelplusui-project"
 
-class Pixys(SfCheck):
-    fullname = "Pixys OS Pie Official"
-    project_name = "pixys-os"
-    sub_path = "pie/whyred/"
-
 class PixysQ(SfCheck):
 
     fullname = "Pixys OS Q Official"
@@ -506,10 +463,6 @@ class Posp(SfCheck):
 class RaghuVarmaProject(SfProjectCheck):
     project_name = "whyred-rv"
     developer = "Raghu Varma"
-
-class RandomRomsProject(SfProjectCheck):
-    project_name = "randomroms"
-    developer = "Sreekanth"
 
 class RandomStuffProject(SfProjectCheck):
 
@@ -575,19 +528,6 @@ class Revolution(SfCheck):
     def filter_rule(self, string):
         return "RedmiNote5" in string
 
-class SreekFreaksProject(SfProjectCheck):
-    project_name = "sreekfreaks-unofficial-builds"
-    developer = "SreekFreaks"
-
-class SrfariasProject(SfProjectCheck):
-    project_name = "whyreddev"
-    developer = "srfarias"
-
-class Stag(SfCheck):
-    fullname = "Stag OS Pie Official"
-    project_name = "stag-os"
-    sub_path = "Whyred/"
-
 class StagQ(CheckUpdate):
 
     fullname = "Stag OS Q Official"
@@ -645,10 +585,9 @@ class TitaniumGapps(Titanium):
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
-class Viper(SfCheck):
-    fullname = "Viper OS Official"
-    project_name = "viper-project"
-    sub_path = "whyred/"
+class Whymeme(SfProjectCheck):
+    project_name = "whymeme-roms"
+    developer = "jhonse02"
 
 class Xtended(SfCheck):
     fullname = "Xtended Official"
@@ -671,21 +610,17 @@ CHECK_LIST = (
     Ancient,
     AncientGapps,
     Aosip,
-    AosipDf,
-    AosipDf2,
     AosipDf3,
     Aospa,
     ArrowQ,
     ArrowQGapps,
     Atom,
-    Beast,
     Bliss,
     BlissQ,
     BlissU1,
     Bootleggers,
     CandyQ,
     CarbonU1,
-    Cerberus,
     Cesium,
     Colt,
     Corvus,
@@ -694,12 +629,10 @@ CHECK_LIST = (
     CrDroid,
     CrDroidQ,
     Cygnus,
-    DotP,
     DuRex,
     EvolutionX,
     Extended,
     ExtendedU1,
-    Gzosp,
     Havoc,
     HavocGapps,
     HavocU1,
@@ -711,8 +644,6 @@ CHECK_LIST = (
     Legion,
     LineageU1,
     LineageU2,
-    Liquid,
-    Lotus,
     MiuiEu,
     MiRoom,
     Neon,
@@ -722,21 +653,16 @@ CHECK_LIST = (
     PeQPe,
     PeU1,
     PixelPlusUI,
-    Pixys,
     PixysQ,
     PixysQGapps,
     Posp,
     RaghuVarmaProject,
-    RandomRomsProject,
     RandomStuffProject,
     Rebellion,
     ResurrectionRemix,
     Revenge,
     RevengeU1,
     Revolution,
-    SreekFreaksProject,
-    SrfariasProject,
-    Stag,
     StagQ,
     Superior,
     SuperiorU1,
@@ -744,7 +670,7 @@ CHECK_LIST = (
     SyberiaU1,
     Titanium,
     TitaniumGapps,
-    Viper,
+    Whymeme,
     Xtended,
     XyzuanProject,
 )

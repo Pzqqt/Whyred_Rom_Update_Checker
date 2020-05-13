@@ -377,28 +377,36 @@ class SfCheck(CheckUpdate):
 class SfProjectCheck(SfCheck):
 
     # file name keyword: full name
-    _KNOWN_ROM = OrderedDict([
-        ("aicp", "AICP"),
-        ("AOSiP", "AOSiP"),
-        ("Arrow", "Arrow OS"),
-        ("atom", "Atom OS"),
-        ("Bliss", "Bliss Rom"),
-        ("Bootleggers", "Bootleggers Rom"),
-        ("Blaze", "Blaze-AOSP Rom"),
-        ("CleanDroid", "CleanDroid OS"),
-        ("crDroid", "CrDroid"),
-        ("DerpFest", "AOSiP DerpFest"),
-        ("ExtendedUI", "ExtendedUI"),
-        ("EvolutionX", "EvolutionX"),
-        ("Havoc", "Havoc OS"),
-        ("Legion", "Legion OS"),
-        ("lineage", "Lineage OS"),
-        ("Rebellion", "Rebellion OS"),
-        ("Titanium", "Titanium OS"),
-        ("ion", "ION"),
-        ("MK", "Mokee Rom"),
-        ("Stag", "Stag OS"),
-    ])
+    _KNOWN_ROM = OrderedDict(
+        sorted([
+            ("aicp", "AICP"),
+            ("AOSiP", "AOSiP"),
+            ("aosp", "AOSP"),
+            ("aosp-forking", "AOSP Forking"),
+            ("AospExtended", "AospExtended"),
+            ("Arrow", "Arrow OS"),
+            ("atom", "Atom OS"),
+            ("Bliss", "Bliss Rom"),
+            ("Bootleggers", "Bootleggers Rom"),
+            ("Blaze", "Blaze-AOSP Rom"),
+            ("CleanDroid", "CleanDroid OS"),
+            ("crDroid", "CrDroid"),
+            ("DerpFest", "AOSiP DerpFest"),
+            ("ExtendedUI", "ExtendedUI"),
+            ("EvolutionX", "EvolutionX"),
+            ("Havoc", "Havoc OS"),
+            ("ion", "ION"),
+            ("Legion", "Legion OS"),
+            ("lineage", "Lineage OS"),
+            ("MK", "Mokee Rom"),
+            ("pa", "Aospa Rom"),
+            ("PixelExperience", "Pixel Experience"),
+            ("PixelExperience_Plus", "Pixel Experience (Plus edition)"),
+            ("Rebellion", "Rebellion OS"),
+            ("Titanium", "Titanium OS"),
+            ("Stag", "Stag OS"),
+        ], key=lambda item: -len(item[0]))
+    )
     developer = None
 
     def __init__(self):
