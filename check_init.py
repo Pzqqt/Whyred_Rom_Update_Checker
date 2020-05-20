@@ -105,9 +105,6 @@ class PageCache:
 
 PAGE_CACHE = PageCache()
 
-class ErrorCode(requests.exceptions.RequestException):
-    """ 自定义异常, 当requests请求结果返回错误代码时抛出 """
-
 class CheckUpdate:
 
     fullname = None
@@ -163,30 +160,29 @@ class CheckUpdate:
         :param kwargs: 其他需要传递给requests的参数
         :return: url页面的源码
         """
-        def _request_url(url, method, encoding, **kwargs):
-            if method == "get":
+        def _request_url(url_, method_, encoding_, **kwargs_):
+            if method_ == "get":
                 requests_func = requests.get
-            elif method == "post":
+            elif method_ == "post":
                 requests_func = requests.post
             else:
-                raise Exception("Unknown request method: %s" % method)
-            params = kwargs.get("params")
+                raise Exception("Unknown request method: %s" % method_)
+            params = kwargs_.get("params")
             if cls._enable_pagecache:
-                saved_page_cache = PAGE_CACHE.read(method, url, params)
+                saved_page_cache = PAGE_CACHE.read(method_, url_, params)
                 if saved_page_cache is not None:
                     return saved_page_cache
-            timeout = kwargs.pop("timeout", TIMEOUT)
-            headers = kwargs.pop("headers", {"user-agent": random.choice(UAS)})
-            proxies = kwargs.pop("proxies", _PROXIES_DIC)
+            timeout = kwargs_.pop("timeout", TIMEOUT)
+            headers = kwargs_.pop("headers", {"user-agent": random.choice(UAS)})
+            proxies = kwargs_.pop("proxies", _PROXIES_DIC)
             req = requests_func(
-                url, timeout=timeout, headers=headers, proxies=proxies, **kwargs
+                url_, timeout=timeout, headers=headers, proxies=proxies, **kwargs_
             )
-            if not req.ok:
-                raise ErrorCode(req.status_code)
-            req.encoding = encoding
+            req.raise_for_status()
+            req.encoding = encoding_
             req_text = req.text
             if cls._enable_pagecache:
-                PAGE_CACHE.save(method, url, params, req_text)
+                PAGE_CACHE.save(method_, url_, params, req_text)
             return req_text
         # 在多线程模式下, 同时只允许一个_enable_pagecache属性为True的CheckUpdate对象进行请求
         # 在其他线程上的_enable_pagecache属性为True的CheckUpdate对象必须等待
@@ -517,7 +513,6 @@ class PeCheck(CheckUpdate):
                 "referer": self._private_dic["request_headers_referer"],
                 "user-agent": UAS[0],
             },
-            timeout=60,
         )
         self.update_info("DOWNLOAD_LINK", real_download_link)
 

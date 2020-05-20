@@ -11,7 +11,7 @@ from requests import exceptions
 
 from config import DEBUG_ENABLE, ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, \
                    ENABLE_MULTI_THREAD, MAX_THREADS_NUM
-from check_init import ErrorCode, PAGE_CACHE
+from check_init import PAGE_CACHE
 from check_list import CHECK_LIST
 from database import create_dbsession, Saved
 from tgbot import send_message
@@ -71,8 +71,8 @@ def check_one(cls, debug_enable=DEBUG_ENABLE):
             print_and_log("%s check failed! Proxy error." % cls_obj.fullname, level="warning")
         elif isinstance(error, exceptions.ConnectionError):
             print_and_log("%s check failed! Connection error." % cls_obj.fullname, level="warning")
-        elif isinstance(error, ErrorCode):
-            print_and_log("%s check failed! Error code: %s." % (cls_obj.fullname, error), level="warning")
+        elif isinstance(error, exceptions.HTTPError):
+            print_and_log("%s check failed! %s." % (cls_obj.fullname, error), level="warning")
         else:
             traceback_string = traceback.format_exc()
             print(traceback_string)
@@ -99,7 +99,6 @@ def check_one(cls, debug_enable=DEBUG_ENABLE):
             send_message(cls_obj.get_print_text())
     else:
         print_and_log("%s no update" % cls_obj.fullname)
-    _sleep(2)
     return True
 
 def single_thread_check():
@@ -115,12 +114,15 @@ def single_thread_check():
                 break
         else:
             req_failed_flag = 0
+        _sleep(2)
     return check_failed_list, is_network_error
 
 def multi_thread_check():
 
     def _check_one(cls_):
-        return cls_, check_one(cls_, debug_enable=False)
+        result = check_one(cls_, debug_enable=False)
+        time.sleep(2)
+        return cls_, result
 
     with ThreadPoolExecutor(MAX_THREADS_NUM) as executor:
         results = executor.map(_check_one, CHECK_LIST)
