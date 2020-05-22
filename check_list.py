@@ -252,6 +252,20 @@ class CandyQ(SfCheck):
     project_name = "candyroms"
     sub_path = "Official/ten/whyred/"
 
+class Carbon(CheckUpdate):
+
+    fullname = "Carbon Rom Official"
+
+    def do_check(self):
+        bs_obj = self.get_bs(self.request_url("https://get.carbonrom.org/device-whyred.html"))
+        latest_build = bs_obj.find("tbody").find("tr").find_all("td")
+        self.update_info("BUILD_TYPE", latest_build[1].get_text().strip())
+        self.update_info("LATEST_VERSION", latest_build[2].find("dd").get_text().strip())
+        self.update_info("DOWNLOAD_LINK", latest_build[2].find("dd").find("a")["href"])
+        self.update_info("FILE_MD5", latest_build[2].find_all("dd")[1].get_text().strip())
+        self.update_info("FILE_SIZE", latest_build[3].get_text().strip())
+        self.update_info("BUILD_DATE", latest_build[4].get_text().strip())
+
 class CarbonU1(SfCheck):
     fullname = "Carbon Rom (Unofficial By fakeyato)"
     project_name = "fakecarbon"
@@ -434,9 +448,10 @@ class PeU1(PlingCheck):
     p_id = 1369478
     collection_id = 1584939374
 
-class PixelPlusUI(SfCheck):
+class PixelPlusUI(PlingCheck):
     fullname = "PixelPlusUI Official"
-    project_name = "pixelplusui-project"
+    p_id = 1380432
+    collection_id = 1588528326
 
 class PixysQ(SfCheck):
 
@@ -620,6 +635,7 @@ CHECK_LIST = (
     BlissU1,
     Bootleggers,
     CandyQ,
+    Carbon,
     CarbonU1,
     Cesium,
     Colt,
