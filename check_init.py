@@ -271,7 +271,7 @@ class CheckUpdate:
         ]
         for key, value in self.info_dic.items():
             if key != "LATEST_VERSION" and value is not None:
-                if key in {"FILE_MD5", "FILE_SHA1", "FILE_SHA256", "BUILD_DATE"}:
+                if key in {"FILE_MD5", "FILE_SHA1", "FILE_SHA256", "BUILD_DATE", "BUILD_TYPE"}:
                     value = "`%s`" % value
                 if key == "BUILD_CHANGELOG" and not value.startswith("http"):
                     value = "`%s`" % value
@@ -328,8 +328,8 @@ class SfCheck(CheckUpdate):
             tm_wday=0, tm_yday=48, tm_isdst=-1
         )
         """
-        date_str_ = date_str[5:-3]
-        date_str_month = date_str[8:8+3]
+        date_str_ = date_str.rsplit(" ", 1)[0].split(", ")[1]
+        date_str_month = date_str_.split()[1]
         date_str_ = date_str_.replace(date_str_month, cls._MONTH_TO_NUMBER[date_str_month])
         return time.strptime(date_str_, "%d %m %Y %H:%M:%S")
 
@@ -366,7 +366,9 @@ class SfCheck(CheckUpdate):
         saved_info = Saved.get_saved_info(self.name)
         if saved_info is None:
             return True
-        latest_date = self.date_transform(self.info_dic["BUILD_DATE"])
+        if self.info_dic["BUILD_DATE"] is None:
+            return False
+        latest_date = self.date_transform(str(self.info_dic["BUILD_DATE"]))
         saved_date = self.date_transform(saved_info.BUILD_DATE)
         return latest_date > saved_date
 
