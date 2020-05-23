@@ -58,18 +58,7 @@ def select_bs4_parser():
 
 BS4_PARSER = select_bs4_parser()
 
-__THREADING_LOCK = threading.Lock() if ENABLE_MULTI_THREAD else None
-
-@contextmanager
-def hook_threading_lock():
-    if __THREADING_LOCK is None:
-        yield None
-        return
-    __THREADING_LOCK.acquire()
-    try:
-        yield None
-    finally:
-        __THREADING_LOCK.release()
+_THREADING_LOCK = threading.Lock()
 
 class PageCache:
 
@@ -100,7 +89,7 @@ class PageCache:
         self.__page_cache[url].add((request_method, params, page_source))
 
     def clear(self):
-        with hook_threading_lock():
+        with _THREADING_LOCK:
             self.__page_cache.clear()
 
 PAGE_CACHE = PageCache()
@@ -188,7 +177,7 @@ class CheckUpdate:
         # 在其他线程上的_enable_pagecache属性为True的CheckUpdate对象必须等待
         # 这样才能避免重复请求, 同时避免了PAGE_CACHE的读写冲突
         if cls._enable_pagecache and ENABLE_MULTI_THREAD:
-            with hook_threading_lock():
+            with _THREADING_LOCK:
                 return _request_url(url, method, encoding, **kwargs)
         return _request_url(url, method, encoding, **kwargs)
 
