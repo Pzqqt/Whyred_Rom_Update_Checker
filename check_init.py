@@ -40,24 +40,6 @@ _KEY_TO_PRINT = {
     "FILE_SIZE": "Size",
 }
 
-def select_bs4_parser():
-    try:
-        import lxml
-        del lxml
-        return "lxml"
-    except ModuleNotFoundError:
-        try:
-            import html5lib
-            del html5lib
-            return "html5lib"
-        except ModuleNotFoundError:
-            raise Exception(
-                "No bs4 parser available. "
-                "Please install at least one parser in 'lxml' and 'html5lib'!"
-            )
-
-BS4_PARSER = select_bs4_parser()
-
 _THREADING_LOCK = threading.Lock()
 
 class PageCache:
@@ -202,7 +184,7 @@ class CheckUpdate:
         :param url_text: url源码
         :return: BeautifulSoup对象
         """
-        return BeautifulSoup(url_text, BS4_PARSER)
+        return BeautifulSoup(url_text, "lxml")
 
     def do_check(self):
         """
