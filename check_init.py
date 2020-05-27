@@ -5,7 +5,6 @@ import json
 import random
 import time
 from collections import OrderedDict
-from contextlib import contextmanager
 from urllib.parse import unquote, urlencode
 
 import requests
@@ -88,8 +87,8 @@ class CheckUpdate:
 
     @classmethod
     def request_url(cls, url, method="get", encoding="utf-8", **kwargs):
-        """
-        对requests进行了简单的包装
+
+        """ 对requests进行了简单的包装
         timeout, headers, proxies这三个参数有默认值, 也可以根据需要自定义这些参数
         :param url: 要请求的url
         :param method: 请求方法, 可选: "get"(默认)或"post"
@@ -97,6 +96,7 @@ class CheckUpdate:
         :param kwargs: 其他需要传递给requests的参数
         :return: url页面的源码
         """
+
         def _request_url(url_, method_, encoding_, **kwargs_):
             if method_ == "get":
                 requests_func = requests.get
@@ -121,6 +121,7 @@ class CheckUpdate:
             if cls._enable_pagecache:
                 PAGE_CACHE.save(method_, url_, params, req_text)
             return req_text
+
         # 在多线程模式下, 同时只允许一个_enable_pagecache属性为True的CheckUpdate对象进行请求
         # 在其他线程上的_enable_pagecache属性为True的CheckUpdate对象必须等待
         # 这样才能避免重复请求, 同时避免了PAGE_CACHE的读写冲突
