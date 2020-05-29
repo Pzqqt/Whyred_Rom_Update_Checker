@@ -424,7 +424,7 @@ class PeCheck(CheckUpdate):
 
     def do_check(self):
         url = "https://download.pixelexperience.org"
-        bs_obj = self.get_bs(self.request_url("%s/%s" % (url, self.model)))
+        bs_obj = self.get_bs(self.request_url("%s/%s" % (url, self.model), headers={}))
         builds = bs_obj.find_all("div", {"class": "version__item"})[self.index]
         assert builds.find("button").get_text().strip() == self.tag_name
         build = builds.find("div", {"class": "build__item"})
