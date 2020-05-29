@@ -389,6 +389,26 @@ class Legion(SfCheck):
     project_name = "legionrom"
     sub_path = "whyred/"
 
+class Lineage(CheckUpdate):
+
+    fullname = "Lineage OS Official"
+
+    def do_check(self):
+        bs_obj = self.get_bs(self.request_url("https://download.lineageos.org/whyred"))
+        build = bs_obj.find("tbody").find("tr")
+        build_type, build_version, build_file, build_size, build_date = build.find_all("td")
+        self.update_info("BUILD_TYPE", build_type.get_text().strip())
+        self.update_info("BUILD_VERSION", build_version.get_text().strip())
+        self.update_info("LATEST_VERSION", build_file.find("a").get_text().strip())
+        self.update_info("DOWNLOAD_LINK", build_file.find("a")["href"].strip())
+        self.update_info("FILE_SIZE", build_size.get_text().strip())
+        self.update_info("BUILD_DATE", build_date.get_text().strip())
+
+    def after_check(self):
+        file_sha1 = self.get_hash_from_file(self.info_dic["DOWNLOAD_LINK"] + "?sha1")
+        if file_sha1 and file_sha1 != "Hash":
+            self.update_info("FILE_SHA1", file_sha1)
+
 class LineageU1(PlingCheck):
     fullname = "Lineage OS (Unofficial By srfarias)"
     p_id = 1336266
@@ -658,6 +678,7 @@ CHECK_LIST = (
     Komodo,
     KubilProject,
     Legion,
+    Lineage,
     LineageU1,
     LineageU2,
     MiuiEu,
