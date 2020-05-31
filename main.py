@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 import time
 import traceback
 import sys
+import threading
 from concurrent.futures import ThreadPoolExecutor
 
 from requests import exceptions
@@ -19,6 +20,9 @@ from logger import write_log_info, write_log_warning, print_and_log
 
 # 为True时将强制将数据保存至数据库并发送消息
 FORCE_UPDATE = False
+
+if ENABLE_MULTI_THREAD:
+    _THREADING_LOCK = threading.Lock()
 
 def database_cleanup():
     """
@@ -119,15 +123,24 @@ def single_thread_check():
 
 def multi_thread_check():
 
+    check_failed_list = []
+    is_network_error = False
+
     def _check_one(cls_):
+        nonlocal check_failed_list, is_network_error
+        if is_network_error:
+            return
         result = check_one(cls_, debug_enable=False)
         time.sleep(2)
-        return cls_, result
+        if not result:
+            with _THREADING_LOCK:
+                check_failed_list.append(cls_)
+            if len(check_failed_list) >= 10:
+                with _THREADING_LOCK:
+                    is_network_error = True
 
     with ThreadPoolExecutor(MAX_THREADS_NUM) as executor:
-        results = executor.map(_check_one, CHECK_LIST)
-    check_failed_list = [cls for cls, result in results if not result]
-    is_network_error = len(check_failed_list) > 10
+        executor.map(_check_one, CHECK_LIST)
     return check_failed_list, is_network_error
 
 def loop_check():
