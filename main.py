@@ -39,8 +39,7 @@ def database_cleanup():
         return drop_ids
 
 def _abort(text):
-    print(" - %s" % text)
-    write_log_warning(str(text))
+    print_and_log(str(text), level="warning", custom_prefix="-")
     sys.exit(1)
 
 def _abort_by_user():
@@ -59,53 +58,51 @@ def _get_time_str(time_num=None, offset=0):
 
 def check_one(cls, debug_enable=DEBUG_ENABLE):
     if isinstance(cls, str):
-        for item in CHECK_LIST:
-            if item.__name__ == cls:
-                cls = item
-                break
-        else:
+        cls = {cls_.__name__: cls_ for cls_ in CHECK_LIST}.get(cls)
+        if cls is None:
             raise Exception("Can not found '%s' from CHECK_LIST!" % cls)
     cls_obj = cls()
     try:
         cls_obj.do_check()
-    except Exception as error:
-        if isinstance(error, exceptions.ReadTimeout):
-            print_and_log("%s check failed! Timeout." % cls_obj.fullname, level="warning")
-        elif isinstance(error, (exceptions.SSLError, exceptions.ProxyError)):
-            print_and_log("%s check failed! Proxy error." % cls_obj.fullname, level="warning")
-        elif isinstance(error, exceptions.ConnectionError):
-            print_and_log("%s check failed! Connection error." % cls_obj.fullname, level="warning")
-        elif isinstance(error, exceptions.HTTPError):
-            print_and_log("%s check failed! %s." % (cls_obj.fullname, error), level="warning")
-        else:
-            traceback_string = traceback.format_exc()
-            print(traceback_string)
-            write_log_warning(*traceback_string.splitlines())
-            print_and_log("%s check failed!" % cls_obj.fullname, level="warning")
-        if debug_enable:
-            if input("* Continue?(Y/N) ").upper() != "Y":
-                _abort_by_user()
-        return False
-    if cls_obj.is_updated() or FORCE_UPDATE:
-        print_and_log(
-            "%s has update: %s" % (cls_obj.fullname, cls_obj.info_dic["LATEST_VERSION"]),
-            custom_prefix=">",
-        )
-        try:
-            cls_obj.after_check()
-        except:
-            traceback_string = traceback.format_exc()
-            print("\n%s\n! Something wrong when running after_check!" % traceback_string)
-            write_log_warning(*traceback_string.splitlines())
-            write_log_warning("%s: Something wrong when running after_check!" % cls_obj.fullname)
-        cls_obj.write_to_database()
-        if ENABLE_SENDMESSAGE:
-            send_message(cls_obj.get_print_text())
+    except exceptions.ReadTimeout:
+        print_and_log("%s check failed! Timeout." % cls_obj.fullname, level="warning")
+    except (exceptions.SSLError, exceptions.ProxyError):
+        print_and_log("%s check failed! Proxy error." % cls_obj.fullname, level="warning")
+    except exceptions.ConnectionError:
+        print_and_log("%s check failed! Connection error." % cls_obj.fullname, level="warning")
+    except exceptions.HTTPError as error:
+        print_and_log("%s check failed! %s." % (cls_obj.fullname, error), level="warning")
+    except:
+        traceback_string = traceback.format_exc()
+        print(traceback_string)
+        write_log_warning(*traceback_string.splitlines())
+        print_and_log("%s check failed!" % cls_obj.fullname, level="warning")
     else:
-        print_and_log("%s no update" % cls_obj.fullname)
-    return True
+        if cls_obj.is_updated() or FORCE_UPDATE:
+            print_and_log(
+                "%s has update: %s" % (cls_obj.fullname, cls_obj.info_dic["LATEST_VERSION"]),
+                custom_prefix=">",
+            )
+            try:
+                cls_obj.after_check()
+            except:
+                traceback_string = traceback.format_exc()
+                print("\n%s\n! Something wrong when running after_check!" % traceback_string)
+                write_log_warning(*traceback_string.splitlines())
+                write_log_warning("%s: Something wrong when running after_check!" % cls_obj.fullname)
+            cls_obj.write_to_database()
+            if ENABLE_SENDMESSAGE:
+                send_message(cls_obj.get_print_text())
+        else:
+            print_and_log("%s no update" % cls_obj.fullname)
+        return True
+    if debug_enable:
+        if input("* Continue?(Y/N) ").upper() != "Y":
+            _abort_by_user()
+    return False
 
 def single_thread_check():
+    # 单线程模式下连续检查失败5项则判定为网络异常, 并提前终止
     req_failed_flag = 0
     check_failed_list = []
     is_network_error = False
@@ -122,7 +119,7 @@ def single_thread_check():
     return check_failed_list, is_network_error
 
 def multi_thread_check():
-
+    # 多线程模式下累计检查失败10项则判定为网络异常, 并在之后往线程池提交的任务中不再进行检查操作而是直接返回
     check_failed_list = []
     is_network_error = False
 
