@@ -134,15 +134,11 @@ class CheckUpdate:
     def get_hash_from_file(cls, url, **kwargs):
         """
         请求哈希校验文件的url, 返回文件中的哈希值
-        请求过程中发生任何异常都允许忽略
         :param url: 哈希校验文件的url
         :param kwargs: 需要传递给self.request_url方法的参数
-        :return: 哈希值字符串或None
+        :return: 哈希值字符串
         """
-        try:
-            return cls.request_url(url, **kwargs).strip().split()[0]
-        except:
-            return None
+        return cls.request_url(url, **kwargs).strip().split()[0]
 
     @staticmethod
     def get_bs(url_text):
