@@ -396,7 +396,13 @@ class Lineage(CheckUpdate):
     def do_check(self):
         bs_obj = self.get_bs(self.request_url("https://download.lineageos.org/whyred"))
         build = bs_obj.find("tbody").find("tr")
-        build_type, build_version, build_file, build_size, build_date = build.find_all("td")
+        tds = build.find_all("td")
+        if len(tds) == 7:
+            build_type, build_version, build_file, build_size, _, _, build_date = tds
+        elif len(tds) == 5:
+            build_type, build_version, build_file, build_size, build_date = tds
+        else:
+            raise Exception("Parsing failed!")
         self.update_info("BUILD_TYPE", build_type.get_text().strip())
         self.update_info("BUILD_VERSION", build_version.get_text().strip())
         self.update_info("LATEST_VERSION", build_file.find("a").get_text().strip())
@@ -468,10 +474,9 @@ class PeU1(PlingCheck):
     p_id = 1369478
     collection_id = 1584939374
 
-class PixelPlusUI(PlingCheck):
+class PixelPlusUI(SfCheck):
     fullname = "PixelPlusUI Official"
-    p_id = 1380432
-    collection_id = 1588528326
+    project_name = "pixelplusui-project"
 
 class PixysQ(SfCheck):
 
