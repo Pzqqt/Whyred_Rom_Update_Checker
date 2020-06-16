@@ -23,16 +23,18 @@ class Linux44Y(CheckUpdate):
                 )
                 self.update_info(
                     "BUILD_CHANGELOG",
-                    "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=v%s" % kernel_version
+                    "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=v%s"
+                    % kernel_version
                 )
                 break
         else:
             raise Exception("Parsing failed!")
 
     def get_print_text(self):
-        return "*Linux Kernel stable* %s *update*\n\n%s" % (
-            "[v%s](%s)" % (self.info_dic["LATEST_VERSION"], self.info_dic["DOWNLOAD_LINK"]),
-            "[Commits](%s)" % self.info_dic["BUILD_CHANGELOG"]
+        return "*Linux Kernel stable* [v%s](%s) *update*\n\n[Commits](%s)" % (
+            self.info_dic["LATEST_VERSION"],
+            self.info_dic["DOWNLOAD_LINK"],
+            self.info_dic["BUILD_CHANGELOG"],
         )
 
 class GoogleClangPrebuilt(CheckUpdate):
@@ -71,13 +73,11 @@ class GoogleClangPrebuilt(CheckUpdate):
         self.update_info("BUILD_VERSION", commit_text)
 
     def get_print_text(self):
-        return "*%s Update*\n\n%s\n\nDownload tar.gz:\n%s" % (
+        return "*%s Update*\n\n[Commit](%s)\n\nDownload tar.gz:\n[%s](%s)" % (
             self.fullname,
-            "[Commit](%s)" % self.info_dic["BUILD_CHANGELOG"],
-            "[%s](%s)" % (
-                self.info_dic.get("BUILD_VERSION", self.info_dic["DOWNLOAD_LINK"].split("/")[-1]),
-                self.info_dic["DOWNLOAD_LINK"]
-            )
+            self.info_dic["BUILD_CHANGELOG"],
+            self.info_dic.get("BUILD_VERSION", self.info_dic["DOWNLOAD_LINK"].split("/")[-1]),
+            self.info_dic["DOWNLOAD_LINK"],
         )
 
 class WireGuard(CheckUpdate):
@@ -105,10 +105,11 @@ class WireGuard(CheckUpdate):
             raise Exception("Parsing failed!")
 
     def get_print_text(self):
-        return "*%s update*\n\n%s\n\nDownload tar.gz:\n%s" % (
+        return "*%s update*\n\n[Commits](%s)\n\nDownload tar.gz:\n[%s](%s)" % (
             self.fullname,
-            "[Commits](%s)" % self.info_dic["BUILD_CHANGELOG"],
-            "[%s](%s)" % (self.info_dic["DOWNLOAD_LINK"].split("/")[-1], self.info_dic["DOWNLOAD_LINK"])
+            self.info_dic["BUILD_CHANGELOG"],
+            self.info_dic["DOWNLOAD_LINK"].split("/")[-1],
+            self.info_dic["DOWNLOAD_LINK"],
         )
 
 class AexP(AexCheck):
@@ -585,7 +586,11 @@ class StagQ(CheckUpdate):
             "DOWNLOAD_LINK",
             [
                 ("Official", base_url + build_info["name"]),
-                ("SourceForge", "https://sourceforge.net/projects/stagos-10/files/whyred/" + build_info["name"]),
+                (
+                    "SourceForge",
+                    "https://sourceforge.net/projects/stagos-10/files/whyred/%s"
+                    % build_info["name"]
+                ),
             ]
         )
 

@@ -3,8 +3,6 @@
 
 import threading
 
-THREADING_LOCK = threading.Lock()
-
 class PageCache:
 
     """ 一个保存了页面源码的类
@@ -22,6 +20,7 @@ class PageCache:
 
     def __init__(self):
         self.__page_cache = dict()
+        self.threading_lock = threading.Lock()
 
     @staticmethod
     def __params_change(params):
@@ -42,5 +41,5 @@ class PageCache:
         self.__page_cache[(request_method, url, params)] = page_source
 
     def clear(self):
-        with THREADING_LOCK:
+        with self.threading_lock:
             self.__page_cache.clear()

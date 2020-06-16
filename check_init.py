@@ -13,7 +13,7 @@ from requests.packages import urllib3
 
 from config import ENABLE_MULTI_THREAD, _PROXIES_DIC, TIMEOUT
 from database import create_dbsession, Saved
-from page_cache import PageCache, THREADING_LOCK
+from page_cache import PageCache
 
 # 禁用安全请求警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -126,7 +126,7 @@ class CheckUpdate:
         # 在其他线程上的_enable_pagecache属性为True的CheckUpdate对象必须等待
         # 这样才能避免重复请求, 同时避免了PAGE_CACHE的读写冲突
         if cls._enable_pagecache and ENABLE_MULTI_THREAD:
-            with THREADING_LOCK:
+            with PAGE_CACHE.threading_lock:
                 return _request_url(url, method, encoding, **kwargs)
         return _request_url(url, method, encoding, **kwargs)
 
@@ -297,13 +297,16 @@ class SfCheck(CheckUpdate):
         result = super().is_updated()
         if not result:
             return False
+        if self.info_dic["BUILD_DATE"] is None:
+            return False
         saved_info = Saved.get_saved_info(self.name)
         if saved_info is None:
             return True
-        if self.info_dic["BUILD_DATE"] is None:
-            return False
         latest_date = self.date_transform(str(self.info_dic["BUILD_DATE"]))
-        saved_date = self.date_transform(saved_info.BUILD_DATE)
+        try:
+            saved_date = self.date_transform(saved_info.BUILD_DATE)
+        except:
+            return True
         return latest_date > saved_date
 
 class SfProjectCheck(SfCheck):
@@ -433,6 +436,7 @@ class PeCheck(CheckUpdate):
         for li_obj in build.find("ul", {"class": "download__meta"}).find_all("li"):
             if "MD5 hash:" in li_obj.get_text():
                 self.update_info("FILE_MD5", li_obj.get_text().split(":")[1].strip())
+                break
         self.update_info(
             "BUILD_CHANGELOG",
             build.find(attrs={"class": "changelogs__list"}).get_text().strip()
