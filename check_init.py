@@ -435,7 +435,7 @@ class PeCheck(CheckUpdate):
                 self.update_info("FILE_MD5", li_obj.get_text().split(":")[1].strip())
         self.update_info(
             "BUILD_CHANGELOG",
-            build.find("textarea", {"class": "changelogs__list"}).get_text().strip()
+            build.find(attrs={"class": "changelogs__list"}).get_text().strip()
         )
         self._private_dic = {
             "fake_download_link": "".join([url, "/download/", build_id]),
