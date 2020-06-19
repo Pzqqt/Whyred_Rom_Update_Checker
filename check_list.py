@@ -185,6 +185,29 @@ class Aosip(H5aiCheck):
             self.get_hash_from_file(self.info_dic["DOWNLOAD_LINK"] + ".md5sum")
         )
 
+class AosipDf(CheckUpdate):
+
+    fullname = "AOSiP DerpFest Official"
+    _base_url = "https://get.derpfest.org/whyred/"
+
+    def do_check(self):
+        dict_json = json.loads(self.request_url(self._base_url + "builds/", method="post"))
+        files = dict_json.get("files")
+        assert files
+        latest_build = files[-1]
+        self.update_info("LATEST_VERSION", latest_build["name"])
+        self.update_info("BUILD_DATE", latest_build["modifiedTime"])
+        self.update_info("FILE_SIZE", "%0.1f MB" % (int(latest_build["size"]) / 1000 / 1000))
+        self.update_info("DOWNLOAD_LINK", self._base_url + "builds/" + latest_build["name"])
+
+    def after_check(self):
+        self.update_info(
+            "FILE_MD5",
+            self.get_hash_from_file(
+                self._base_url + "md5/" + self.info_dic["LATEST_VERSION"] + ".md5sum"
+            )
+        )
+
 class AosipDf3(PlingCheck):
     fullname = "AOSiP DerpFest (By srfarias)"
     p_id = 1338683
@@ -655,6 +678,7 @@ CHECK_LIST = (
     Ancient,
     AncientGapps,
     Aosip,
+    AosipDf,
     AosipDf3,
     Aospa,
     ArrowQ,
