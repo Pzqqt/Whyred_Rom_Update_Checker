@@ -166,12 +166,33 @@ def loop_check():
         write_log_info("End of check")
         _sleep(LOOP_CHECK_INTERVAL)
 
+def show_saved_data():
+    # 以MySQL命令行风格打印已保存的数据
+    with create_dbsession() as session:
+        results = session.query(Saved).with_entities(Saved.ID, Saved.FULL_NAME, Saved.LATEST_VERSION)
+        kv_dic = {k: (v1, v2) for k, v1, v2 in results}
+    id_maxlen = max(*[len(x) for x in kv_dic.keys()])
+    fn_maxlen = max(*[len(x[0]) for x in kv_dic.values()])
+    lv_maxlen = max(*[len(x[1]) for x in kv_dic.values()])
+    print("+%s+%s+%s+" % ("-" * id_maxlen, "-" * fn_maxlen, "-" * lv_maxlen))
+    print("|%s|%s|%s|" % (
+        "ID".ljust(id_maxlen), "FULL_NAME".ljust(fn_maxlen), "LATEST_VERSION".ljust(lv_maxlen)
+    ))
+    print("+%s+%s+%s+" % ("-" * id_maxlen, "-" * fn_maxlen, "-" * lv_maxlen))
+    for id_ in sorted(kv_dic.keys()):
+        fn, lv = kv_dic[id_]
+        print("|%s|%s|%s|" % (
+            id_.ljust(id_maxlen), fn.ljust(fn_maxlen), lv.ljust(lv_maxlen)
+        ))
+    print("+%s+%s+%s+" % ("-" * id_maxlen, "-" * fn_maxlen, "-" * lv_maxlen))
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--force", help="Force save to database & send message to Telegram", action="store_true")
     parser.add_argument("--dontpost", help="Do not send message to Telegram", action="store_true")
     parser.add_argument("-a", "--auto", help="Automatically loop check all items", action="store_true")
     parser.add_argument("-c", "--check", help="Check one item")
+    parser.add_argument("-s", "--show", help="Show saved data", action="store_true")
 
     args = parser.parse_args()
 
@@ -183,5 +204,7 @@ if __name__ == "__main__":
         loop_check()
     elif args.check:
         check_one(args.check)
+    elif args.show:
+        show_saved_data()
     else:
         parser.print_usage()
