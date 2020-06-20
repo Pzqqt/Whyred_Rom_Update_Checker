@@ -154,7 +154,7 @@ class Ancient(SfCheck):
     fullname = "Ancient Rom"
     project_name = "ancientrom"
     sub_path = "whyred"
-    _enable_pagecache = True
+    enable_pagecache = True
 
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
@@ -191,8 +191,8 @@ class AosipDf(CheckUpdate):
     _base_url = "https://get.derpfest.org/whyred/"
 
     def do_check(self):
-        dict_json = json.loads(self.request_url(self._base_url + "builds/", method="post"))
-        files = dict_json.get("files")
+        json_dic = json.loads(self.request_url(self._base_url + "builds/", method="post"))
+        files = json_dic.get("files")
         assert files
         latest_build = files[-1]
         self.update_info("LATEST_VERSION", latest_build["name"])
@@ -223,7 +223,7 @@ class ArrowQ(SfCheck):
     fullname = "Arrow OS Q Official"
     project_name = "arrow-os"
     sub_path = "arrow-10.0/whyred/"
-    _enable_pagecache = True
+    enable_pagecache = True
 
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
@@ -310,7 +310,7 @@ class Corvus(SfCheck):
     fullname = "Corvus OS Official"
     project_name = "corvus-os"
     sub_path = "whyred/"
-    _enable_pagecache = True
+    enable_pagecache = True
 
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
@@ -367,7 +367,7 @@ class Havoc(SfCheck):
     fullname = "Havoc OS Official"
     project_name = "havoc-os"
     sub_path = "whyred/"
-    _enable_pagecache = True
+    enable_pagecache = True
 
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
@@ -486,7 +486,7 @@ class PeQ(PeCheck):
     model = "whyred"
     index = 0
     tag_name = "10"
-    _enable_pagecache = True
+    enable_pagecache = True
 
 class PeQPe(PeQ):
     fullname = "Pixel Experience Q (Plus edition) Official"
@@ -507,7 +507,7 @@ class PixysQ(SfCheck):
     fullname = "Pixys OS Q Official"
     project_name = "pixys-os"
     sub_path = "ten/whyred/"
-    _enable_pagecache = True
+    enable_pagecache = True
 
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
@@ -622,7 +622,7 @@ class Titanium(SfCheck):
     fullname = "Titanium OS Official"
     project_name = "titaniumos"
     sub_path = "whyred/"
-    _enable_pagecache = True
+    enable_pagecache = True
 
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()

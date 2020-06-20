@@ -44,7 +44,7 @@ PAGE_CACHE = PageCache()
 class CheckUpdate:
 
     fullname = None
-    _enable_pagecache = False
+    enable_pagecache = False
 
     def __init__(self):
         self._raise_if_missing_property("fullname")
@@ -105,7 +105,7 @@ class CheckUpdate:
             else:
                 raise Exception("Unknown request method: %s" % method_)
             params = kwargs_.get("params")
-            if cls._enable_pagecache:
+            if cls.enable_pagecache:
                 saved_page_cache = PAGE_CACHE.read(method_, url_, params)
                 if saved_page_cache is not None:
                     return saved_page_cache
@@ -118,14 +118,14 @@ class CheckUpdate:
             req.raise_for_status()
             req.encoding = encoding_
             req_text = req.text
-            if cls._enable_pagecache:
+            if cls.enable_pagecache:
                 PAGE_CACHE.save(method_, url_, params, req_text)
             return req_text
 
-        # 在多线程模式下, 同时只允许一个_enable_pagecache属性为True的CheckUpdate对象进行请求
-        # 在其他线程上的_enable_pagecache属性为True的CheckUpdate对象必须等待
+        # 在多线程模式下, 同时只允许一个enable_pagecache属性为True的CheckUpdate对象进行请求
+        # 在其他线程上的enable_pagecache属性为True的CheckUpdate对象必须等待
         # 这样才能避免重复请求, 同时避免了PAGE_CACHE的读写冲突
-        if cls._enable_pagecache and ENABLE_MULTI_THREAD:
+        if cls.enable_pagecache and ENABLE_MULTI_THREAD:
             with PAGE_CACHE.threading_lock:
                 return _request_url(url, method, encoding, **kwargs)
         return _request_url(url, method, encoding, **kwargs)
@@ -172,7 +172,7 @@ class CheckUpdate:
     def write_to_database(self):
         """ 将CheckUpdate实例的info_dic数据写入数据库 """
         with create_dbsession() as session:
-            if self.name in {x.ID for x in session.query(Saved).all()}:
+            if (self.name,) in session.query(Saved).with_entities(Saved.ID):
                 saved_data = session.query(Saved).filter(Saved.ID == self.name).one()
                 saved_data.FULL_NAME = self.fullname
                 for key, value in self.__info_dic.items():
