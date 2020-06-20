@@ -547,24 +547,6 @@ class Rebellion(SfCheck):
     project_name = "rebellion-os"
     sub_path = "whyred/"
 
-class ResurrectionRemix(CheckUpdate):
-
-    fullname = "Resurrection Remix OS Pie Official"
-
-    def do_check(self):
-        url = "https://get.resurrectionremix.com/?dir=whyred"
-        bs_obj = self.get_bs(self.request_url(url))
-        files = bs_obj.find("ul", {"id": "directory-listing"}).find_all("li")[3:-1]
-        for file in files[::-1]:
-            file_info = file.find("a")
-            file_name = file_info["data-name"]
-            if file_name.endswith(".zip"):
-                self.update_info("LATEST_VERSION", file_name)
-                self.update_info("DOWNLOAD_LINK", url + file_info["href"])
-                self.update_info("FILE_SIZE", file_info.find_all("span")[1].get_text().strip())
-                self.update_info("BUILD_DATE", file_info.find_all("span")[2].get_text().strip())
-                break
-
     def after_check(self):
         json_str = self.request_url(
             "https://get.resurrectionremix.com/?hash=whyred/%s" % self.info_dic["LATEST_VERSION"]
@@ -579,11 +561,6 @@ class Revenge(PlingCheck):
     p_id = 1358218
     collection_id = 1581174106
 
-class RevengeU1(SfCheck):
-    fullname = "Revenge OS (By SebaUbuntu)"
-    project_name = "sebaubuntu-s-projects"
-    sub_path = "ROMs/whyred/RevengeOS-Q/"
-
 class Revolution(SfCheck):
 
     fullname = "Revolution OS"
@@ -591,6 +568,10 @@ class Revolution(SfCheck):
 
     def filter_rule(self, string):
         return "RedmiNote5" in string
+
+class SebaUbuntuProject(SfProjectCheck):
+    project_name = "sebaubuntu-s-projects"
+    developer = "SebaUbuntu"
 
 class StagQ(CheckUpdate):
 
@@ -730,10 +711,9 @@ CHECK_LIST = (
     RaghuVarmaProject,
     RandomStuffProject,
     Rebellion,
-    ResurrectionRemix,
     Revenge,
-    RevengeU1,
     Revolution,
+    SebaUbuntuProject,
     StagQ,
     Superior,
     SuperiorU1,
