@@ -240,6 +240,10 @@ class Atom(SfCheck):
     project_name = "atom-os-project"
     sub_path = "whyred/"
 
+class BabaProject(SfProjectCheck):
+    project_name = "babarom"
+    developer = "Baba Sahare"
+
 class Bliss(H5aiCheck):
     fullname = "Bliss Rom Pie Official"
     base_url = "https://downloads.blissroms.com"
@@ -361,6 +365,10 @@ class ExtendedU1(PlingCheck):
     fullname = "ExtendedUI (Unofficial By Nesquirt)"
     p_id = 1374700
     collection_id = 1586685069
+
+class HarooonProject(SfProjectCheck):
+    project_name = "whyded-releases"
+    developer = "Harooon"
 
 class Havoc(SfCheck):
 
@@ -665,6 +673,7 @@ CHECK_LIST = (
     ArrowQ,
     ArrowQGapps,
     Atom,
+    BabaProject,
     Bliss,
     BlissQ,
     BlissU1,
@@ -684,6 +693,7 @@ CHECK_LIST = (
     EvolutionX,
     Extended,
     ExtendedU1,
+    HarooonProject,
     Havoc,
     HavocGapps,
     HavocU1,
