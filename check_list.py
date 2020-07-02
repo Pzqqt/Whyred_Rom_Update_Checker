@@ -141,13 +141,15 @@ class Aicp(CheckUpdate):
                 "User-Agent": UAS[0]
             }
         )
-        json_dic = json.loads(req_text)["updates"][0]
-        self.update_info("LATEST_VERSION", json_dic["name"])
-        self.update_info("BUILD_VERSION", json_dic["version"].replace("\n", " "))
-        self.update_info("FILE_SIZE", json_dic["size"] + " MB")
-        self.update_info("DOWNLOAD_LINK", json_dic["url"])
-        self.update_info("FILE_MD5", json_dic["md5"])
-        self.update_info("BUILD_CHANGELOG", json_dic["url"] + ".html")
+        json_dic = json.loads(req_text).get("updates")
+        if json_dic:
+            latest_build = json_dic[0]
+            self.update_info("LATEST_VERSION", latest_build["name"])
+            self.update_info("BUILD_VERSION", latest_build["version"].replace("\n", " "))
+            self.update_info("FILE_SIZE", latest_build["size"] + " MB")
+            self.update_info("DOWNLOAD_LINK", latest_build["url"])
+            self.update_info("FILE_MD5", latest_build["md5"])
+            self.update_info("BUILD_CHANGELOG", latest_build["url"] + ".html")
 
 class Ancient(SfCheck):
 
