@@ -10,8 +10,9 @@ from concurrent.futures import ThreadPoolExecutor
 
 from requests import exceptions
 
-from config import DEBUG_ENABLE, ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, \
-                   ENABLE_MULTI_THREAD, MAX_THREADS_NUM
+from config import (
+    DEBUG_ENABLE, ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM
+)
 from check_init import PAGE_CACHE
 from check_list import CHECK_LIST
 from database import create_dbsession, Saved
@@ -21,8 +22,7 @@ from logger import write_log_info, write_log_warning, print_and_log
 # 为True时将强制将数据保存至数据库并发送消息
 FORCE_UPDATE = False
 
-if ENABLE_MULTI_THREAD:
-    _THREADING_LOCK = threading.Lock()
+_THREADING_LOCK = threading.Lock()
 
 def database_cleanup():
     """
@@ -59,7 +59,7 @@ def _get_time_str(time_num=None, offset=0):
 def check_one(cls, debug_enable=DEBUG_ENABLE):
     if isinstance(cls, str):
         cls = {cls_.__name__: cls_ for cls_ in CHECK_LIST}.get(cls)
-        if cls is None:
+        if not cls:
             raise Exception("Can not found '%s' from CHECK_LIST!" % cls)
     cls_obj = cls()
     try:
@@ -171,9 +171,9 @@ def show_saved_data():
     with create_dbsession() as session:
         results = session.query(Saved).with_entities(Saved.ID, Saved.FULL_NAME, Saved.LATEST_VERSION)
         kv_dic = {k: (v1, v2) for k, v1, v2 in results}
-    id_maxlen = max(*[len(x) for x in kv_dic.keys()])
-    fn_maxlen = max(*[len(x[0]) for x in kv_dic.values()])
-    lv_maxlen = max(*[len(x[1]) for x in kv_dic.values()])
+    id_maxlen = len(max(kv_dic.keys(), key=len))
+    fn_maxlen = max([len(x[0]) for x in kv_dic.values()])
+    lv_maxlen = max([len(x[1]) for x in kv_dic.values()])
     print("+%s+%s+%s+" % ("-" * id_maxlen, "-" * fn_maxlen, "-" * lv_maxlen))
     print("|%s|%s|%s|" % (
         "ID".ljust(id_maxlen), "FULL_NAME".ljust(fn_maxlen), "LATEST_VERSION".ljust(lv_maxlen)

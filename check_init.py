@@ -11,7 +11,7 @@ import requests
 from bs4 import BeautifulSoup
 from requests.packages import urllib3
 
-from config import ENABLE_MULTI_THREAD, _PROXIES_DIC, TIMEOUT
+from config import ENABLE_MULTI_THREAD, PROXIES_DICT, TIMEOUT
 from database import create_dbsession, Saved
 from page_cache import PageCache
 
@@ -111,7 +111,7 @@ class CheckUpdate:
                     return saved_page_cache
             timeout = kwargs_.pop("timeout", TIMEOUT)
             headers = kwargs_.pop("headers", {"user-agent": random.choice(UAS)})
-            proxies = kwargs_.pop("proxies", _PROXIES_DIC)
+            proxies = kwargs_.pop("proxies", PROXIES_DICT)
             req = requests_func(
                 url_, timeout=timeout, headers=headers, proxies=proxies, **kwargs_
             )
@@ -187,15 +187,16 @@ class CheckUpdate:
             session.commit()
 
     def is_updated(self):
-        """ 与数据库中已存储的数据进行比对, 如果有更新, 则返回True, 否则返回False """
+        """
+        与数据库中已存储的数据进行比对, 如果有更新, 则返回True, 否则返回False
+        一般情况下只需比对LATEST_VERSION字段, 子类在继承时可以根据需要扩展此方法
+        """
         if self.__info_dic["LATEST_VERSION"] is None:
             return False
         saved_info = Saved.get_saved_info(self.name)
         if saved_info is None:
             return True
-        if self.__info_dic["LATEST_VERSION"] == saved_info.LATEST_VERSION:
-            return False
-        return True
+        return self.__info_dic["LATEST_VERSION"] != saved_info.LATEST_VERSION
 
     def get_print_text(self):
         """ 返回更新消息文本 """
@@ -210,8 +211,8 @@ class CheckUpdate:
                 if key == "BUILD_CHANGELOG" and not value.startswith("http"):
                     value = "`%s`" % value
                 if key == "DOWNLOAD_LINK":
-                    assert value[0] != "{"
-                    if value[0] == "[":
+                    assert not value.startswith("{")
+                    if value.startswith("["):
                         value = "\n".join(["# %s\n%s" % (k, v) for k, v in json.loads(value)])
                     else:
                         value = "[%s](%s)" % (self.info_dic.get("LATEST_VERSION", ""), value)
@@ -294,6 +295,7 @@ class SfCheck(CheckUpdate):
                 break
 
     def is_updated(self):
+        # 对于SfCheck, 额外检查BUILD_DATE, 避免把旧Rom当作新Rom
         result = super().is_updated()
         if not result:
             return False
@@ -349,18 +351,16 @@ class SfProjectCheck(SfCheck):
         self.fullname = "New rom release by %s" % self.developer
         super().__init__()
 
-    def do_check(self):
-        super().do_check()
-        for key, value in self._KNOWN_ROM.items():
-            if key.upper() in str(self.info_dic["LATEST_VERSION"]).upper():
-                self.fullname = "%s (By %s)" % (value, self.developer)
-                break
-
     def get_print_text(self):
-        print_str = super().get_print_text()
-        if self.fullname.startswith("New rom release by"):
-            print_str = print_str.replace(" Update", "")
-        return print_str
+        fullname_bak = self.fullname
+        try:
+            for key, value in self._KNOWN_ROM.items():
+                if key.upper() in str(self.info_dic["LATEST_VERSION"]).upper():
+                    self.fullname = "%s (By %s)" % (value, self.developer)
+                    break
+            return super().get_print_text()
+        finally:
+            self.fullname = fullname_bak
 
 class H5aiCheck(CheckUpdate):
 

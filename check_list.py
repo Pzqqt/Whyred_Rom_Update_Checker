@@ -3,8 +3,9 @@
 
 import json
 
-from check_init import UAS, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, \
-                       AexCheck, PeCheck, PlingCheck
+from check_init import (
+    UAS, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck
+)
 
 class Linux44Y(CheckUpdate):
 

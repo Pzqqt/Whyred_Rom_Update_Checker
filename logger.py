@@ -5,28 +5,23 @@ import logging
 
 from config import LOG_FILE, ENABLE_LOGGER
 
-_LOGGER = logging.getLogger(__name__)
-_LOGGER.setLevel(level=logging.INFO)
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(level=logging.INFO)
 
-def _build_handler():
-    handler = logging.FileHandler(LOG_FILE)
-    handler.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    return handler
+_HANDLER = logging.FileHandler(LOG_FILE)
+_HANDLER.setLevel(logging.INFO)
+_HANDLER.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 
-_LOGGER.addHandler(_build_handler())
+LOGGER.addHandler(_HANDLER)
 
-if ENABLE_LOGGER:
-    def write_log_info(*text):
+def write_log_info(*text):
+    if ENABLE_LOGGER:
         for string in text:
-            _LOGGER.info(string)
-    def write_log_warning(*text):
+            LOGGER.info(string)
+def write_log_warning(*text):
+    if ENABLE_LOGGER:
         for string in text:
-            _LOGGER.warning(string)
-else:
-    def write_log_info(*text): pass
-    def write_log_warning(*text): pass
+            LOGGER.warning(string)
 
 _PREFIX_FUNC_DIC = {
     "info": ("-", write_log_info),

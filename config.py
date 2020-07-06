@@ -44,6 +44,6 @@ TG_TOKEN = os.environ.get("TG_TOKEN", "")
 TG_SENDTO = os.environ.get("TG_SENDTO", "")
 
 if IS_SOCKS:
-    _PROXIES_DIC = {"http": "socks5h://%s" % PROXIES, "https": "socks5h://%s" % PROXIES}
+    PROXIES_DICT = {"http": "socks5h://%s" % PROXIES, "https": "socks5h://%s" % PROXIES}
 else:
-    _PROXIES_DIC = {"http": PROXIES, "https": PROXIES}
+    PROXIES_DICT = {"http": PROXIES, "https": PROXIES}
