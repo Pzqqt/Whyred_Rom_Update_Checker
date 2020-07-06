@@ -246,25 +246,17 @@ class BabaProject(SfProjectCheck):
     project_name = "babarom"
     developer = "Baba Sahare"
 
-class Bliss(H5aiCheck):
-    fullname = "Bliss Rom Pie Official"
-    base_url = "https://downloads.blissroms.com"
-    sub_url = "/BlissRoms/Pie/whyred/"
-
-class BlissQ(H5aiCheck):
+class BlissQ(SfCheck):
 
     fullname = "Bliss Rom Q Official"
-    base_url = "https://downloads.blissroms.com"
-    sub_url = "/BlissRoms/Q/whyred/"
+    project_name = "blissroms"
+    sub_path = "Q/whyred/"
 
     def after_check(self):
         self.update_info(
-            "FILE_MD5", self.get_hash_from_file(self.info_dic["DOWNLOAD_LINK"] + ".md5")
-        )
-        self.update_info(
             "BUILD_CHANGELOG",
             self.info_dic["DOWNLOAD_LINK"] \
-                .replace(self.sub_url, self.sub_url + "Changelog-").replace(".zip", ".txt")
+                .replace(self.sub_path, self.sub_path + "Changelog-").replace(".zip", ".txt")
         )
 
 class BlissU1(PlingCheck):
@@ -676,7 +668,6 @@ CHECK_LIST = (
     ArrowQGapps,
     Atom,
     BabaProject,
-    Bliss,
     BlissQ,
     BlissU1,
     Bootleggers,
