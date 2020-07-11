@@ -317,7 +317,7 @@ class SfCheck(CheckUpdate):
                 break
 
     def is_updated(self):
-        # 对于SfCheck, 额外检查BUILD_DATE, 避免把旧Rom当作新Rom
+        # 对于SfCheck, 额外检查BUILD_DATE, 避免新Rom撤包后把旧Rom当作新Rom...
         result = super().is_updated()
         if not result:
             return False
@@ -357,6 +357,7 @@ class SfProjectCheck(SfCheck):
             ("ion", "ION"),
             ("Legion", "Legion OS"),
             ("lineage", "Lineage OS"),
+            ("lineageX", "Lineage X"),
             ("MK", "Mokee Rom"),
             ("pa", "Aospa Rom"),
             ("PixelExperience", "Pixel Experience"),
