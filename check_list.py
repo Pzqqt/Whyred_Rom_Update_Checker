@@ -299,6 +299,11 @@ class Cesium(SfCheck):
     project_name = "cesiumos"
     sub_path = "whyred/"
 
+class Cherish(SfCheck):
+    fullname = "Cherish OS Official"
+    project_name = "cherish-os"
+    sub_path = "device/whyred/"
+
 class Colt(SfCheck):
     fullname = "Colt OS Official"
     project_name = "coltos"
@@ -360,6 +365,11 @@ class ExtendedU1(PlingCheck):
     fullname = "ExtendedUI (Unofficial By Nesquirt)"
     p_id = 1374700
     collection_id = 1586685069
+
+class GengKapakProject(SfProjectCheck):
+    project_name = "gengkapak"
+    developer = "GengKapak Project"
+    sub_path = "ROM/whyred/"
 
 class HarooonProject(SfProjectCheck):
     project_name = "whyded-releases"
@@ -559,10 +569,27 @@ class Rebellion(SfCheck):
             self.update_info("FILE_MD5", json_dic.get("md5"))
             self.update_info("FILE_SHA1", json_dic.get("sha1"))
 
-class Revenge(PlingCheck):
+class Revenge(CheckUpdate):
+
     fullname = "Revenge OS Official"
-    p_id = 1358218
-    collection_id = 1581174106
+
+    def do_check(self):
+        url = "https://osdn.net/projects/revengeos/storage/whyred/"
+        bs_obj = self.get_bs(self.request_url(url))
+        builds = bs_obj.find(attrs={"id": "filelist"}).find_all("tr", {"class": "file"})
+        builds.sort(key=lambda tr: -int(tr.find(attrs={"class": "date"})["data-num"]))
+        for build in builds:
+            file_name = build.find("td", {"class": "name"})["data-name"]
+            if not SfCheck.filter_rule(file_name):
+                continue
+            file_size = build.find("td", {"class": "size filesize"}).get_text()
+            if float(file_size.split()[0]) < 500:
+                continue
+            self.update_info("LATEST_VERSION", file_name)
+            self.update_info("FILE_SIZE", file_size)
+            self.update_info("DOWNLOAD_LINK", url + file_name)
+            self.update_info("BUILD_DATE", build.find(attrs={"class": "date"}).get_text())
+            break
 
 class Revolution(SfCheck):
 
@@ -676,6 +703,7 @@ CHECK_LIST = (
     Carbon,
     CarbonU1,
     Cesium,
+    Cherish,
     Colt,
     Corvus,
     CorvusGapps,
@@ -687,6 +715,7 @@ CHECK_LIST = (
     EvolutionX,
     Extended,
     ExtendedU1,
+    GengKapakProject,
     HarooonProject,
     Havoc,
     HavocGapps,
