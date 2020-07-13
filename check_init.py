@@ -398,6 +398,7 @@ class H5aiCheck(CheckUpdate):
         url = self.base_url + self.sub_url
         bs_obj = self.get_bs(self.request_url(url, verify=False))
         trs = bs_obj.find("div", {"id": "fallback"}).find("table").find_all("tr")[1:]
+        trs = [tr for tr in trs if tr.find_all("td")[2].get_text().strip()]
         trs.sort(key=lambda x: x.find_all("td")[2].get_text(), reverse=True)
         build = list(filter(lambda x: x.find("a").get_text().endswith(".zip"), trs))[0]
         self.update_info("LATEST_VERSION", build.find("a").get_text())
