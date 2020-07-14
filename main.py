@@ -171,20 +171,39 @@ def show_saved_data():
     with create_dbsession() as session:
         results = session.query(Saved).with_entities(Saved.ID, Saved.FULL_NAME, Saved.LATEST_VERSION)
         kv_dic = {k: (v1, v2) for k, v1, v2 in results}
-    id_maxlen = len(max(kv_dic.keys(), key=len))
-    fn_maxlen = max([len(x[0]) for x in kv_dic.values()])
-    lv_maxlen = max([len(x[1]) for x in kv_dic.values()])
-    print("+%s+%s+%s+" % ("-" * id_maxlen, "-" * fn_maxlen, "-" * lv_maxlen))
-    print("|%s|%s|%s|" % (
-        "ID".ljust(id_maxlen), "FULL_NAME".ljust(fn_maxlen), "LATEST_VERSION".ljust(lv_maxlen)
-    ))
-    print("+%s+%s+%s+" % ("-" * id_maxlen, "-" * fn_maxlen, "-" * lv_maxlen))
-    for id_ in sorted(kv_dic.keys()):
-        fn, lv = kv_dic[id_]
+    try:
+        # 可以的话, 使用rich库
+        import rich
+        del rich
+    except ImportError:
+        id_maxlen = len(max(kv_dic.keys(), key=len))
+        fn_maxlen = max([len(x[0]) for x in kv_dic.values()])
+        lv_maxlen = max([len(x[1]) for x in kv_dic.values()])
+        print("+%s+%s+%s+" % ("-" * id_maxlen, "-" * fn_maxlen, "-" * lv_maxlen))
         print("|%s|%s|%s|" % (
-            id_.ljust(id_maxlen), fn.ljust(fn_maxlen), lv.ljust(lv_maxlen)
+            "ID".ljust(id_maxlen), "FULL_NAME".ljust(fn_maxlen), "LATEST_VERSION".ljust(lv_maxlen)
         ))
-    print("+%s+%s+%s+" % ("-" * id_maxlen, "-" * fn_maxlen, "-" * lv_maxlen))
+        print("+%s+%s+%s+" % ("-" * id_maxlen, "-" * fn_maxlen, "-" * lv_maxlen))
+        for id_ in sorted(kv_dic.keys()):
+            fn, lv = kv_dic[id_]
+            print("|%s|%s|%s|" % (
+                id_.ljust(id_maxlen), fn.ljust(fn_maxlen), lv.ljust(lv_maxlen)
+            ))
+        print("+%s+%s+%s+" % ("-" * id_maxlen, "-" * fn_maxlen, "-" * lv_maxlen))
+    else:
+        from rich.console import Console
+        from rich.table import Table
+
+        console = Console()
+
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("ID", style="dim")
+        table.add_column("Full Name")
+        table.add_column("Latest Version")
+        for id_ in sorted(kv_dic.keys()):
+            table.add_row(id_, *kv_dic[id_])
+
+        console.print(table)
 
 if __name__ == "__main__":
     parser = ArgumentParser()
