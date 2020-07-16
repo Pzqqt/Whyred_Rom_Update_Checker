@@ -300,22 +300,22 @@ class Colt(SfCheck):
     project_name = "coltos"
     sub_path = "Whyred/"
 
-class Corvus(SfCheck):
+class Corvus(PlingCheck):
 
     fullname = "Corvus OS Official"
-    project_name = "corvus-os"
-    sub_path = "whyred/"
+    p_id = 1375302
+    collection_id = 1586848776
     enable_pagecache = True
 
     def filter_rule(self, string):
-        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
+        return "GAPPS" not in string.upper()
 
 class CorvusGapps(Corvus):
 
     fullname = "Corvus OS Official (Include Gapps)"
 
     def filter_rule(self, string):
-        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
+        return "GAPPS" in string.upper()
 
 class Cosmic(SfCheck):
     fullname = "Cosmic OS Official"

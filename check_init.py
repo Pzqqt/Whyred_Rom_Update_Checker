@@ -489,6 +489,10 @@ class PlingCheck(CheckUpdate):
         self._raise_if_missing_property("p_id", "collection_id")
         super().__init__()
 
+    def filter_rule(self, string):
+        """ 文件名过滤规则 """
+        return True
+
     def do_check(self):
         url = "https://www.pling.com/p/%s/getfilesajax" % self.p_id
         params = {
@@ -501,7 +505,7 @@ class PlingCheck(CheckUpdate):
         }
         json_dic = json.loads(self.request_url(url, params=params))
         if json_dic["files"]:
-            latest_build = json_dic["files"][-1]
+            latest_build = [f for f in json_dic["files"] if self.filter_rule(f["name"])][-1]
             self.update_info("LATEST_VERSION", latest_build["name"])
             self.update_info("BUILD_DATE", latest_build["updated_timestamp"])
             self.update_info("FILE_MD5", latest_build["md5sum"])
