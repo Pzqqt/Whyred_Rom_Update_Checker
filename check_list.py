@@ -207,7 +207,24 @@ class AosipDf3(PlingCheck):
     p_id = 1338683
     collection_id = 1574482242
 
-class Aospa(PlingCheck):
+class Aospa(CheckUpdate):
+
+    fullname = "Paranoid Android Official"
+
+    def do_check(self):
+        req_text = self.request_url("https://api.aospa.co/updates/whyred")
+        json_dic = json.loads(req_text)
+        builds = json_dic.get("updates")
+        if builds:
+            latest_build = builds[0]
+            self.update_info("BUILD_DATE", latest_build["build"])
+            self.update_info("FILE_MD5", latest_build["md5"])
+            self.update_info("LATEST_VERSION", latest_build["name"])
+            self.update_info("FILE_SIZE", "%0.2f MB" % (int(latest_build["size"]) / 1000 / 1000,))
+            self.update_info("DOWNLOAD_LINK", latest_build["url"])
+            self.update_info("BUILD_VERSION", latest_build["version"])
+
+class AospaU1(PlingCheck):
     fullname = "Aospa Quartz (Unofficial By orges)"
     p_id = 1349975
     collection_id = 1578163970
@@ -683,6 +700,7 @@ CHECK_LIST = (
     AosipDf,
     AosipDf3,
     Aospa,
+    AospaU1,
     ArrowQ,
     ArrowQGapps,
     Atom,
