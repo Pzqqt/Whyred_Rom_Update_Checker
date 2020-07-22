@@ -216,7 +216,7 @@ class Aospa(CheckUpdate):
         json_dic = json.loads(req_text)
         builds = json_dic.get("updates")
         if builds:
-            latest_build = builds[0]
+            latest_build = sorted(builds, key=lambda x: int(x["build"]))[-1]
             self.update_info("BUILD_DATE", latest_build["build"])
             self.update_info("FILE_MD5", latest_build["md5"])
             self.update_info("LATEST_VERSION", latest_build["name"])
