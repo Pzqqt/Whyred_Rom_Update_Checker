@@ -58,9 +58,10 @@ def _get_time_str(time_num=None, offset=0):
 
 def check_one(cls, debug_enable=DEBUG_ENABLE):
     if isinstance(cls, str):
-        cls = {cls_.__name__: cls_ for cls_ in CHECK_LIST}.get(cls)
+        cls_str = cls
+        cls = {cls_.__name__: cls_ for cls_ in CHECK_LIST}.get(cls_str)
         if not cls:
-            raise Exception("Can not found '%s' from CHECK_LIST!" % cls)
+            raise Exception("Can not found '%s' from CHECK_LIST!" % cls_str)
     cls_obj = cls()
     try:
         cls_obj.do_check()
@@ -174,14 +175,13 @@ def show_saved_data():
     try:
         # 可以的话, 使用rich库
         import rich
-        del rich
     except ImportError:
         id_maxlen = len(max(kv_dic.keys(), key=len))
         fn_maxlen = max([len(x[0]) for x in kv_dic.values()])
         lv_maxlen = max([len(x[1]) for x in kv_dic.values()])
         print("+%s+%s+%s+" % ("-" * id_maxlen, "-" * fn_maxlen, "-" * lv_maxlen))
         print("|%s|%s|%s|" % (
-            "ID".ljust(id_maxlen), "FULL_NAME".ljust(fn_maxlen), "LATEST_VERSION".ljust(lv_maxlen)
+            "ID".ljust(id_maxlen), "Full Name".ljust(fn_maxlen), "Latest Version".ljust(lv_maxlen)
         ))
         print("+%s+%s+%s+" % ("-" * id_maxlen, "-" * fn_maxlen, "-" * lv_maxlen))
         for id_ in sorted(kv_dic.keys()):
@@ -191,6 +191,7 @@ def show_saved_data():
             ))
         print("+%s+%s+%s+" % ("-" * id_maxlen, "-" * fn_maxlen, "-" * lv_maxlen))
     else:
+        del rich
         from rich.console import Console
         from rich.table import Table
 
