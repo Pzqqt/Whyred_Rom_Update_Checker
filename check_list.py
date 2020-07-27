@@ -354,6 +354,11 @@ class Cygnus(SfCheck):
     project_name = "cygnus-android"
     sub_path = "whyred/"
 
+class DarkstarProject(SfProjectCheck):
+    project_name = "project-dark"
+    developer = "Darkstar"
+    sub_path = "whyred/"
+
 class DuRex(SfCheck):
     fullname = "DU-REX Official"
     project_name = "rafiester"
@@ -720,6 +725,7 @@ CHECK_LIST = (
     CrDroid,
     CrDroidQ,
     Cygnus,
+    DarkstarProject,
     DuRex,
     EvolutionX,
     Extended,
