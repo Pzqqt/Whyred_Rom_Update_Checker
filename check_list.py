@@ -612,10 +612,6 @@ class Revolution(SfCheck):
     def filter_rule(self, string):
         return "RedmiNote5" in string
 
-class SebaUbuntuProject(SfProjectCheck):
-    project_name = "sebaubuntu-s-projects"
-    developer = "SebaUbuntu"
-
 class StagQ(CheckUpdate):
 
     fullname = "Stag OS Q Official"
@@ -701,7 +697,7 @@ CHECK_LIST = (
     Aicp,
     Ancient,
     AncientGapps,
-    Aosip,
+    # Aosip,
     AosipDf,
     AosipDf3,
     Aospa,
@@ -761,7 +757,6 @@ CHECK_LIST = (
     Rebellion,
     Revenge,
     Revolution,
-    SebaUbuntuProject,
     StagQ,
     Superior,
     SuperiorU1,
