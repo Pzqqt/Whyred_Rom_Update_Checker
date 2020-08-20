@@ -612,6 +612,11 @@ class Revolution(SfCheck):
     def filter_rule(self, string):
         return "RedmiNote5" in string
 
+class Sakura(SfCheck):
+    fullname = "Project Sakura ROM Official"
+    project_name = "projectsakura"
+    sub_path = "whyred/"
+
 class StagQ(CheckUpdate):
 
     fullname = "Stag OS Q Official"
@@ -757,6 +762,7 @@ CHECK_LIST = (
     Rebellion,
     Revenge,
     Revolution,
+    Sakura,
     StagQ,
     Superior,
     SuperiorU1,
