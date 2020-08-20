@@ -238,6 +238,8 @@ class CheckUpdate:
                         value = "\n".join(["# %s\n%s" % (k, v) for k, v in json.loads(value)])
                     else:
                         value = "[%s](%s)" % (self.info_dic.get("LATEST_VERSION", ""), value)
+                if value.startswith("http"):
+                    value = "[%s](%s)" % (value, value)
                 print_str_list.append("\n%s:\n%s" % (_KEY_TO_PRINT[key], value))
         return "\n".join(print_str_list)
 
