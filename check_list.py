@@ -576,6 +576,7 @@ class Rebellion(SfCheck):
 class ResurrectionRemix(CheckUpdate):
 
     fullname = "Resurrection Remix OS Q Official"
+    enable_pagecache = True
 
     def filter_rule(self, string):
         return "GAPPS" not in string.upper()
