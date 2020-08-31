@@ -459,11 +459,15 @@ class Lineage(CheckUpdate):
         self.update_info("DOWNLOAD_LINK", build_file.find("a")["href"].strip())
         self.update_info("FILE_SIZE", build_size.get_text().strip())
         self.update_info("BUILD_DATE", build_date.get_text().strip())
+        self.update_info("BUILD_CHANGELOG", "https://download.lineageos.org/whyred/changes/")
 
     def after_check(self):
         file_sha1 = self.get_hash_from_file(self.info_dic["DOWNLOAD_LINK"] + "?sha1")
         if file_sha1 and file_sha1 != "Hash":
             self.update_info("FILE_SHA1", file_sha1)
+        file_sha256 = self.get_hash_from_file(self.info_dic["DOWNLOAD_LINK"] + "?sha256")
+        if file_sha256 and file_sha256 != "Hash":
+            self.update_info("FILE_SHA256", file_sha256)
 
 class LineageU1(PlingCheck):
     fullname = "Lineage OS (Unofficial By srfarias)"
