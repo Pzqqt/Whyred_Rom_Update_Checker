@@ -308,9 +308,21 @@ class Cesium(SfCheck):
     sub_path = "whyred/"
 
 class Cherish(SfCheck):
+
     fullname = "Cherish OS Official"
     project_name = "cherish-os"
     sub_path = "device/whyred/"
+    enable_pagecache = True
+
+    def filter_rule(self, string):
+        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
+
+class CherishGapps(Cherish):
+
+    fullname = "Cherish OS Official (Include Gapps)"
+
+    def filter_rule(self, string):
+        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
 class Colt(SfCheck):
     fullname = "Colt OS Official"
@@ -754,6 +766,7 @@ CHECK_LIST = (
     CarbonU1,
     Cesium,
     Cherish,
+    CherishGapps,
     Colt,
     Corvus,
     CorvusGapps,
