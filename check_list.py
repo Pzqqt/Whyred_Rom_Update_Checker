@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 import json
+import time
 
 from check_init import (
     UAS, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck
@@ -601,6 +602,10 @@ class ResurrectionRemix(CheckUpdate):
         url = "https://get.resurrectionremix.com/?dir=ten/whyred"
         bs_obj = self.get_bs(self.request_url(url))
         files = bs_obj.find("ul", {"id": "directory-listing"}).find_all("li")[1:]
+        files = sorted(
+            files,
+            key=lambda x: time.strptime(x.find_all("span")[2].get_text().strip(), "%Y-%m-%d %H:%M:%S")
+        )
         for file in files[::-1]:
             file_info = file.find("a")
             file_name = file_info["data-name"]
