@@ -596,7 +596,7 @@ class ResurrectionRemix(CheckUpdate):
     enable_pagecache = True
 
     def filter_rule(self, string):
-        return "GAPPS" not in string.upper()
+        return "VANILLA" in string.upper()
 
     def do_check(self):
         url = "https://get.resurrectionremix.com/?dir=ten/whyred"
@@ -632,7 +632,7 @@ class ResurrectionRemixGapps(ResurrectionRemix):
     fullname = "Resurrection Remix OS Q Official (Include Gapps)"
 
     def filter_rule(self, string):
-        return "GAPPS" in string.upper()
+        return "VANILLA" not in string.upper()
 
 class Revenge(CheckUpdate):
 
