@@ -230,22 +230,76 @@ class AospaU1(PlingCheck):
     p_id = 1349975
     collection_id = 1578163970
 
-class ArrowQ(SfCheck):
+class ArrowQ(CheckUpdate):
 
     fullname = "Arrow OS Q Official"
-    project_name = "arrow-os"
-    sub_path = "arrow-10.0/whyred/"
     enable_pagecache = True
 
-    def filter_rule(self, string):
-        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
+    post_url_1 = "https://arrowos.net/device.php"
+    post_url_2 = "https://get.mirror1.arrowos.net/download.php"
+
+    def do_check(self):
+        url_source = self.request_url(
+            self.post_url_1,
+            method="post",
+            data={
+                "device": "whyred",
+                "deviceVariant": "official",
+                "deviceVersion": "arrow-10.0",
+                "supportedVersions": ["arrow-10.0"],
+                "supportedVariants": ["official"],
+            }
+        )
+        bs_obj = self.get_bs(url_source)
+        self.update_info("LATEST_VERSION", bs_obj.find(id="vanilla-filename")["name"])
+        self.update_info(
+            "BUILD_VERSION",
+            bs_obj.find(id="vanilla-version").get_text().strip().split(":")[-1].strip()
+        )
+        build_info_text = bs_obj.find(id="vanilla-filename").parent.get_text()
+        self.update_info("FILE_SIZE", self.grep(build_info_text, "Size"))
+        self.update_info("BUILD_DATE", self.grep(build_info_text, "Date"))
+        self.update_info("FILE_SHA256", bs_obj.find(id="vanilla-file_sha256").get_text().strip())
+
+    def after_check(self):
+        real_download_link = self.request_url(
+            self.post_url_2,
+            method="post",
+            data={
+                "file_sha256": self.info_dic["FILE_SHA256"],
+                "version": "arrow-10.0",
+                "variant": "official",
+                "filename": self.info_dic["LATEST_VERSION"],
+            },
+        )
+        self.update_info("DOWNLOAD_LINK", real_download_link)
 
 class ArrowQGapps(ArrowQ):
 
     fullname = "Arrow OS Q Official (Include Gapps)"
 
-    def filter_rule(self, string):
-        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
+    def do_check(self):
+        url_source = self.request_url(
+            self.post_url_1,
+            method="post",
+            data={
+                "device": "whyred",
+                "deviceVariant": "official",
+                "deviceVersion": "arrow-10.0",
+                "supportedVersions": ["arrow-10.0"],
+                "supportedVariants": ["official"],
+            }
+        )
+        bs_obj = self.get_bs(url_source)
+        self.update_info("LATEST_VERSION", bs_obj.find(id="gapps-filename")["name"])
+        self.update_info(
+            "BUILD_VERSION",
+            bs_obj.find(id="gapps-version").get_text().strip().split(":")[-1].strip()
+        )
+        build_info_text = bs_obj.find(id="gapps-filename").parent.get_text()
+        self.update_info("FILE_SIZE", self.grep(build_info_text, "Size"))
+        self.update_info("BUILD_DATE", self.grep(build_info_text, "Date"))
+        self.update_info("FILE_SHA256", bs_obj.find(id="gapps-file_sha256").get_text().strip())
 
 class Atom(SfCheck):
     fullname = "Atom OS Official"
