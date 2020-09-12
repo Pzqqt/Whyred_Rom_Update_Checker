@@ -171,6 +171,21 @@ class CheckUpdate:
         """
         return BeautifulSoup(url_text, "lxml")
 
+    @staticmethod
+    def grep(text, key, delimiter=":", ignore_case=False):
+        """ 类似Linux的grep命令, 默认分隔符为':' """
+        for line in text.strip().splitlines():
+            if delimiter not in line:
+                continue
+            k, v = line.split(delimiter, 1)
+            k, v = k.strip(), v.strip()
+            if ignore_case:
+                if k.upper() == key.upper():
+                    return v
+            else:
+                if k == key:
+                    return v
+
     def do_check(self):
         """
         开始进行更新检查, 包括页面请求 数据清洗 info_dic更新, 都应该在此方法中完成
