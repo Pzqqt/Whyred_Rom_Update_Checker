@@ -237,6 +237,7 @@ class ArrowQ(CheckUpdate):
 
     post_url_1 = "https://arrowos.net/device.php"
     post_url_2 = "https://get.mirror1.arrowos.net/download.php"
+    build_type_flag = "vanilla"
 
     def do_check(self):
         url_source = self.request_url(
@@ -251,15 +252,26 @@ class ArrowQ(CheckUpdate):
             }
         )
         bs_obj = self.get_bs(url_source)
-        self.update_info("LATEST_VERSION", bs_obj.find(id="vanilla-filename")["name"])
+        self.update_info(
+            "LATEST_VERSION",
+            bs_obj.find(id="%s-filename" % self.build_type_flag)["name"]
+        )
         self.update_info(
             "BUILD_VERSION",
-            bs_obj.find(id="vanilla-version").get_text().strip().split(":")[-1].strip()
+            bs_obj.find(id="%s-version" % self.build_type_flag).get_text().strip().split(":")[-1].strip()
         )
-        build_info_text = bs_obj.find(id="vanilla-filename").parent.get_text()
+        build_info_text = bs_obj.find(id="%s-filename" % self.build_type_flag).parent.get_text()
         self.update_info("FILE_SIZE", self.grep(build_info_text, "Size"))
         self.update_info("BUILD_DATE", self.grep(build_info_text, "Date"))
-        self.update_info("FILE_SHA256", bs_obj.find(id="vanilla-file_sha256").get_text().strip())
+        self.update_info(
+            "FILE_SHA256",
+            bs_obj.find(id="%s-file_sha256" % self.build_type_flag).get_text().strip()
+        )
+        self.update_info(
+            "BUILD_CHANGELOG",
+            "# Device side changes\n%s\n# Source changelog\nhttps://arrowos.net/changelog.php"
+            % bs_obj.find(id="source-changelog").parent.find("p").get_text().strip()
+        )
 
     def after_check(self):
         real_download_link = self.request_url(
@@ -275,31 +287,8 @@ class ArrowQ(CheckUpdate):
         self.update_info("DOWNLOAD_LINK", real_download_link)
 
 class ArrowQGapps(ArrowQ):
-
     fullname = "Arrow OS Q Official (Include Gapps)"
-
-    def do_check(self):
-        url_source = self.request_url(
-            self.post_url_1,
-            method="post",
-            data={
-                "device": "whyred",
-                "deviceVariant": "official",
-                "deviceVersion": "arrow-10.0",
-                "supportedVersions": ["arrow-10.0"],
-                "supportedVariants": ["official"],
-            }
-        )
-        bs_obj = self.get_bs(url_source)
-        self.update_info("LATEST_VERSION", bs_obj.find(id="gapps-filename")["name"])
-        self.update_info(
-            "BUILD_VERSION",
-            bs_obj.find(id="gapps-version").get_text().strip().split(":")[-1].strip()
-        )
-        build_info_text = bs_obj.find(id="gapps-filename").parent.get_text()
-        self.update_info("FILE_SIZE", self.grep(build_info_text, "Size"))
-        self.update_info("BUILD_DATE", self.grep(build_info_text, "Date"))
-        self.update_info("FILE_SHA256", bs_obj.find(id="gapps-file_sha256").get_text().strip())
+    build_type_flag = "gapps"
 
 class Atom(SfCheck):
     fullname = "Atom OS Official"
