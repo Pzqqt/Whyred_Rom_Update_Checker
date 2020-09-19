@@ -177,8 +177,7 @@ class CheckUpdate:
         for line in text.strip().splitlines():
             if delimiter not in line:
                 continue
-            k, v = line.split(delimiter, 1)
-            k, v = k.strip(), v.strip()
+            k, v = [x.strip() for x in line.split(delimiter, 1)]
             if ignore_case:
                 if k.upper() == key.upper():
                     return v
@@ -226,7 +225,7 @@ class CheckUpdate:
     def is_updated(self):
         """
         与数据库中已存储的数据进行比对, 如果有更新, 则返回True, 否则返回False
-        一般情况下只需比对LATEST_VERSION字段, 子类在继承时可以根据需要扩展此方法
+        一般情况下只需比对LATEST_VERSION字段, 子类在继承时可以根据需要拓展此方法
         """
         if self.__info_dic["LATEST_VERSION"] is None:
             return False
@@ -474,10 +473,10 @@ class PeCheck(CheckUpdate):
         self.update_info("BUILD_DATE", build.find("span", {"class": "date"}).get_text().strip())
         self.update_info("DOWNLOAD_LINK", url + build.find("a", {"class": "download__btn"})["href"])
         build_id = build.find("a", {"class": "download__btn"})["data-file-uid"]
-        for li_obj in build.find("ul", {"class": "download__meta"}).find_all("li"):
-            if "MD5 hash:" in li_obj.get_text():
-                self.update_info("FILE_MD5", li_obj.get_text().split(":")[1].strip())
-                break
+        self.update_info(
+            "FILE_MD5",
+            self.grep(build.find("ul", {"class": "download__meta"}).get_text(), "MD5 hash")
+        )
         self.update_info(
             "BUILD_CHANGELOG",
             build.find(attrs={"class": "changelogs__list"}).get_text().strip()
