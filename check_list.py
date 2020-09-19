@@ -193,6 +193,20 @@ class AosipDf(H5aiCheck):
 
     fullname = "AOSiP DerpFest Official"
     base_url = "https://get.derpfest.org"
+    sub_url = "/whyred-vanilla/builds/"
+
+    def after_check(self):
+        self.update_info(
+            "FILE_MD5",
+            self.get_hash_from_file(
+                self.base_url + "/whyred-vanilla/md5/" + self.info_dic["LATEST_VERSION"] + ".md5sum"
+            )
+        )
+
+class AosipDfGapps(H5aiCheck):
+
+    fullname = "AOSiP DerpFest Official (Include Gapps)"
+    base_url = "https://get.derpfest.org"
     sub_url = "/whyred/builds/"
 
     def after_check(self):
@@ -808,6 +822,7 @@ CHECK_LIST = (
     AncientGapps,
     # Aosip,
     AosipDf,
+    AosipDfGapps,
     AosipDf3,
     Aospa,
     AospaU1,
