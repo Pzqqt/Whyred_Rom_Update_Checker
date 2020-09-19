@@ -256,12 +256,9 @@ class ArrowQ(CheckUpdate):
             "LATEST_VERSION",
             bs_obj.find(id="%s-filename" % self.build_type_flag)["name"]
         )
-        self.update_info(
-            "BUILD_VERSION",
-            bs_obj.find(id="%s-version" % self.build_type_flag).get_text().strip().split(":")[-1].strip()
-        )
         build_info_text = bs_obj.find(id="%s-filename" % self.build_type_flag).parent.get_text()
         self.update_info("FILE_SIZE", self.grep(build_info_text, "Size"))
+        self.update_info("BUILD_VERSION", self.grep(build_info_text, "Version"))
         self.update_info("BUILD_DATE", self.grep(build_info_text, "Date"))
         self.update_info(
             "FILE_SHA256",
@@ -491,9 +488,21 @@ class KubilProject(SfProjectCheck):
     developer = "kubil"
 
 class Legion(SfCheck):
+
     fullname = "Legion OS Official"
     project_name = "legionrom"
     sub_path = "whyred/"
+    enable_pagecache = True
+
+    def filter_rule(self, string):
+        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
+
+class LegionGapps(Legion):
+
+    fullname = "Legion OS Official (Include Gapps)"
+
+    def filter_rule(self, string):
+        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
 class Lineage(CheckUpdate):
 
@@ -773,7 +782,7 @@ class TitaniumGapps(Titanium):
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
-class Whymeme(SfProjectCheck):
+class WhymemeProject(SfProjectCheck):
     project_name = "whymeme-roms"
     developer = "jhonse02"
 
@@ -838,6 +847,7 @@ CHECK_LIST = (
     Komodo,
     KubilProject,
     Legion,
+    LegionGapps,
     Lineage,
     LineageU1,
     LineageU2,
@@ -868,7 +878,7 @@ CHECK_LIST = (
     SyberiaU1,
     Titanium,
     TitaniumGapps,
-    Whymeme,
+    WhymemeProject,
     Xtended,
     XyzuanProject,
 )
