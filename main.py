@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 from argparse import ArgumentParser
+import json
 import time
 import traceback
 import sys
@@ -166,6 +167,14 @@ def loop_check():
         print(" - The next check will start at %s\n" % _get_time_str(offset=LOOP_CHECK_INTERVAL))
         write_log_info("End of check")
         _sleep(LOOP_CHECK_INTERVAL)
+
+def get_saved_json():
+    # 以json格式返回已保存的数据
+    with create_dbsession() as session:
+        return json.dumps(
+            [result.get_kv() for result in sorted(session.query(Saved), key=lambda x: x.ID)],
+            ensure_ascii=False,
+        )
 
 def show_saved_data():
     # 以MySQL命令行风格打印已保存的数据
