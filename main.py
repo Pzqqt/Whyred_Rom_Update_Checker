@@ -172,7 +172,7 @@ def get_saved_json():
     # 以json格式返回已保存的数据
     with create_dbsession() as session:
         return json.dumps(
-            [result.get_kv() for result in sorted(session.query(Saved), key=lambda x: x.ID)],
+            [result.get_kv() for result in sorted(session.query(Saved), key=lambda x: x.FULL_NAME)],
             ensure_ascii=False,
         )
 
