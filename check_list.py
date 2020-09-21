@@ -665,26 +665,28 @@ class ResurrectionRemix(CheckUpdate):
         return "VANILLA" in string.upper()
 
     def do_check(self):
-        url = "https://get.resurrectionremix.com/?dir=ten/whyred"
-        bs_obj = self.get_bs(self.request_url(url))
+        base_url = "https://get.resurrectionremix.com/"
+        bs_obj = self.get_bs(self.request_url(base_url, params={"dir": "ten/whyred"}))
         files = bs_obj.find("ul", {"id": "directory-listing"}).find_all("li")[1:]
         files = sorted(
             files,
-            key=lambda x: time.strptime(x.find_all("span")[2].get_text().strip(), "%Y-%m-%d %H:%M:%S")
+            key=lambda x:
+                time.strptime(x.find_all("span")[2].get_text().strip(), "%Y-%m-%d %H:%M:%S")
         )
         for file in files[::-1]:
             file_info = file.find("a")
             file_name = file_info["data-name"]
             if file_name.endswith(".zip") and self.filter_rule(file_name):
                 self.update_info("LATEST_VERSION", file_name)
-                self.update_info("DOWNLOAD_LINK", url + file_info["href"])
+                self.update_info("DOWNLOAD_LINK", base_url + file_info["href"])
                 self.update_info("FILE_SIZE", file_info.find_all("span")[1].get_text().strip())
                 self.update_info("BUILD_DATE", file_info.find_all("span")[2].get_text().strip())
                 break
 
     def after_check(self):
         json_str = self.request_url(
-            "https://get.resurrectionremix.com/?hash=ten/whyred/%s" % self.info_dic["LATEST_VERSION"]
+            "https://get.resurrectionremix.com/",
+            params={"hash": "ten/whyred/%s" % self.info_dic["LATEST_VERSION"]}
         )
         if json_str is not None:
             json_dic = json.loads(json_str)
