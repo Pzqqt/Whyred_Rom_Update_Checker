@@ -7,6 +7,7 @@ import time
 from check_init import (
     UAS, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck
 )
+from database import Saved
 
 class Linux44Y(CheckUpdate):
 
@@ -239,6 +240,17 @@ class Aospa(CheckUpdate):
             self.update_info("DOWNLOAD_LINK", latest_build["url"])
             self.update_info("BUILD_VERSION", latest_build["version"])
 
+    def is_updated(self):
+        result = super().is_updated()
+        if not result:
+            return False
+        if self.info_dic["BUILD_DATE"] is None:
+            return False
+        saved_info = Saved.get_saved_info(self.name)
+        if saved_info is None:
+            return True
+        return int(self.info_dic["BUILD_DATE"]) > int(saved_info.BUILD_DATE)
+
 class AospaU1(PlingCheck):
     fullname = "Aospa Quartz (Unofficial By orges)"
     p_id = 1349975
@@ -432,9 +444,19 @@ class DuRex(SfCheck):
     sub_path = "whyred/DuRex/"
 
 class EvolutionX(SfCheck):
+
     fullname = "EvolutionX Official"
     project_name = "evolution-x"
     sub_path = "whyred/"
+
+    def after_check(self):
+        self.update_info(
+            "BUILD_CHANGELOG",
+            self.request_url(
+                "https://raw.githubusercontent.com/Evolution-X-Devices/official_devices/"
+                "master/changelogs/whyred/%s.txt" % self.info_dic["LATEST_VERSION"]
+            ).strip()
+        )
 
 class Extended(SfCheck):
     fullname = "ExtendedUI Official"
@@ -589,6 +611,11 @@ class NitrogenU1(SfCheck):
     fullname = "Nitrogen OS (Unofficial By Bagaskara815)"
     project_name = "nangis"
     sub_path = "NitrogenOS/Whyred/10/"
+
+class PixelExtended(SfCheck):
+    fullname = "Pixel Extended Q Official"
+    project_name = "pixelextended"
+    sub_path = "Whyred/"
 
 class PeQ(PeCheck):
     fullname = "Pixel Experience Q Official"
@@ -767,11 +794,6 @@ class Superior(SfCheck):
     project_name = "superioros"
     sub_path = "whyred/"
 
-class SuperiorU1(SfCheck):
-    fullname = "Superior OS (Unofficial By darkstar085)"
-    project_name = "project-dark"
-    sub_path = "whyred/superior/"
-
 class Syberia(SfCheck):
     fullname = "Syberia OS Official"
     project_name = "syberiaos"
@@ -873,6 +895,7 @@ CHECK_LIST = (
     Neon,
     Nitrogen,
     NitrogenU1,
+    PixelExtended,
     PeQ,
     PeQPe,
     PeU1,
@@ -890,7 +913,6 @@ CHECK_LIST = (
     Sakura,
     StagQ,
     Superior,
-    SuperiorU1,
     Syberia,
     SyberiaU1,
     Titanium,
