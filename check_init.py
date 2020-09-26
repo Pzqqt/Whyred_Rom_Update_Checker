@@ -172,7 +172,7 @@ class CheckUpdate:
         return BeautifulSoup(url_text, "lxml")
 
     @staticmethod
-    def grep(text, key, delimiter=":", ignore_case=False):
+    def grep(text, key, delimiter=":", default=None, ignore_case=False):
         """ 类似Linux的grep命令, 默认分隔符为':' """
         for line in text.strip().splitlines():
             if delimiter not in line:
@@ -184,6 +184,7 @@ class CheckUpdate:
             else:
                 if k == key:
                     return v
+        return default
 
     def do_check(self):
         """
