@@ -674,9 +674,7 @@ class RandomStuffProject(SfProjectCheck):
         if not result:
             return False
         # Ignore test builds
-        if "/test/" in self.info_dic["DOWNLOAD_LINK"]:
-            return False
-        return True
+        return "/test/" not in self.info_dic["DOWNLOAD_LINK"]
 
 class Rebellion(SfCheck):
     fullname = "RebellionOS Official"

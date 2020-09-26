@@ -78,8 +78,7 @@ class CheckUpdate:
 
     def __hook_after_check(self, method):
         def hook(*args, **kwargs):
-            if not self.__is_checked:
-                raise Exception("Please execute the 'do_check' method first.")
+            assert self.__is_checked, "Please execute the 'do_check' method first."
             method(*args, **kwargs)
             # 必须返回 None
         return hook
