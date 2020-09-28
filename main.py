@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 from requests import exceptions
 
 from config import (
-    DEBUG_ENABLE, ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM
+    ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM
 )
 from check_init import PAGE_CACHE
 from check_list import CHECK_LIST
@@ -57,7 +57,7 @@ def _get_time_str(time_num=None, offset=0):
         time_num = time.time()
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_num+offset))
 
-def check_one(cls, debug_enable=DEBUG_ENABLE):
+def check_one(cls):
     if isinstance(cls, str):
         cls_str = cls
         cls = {cls_.__name__: cls_ for cls_ in CHECK_LIST}.get(cls_str)
@@ -79,6 +79,7 @@ def check_one(cls, debug_enable=DEBUG_ENABLE):
         print(traceback_string)
         write_log_warning(*traceback_string.splitlines())
         print_and_log("%s check failed!" % cls_obj.fullname, level="warning")
+        return False
     else:
         if cls_obj.is_updated() or FORCE_UPDATE:
             print_and_log(
@@ -98,10 +99,6 @@ def check_one(cls, debug_enable=DEBUG_ENABLE):
         else:
             print_and_log("%s no update" % cls_obj.fullname)
         return True
-    if debug_enable:
-        if input("* Continue?(Y/N) ").upper() != "Y":
-            _abort_by_user()
-    return False
 
 def single_thread_check():
     # 单线程模式下连续检查失败5项则判定为网络异常, 并提前终止
@@ -129,7 +126,7 @@ def multi_thread_check():
         nonlocal check_failed_list, is_network_error
         if is_network_error:
             return
-        result = check_one(cls_, debug_enable=False)
+        result = check_one(cls_)
         time.sleep(2)
         if not result:
             with _THREADING_LOCK:
