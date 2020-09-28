@@ -177,7 +177,7 @@ class CheckUpdate:
         for line in text.strip().splitlines():
             if delimiter not in line:
                 continue
-            k, v = [x.strip() for x in line.split(delimiter, 1)]
+            k, v = (x.strip() for x in line.split(delimiter, 1))
             if ignore_case:
                 if k.upper() == key.upper():
                     return v
@@ -250,7 +250,7 @@ class CheckUpdate:
                 if key == "DOWNLOAD_LINK":
                     assert not value.startswith("{")
                     if value.startswith("["):
-                        value = "\n".join(["# %s\n%s" % (k, v) for k, v in json.loads(value)])
+                        value = "\n".join(["# %s\n[%s](%s)" % (k, v, v) for k, v in json.loads(value)])
                     else:
                         value = "[%s](%s)" % (self.info_dic.get("LATEST_VERSION", ""), value)
                 if value.startswith("http"):
