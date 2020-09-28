@@ -3,6 +3,7 @@
 
 import json
 import random
+import re
 import time
 from collections import OrderedDict
 from urllib.parse import unquote, urlencode
@@ -455,15 +456,26 @@ class PeCheck(CheckUpdate):
     index = None
     tag_name = None
 
+    _url = "https://download.pixelexperience.org"
+
     def __init__(self):
         self._raise_if_missing_property("model")
         self._raise_if_missing_property("index")
         self._raise_if_missing_property("tag_name")
         super().__init__()
 
+    @classmethod
+    def get_true_url(cls, fake_url):
+        return cls.request_url(
+            fake_url,
+            headers={
+                "referer": "%s/%s" % (cls._url, cls.model),
+                "user-agent": UAS[0],
+            }
+        )
+
     def do_check(self):
-        url = "https://download.pixelexperience.org"
-        bs_obj = self.get_bs(self.request_url("%s/%s" % (url, self.model), headers={}))
+        bs_obj = self.get_bs(self.request_url("%s/%s" % (self._url, self.model), headers={}))
         builds = bs_obj.find_all("div", {"class": "version__item"})[self.index]
         assert builds.find("button").get_text().strip() == self.tag_name
         build = builds.find("div", {"class": "build__item"})
@@ -471,8 +483,11 @@ class PeCheck(CheckUpdate):
             return
         self.update_info("LATEST_VERSION", build["data-build-version"])
         self.update_info("BUILD_DATE", build.find("span", {"class": "date"}).get_text().strip())
-        self.update_info("DOWNLOAD_LINK", url + build.find("a", {"class": "download__btn"})["href"])
-        build_id = build.find("a", {"class": "download__btn"})["data-file-uid"]
+        self.update_info("DOWNLOAD_LINK", self._url + build.find("a", {"class": "download__btn"})["href"])
+        self.update_info(
+            "FILE_SIZE",
+            re.search(r"\((.*?)\)", build.find("a", {"class": "download__btn"}).get_text()).group(1)
+        )
         self.update_info(
             "FILE_MD5",
             self.grep(build.find("ul", {"class": "download__meta"}).get_text(), "MD5 hash")
@@ -481,20 +496,16 @@ class PeCheck(CheckUpdate):
             "BUILD_CHANGELOG",
             build.find(attrs={"class": "changelogs__list"}).get_text().strip()
         )
+        build_id = build.find("a", {"class": "download__btn"})["data-file-uid"]
         self._private_dic = {
-            "fake_download_link": "".join([url, "/download/", build_id]),
-            "request_headers_referer": "%s/%s" % (url, self.model),
+            "fake_download_link": "".join([self._url, "/download/", build_id]),
         }
 
     def after_check(self):
-        real_download_link = self.request_url(
-            self._private_dic["fake_download_link"],
-            headers={
-                "referer": self._private_dic["request_headers_referer"],
-                "user-agent": UAS[0],
-            },
+        self.update_info(
+            "DOWNLOAD_LINK",
+            self.get_true_url(self._private_dic["fake_download_link"])
         )
-        self.update_info("DOWNLOAD_LINK", real_download_link)
 
 class PlingCheck(CheckUpdate):
 
