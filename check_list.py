@@ -115,6 +115,9 @@ class WireGuard(CheckUpdate):
             self.info_dic["DOWNLOAD_LINK"],
         )
 
+class AdrarProject(SfProjectCheck):
+    project_name = "unofficial-by-adrar"
+    developer = "AdrarHussain"
 class AexP(AexCheck):
     fullname = "AospExtended Pie Official"
     sub_path = "whyred/pie"
@@ -130,6 +133,10 @@ class AexQ(AexCheck):
 class AexQGapps(AexCheck):
     fullname = "AospExtended Q (with Gapps) Official"
     sub_path = "whyred/q_gapps"
+class AexRU1(PlingCheck):
+    fullname = "AospExtended 11 (Unofficial By SakilMondal)"
+    p_id = 1423583
+    collection_id = 1600503087
 
 class Aicp(CheckUpdate):
 
@@ -156,7 +163,7 @@ class Aicp(CheckUpdate):
 
 class Ancient(SfCheck):
 
-    fullname = "Ancient Rom"
+    fullname = "Ancient OS"
     project_name = "ancientrom"
     sub_path = "whyred"
     enable_pagecache = True
@@ -166,7 +173,7 @@ class Ancient(SfCheck):
 
 class AncientGapps(Ancient):
 
-    fullname = "Ancient Rom (Include Gapps)"
+    fullname = "Ancient OS (Include Gapps)"
 
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
@@ -612,6 +619,10 @@ class NitrogenU1(SfCheck):
     project_name = "nangis"
     sub_path = "NitrogenOS/Whyred/10/"
 
+class Octavi(SfCheck):
+    fullname = "Octavi OS Official"
+    project_name = "octavi-os"
+    sub_path = "Whyred"
 class PixelExtended(SfCheck):
     fullname = "Pixel Extended Q Official"
     project_name = "pixelextended"
@@ -835,10 +846,12 @@ CHECK_LIST = (
     Linux44Y,
     GoogleClangPrebuilt,
     WireGuard,
+    AdrarProject,
     AexP,
     AexPGapps,
     AexQ,
     AexQGapps,
+    AexRU1,
     Aicp,
     Ancient,
     AncientGapps,
@@ -893,6 +906,7 @@ CHECK_LIST = (
     Neon,
     Nitrogen,
     NitrogenU1,
+    Octavi,
     PixelExtended,
     PeQ,
     PeQPe,
