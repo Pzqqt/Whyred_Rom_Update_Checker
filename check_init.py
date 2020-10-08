@@ -467,12 +467,11 @@ class PeCheck(CheckUpdate):
         self._raise_if_missing_property("tag_name")
         super().__init__()
 
-    @classmethod
-    def get_true_url(cls, fake_url):
-        return cls.request_url(
+    def get_true_url(self, fake_url):
+        return self.request_url(
             fake_url,
             headers={
-                "referer": "%s/%s" % (cls._url, cls.model),
+                "referer": "%s/%s" % (self._url, self.model),
                 "user-agent": UAS[0],
             }
         )
