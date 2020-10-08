@@ -15,6 +15,7 @@ from requests.packages import urllib3
 from config import ENABLE_MULTI_THREAD, PROXIES_DICT, TIMEOUT
 from database import create_dbsession, Saved
 from page_cache import PageCache
+from tgbot import send_message as _send_message
 
 # 禁用安全请求警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -257,6 +258,9 @@ class CheckUpdate:
                     value = "[%s](%s)" % (value, value)
                 print_str_list.append("\n%s:\n%s" % (_KEY_TO_PRINT[key], value))
         return "\n".join(print_str_list)
+
+    def send_message(self):
+        _send_message(self.get_print_text())
 
     def __repr__(self):
         return "%s(fullname='%s', info_dic={%s})" % (

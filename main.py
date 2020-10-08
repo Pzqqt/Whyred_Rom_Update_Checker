@@ -17,7 +17,6 @@ from config import (
 from check_init import PAGE_CACHE
 from check_list import CHECK_LIST
 from database import create_dbsession, Saved
-from tgbot import send_message
 from logger import write_log_info, write_log_warning, print_and_log
 
 # 为True时将强制将数据保存至数据库并发送消息
@@ -95,7 +94,7 @@ def check_one(cls):
                 write_log_warning("%s: Something wrong when running after_check!" % cls_obj.fullname)
             cls_obj.write_to_database()
             if ENABLE_SENDMESSAGE:
-                send_message(cls_obj.get_print_text())
+                cls_obj.send_message()
         else:
             print_and_log("%s no update" % cls_obj.fullname)
         return True
