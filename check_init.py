@@ -356,6 +356,7 @@ class SfProjectCheck(SfCheck):
     _KNOWN_ROM = OrderedDict(
         sorted([
             ("aicp", "AICP"),
+            ("ancient", "Ancient OS"),
             ("AOSiP", "AOSiP"),
             ("aosp", "AOSP"),
             ("aosp-forking", "AOSP Forking"),
@@ -372,6 +373,7 @@ class SfProjectCheck(SfCheck):
             ("EvolutionX", "EvolutionX"),
             ("Havoc", "Havoc OS"),
             ("ion", "ION"),
+            ("Komodo", "Komodo OS"),
             ("Legion", "Legion OS"),
             ("lineage", "Lineage OS"),
             ("lineageX", "Lineage X"),
@@ -382,6 +384,7 @@ class SfProjectCheck(SfCheck):
             ("Rebellion", "Rebellion OS"),
             ("Titanium", "Titanium OS"),
             ("Stag", "Stag OS"),
+            ("Superior", "Superior OS"),
         ], key=lambda item: -len(item[0]))
     )
     developer = None
