@@ -3,11 +3,13 @@
 
 import json
 import time
+from collections import OrderedDict
 
 from check_init import (
     UAS, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck
 )
 from database import Saved
+from tgbot import send_message as _send_message
 
 class Linux44Y(CheckUpdate):
 
@@ -44,44 +46,79 @@ class GoogleClangPrebuilt(CheckUpdate):
 
     fullname = "Google Clang Prebuilt"
 
+    _base_url = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
+
     def do_check(self):
-        base_url = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
-        bs_obj = self.get_bs(self.request_url(base_url + "/+log"))
+        self._private_dic["sp_commits"] = OrderedDict()
+        self._private_dic["extra_ids"] = []
+        bs_obj = self.get_bs(self.request_url(self._base_url + "/+log"))
         commits = bs_obj.find("ol", {"class": "CommitLog"}).find_all("li")
         for commit in commits:
             a_tag = commit.find_all("a")[1]
             commit_title = a_tag.get_text()
             if commit_title.startswith("Update prebuilt Clang to"):
-                commit_url = "https://android.googlesource.com" + a_tag["href"]
-                commit_id = a_tag["href"].split("/")[-1]
-                r_tag = commit_title.split()[4]
-                assert r_tag.startswith("r")
-                if r_tag[-1] == ".":
-                    r_tag = r_tag[:-1]
-                self.update_info("LATEST_VERSION", commit_id)
-                self.update_info("BUILD_CHANGELOG", commit_url)
-                self.update_info(
-                    "DOWNLOAD_LINK",
-                    "%s/+archive/%s/clang-%s.tar.gz" % (base_url, commit_id, r_tag)
-                )
-                break
-        else:
-            raise Exception("Parsing failed!")
+                release_version = commit_title.split()[4]
+                if release_version.startswith("r"):
+                    if release_version[-1] == ".":
+                        release_version = release_version[:-1]
+                    commit_url = "https://android.googlesource.com" + a_tag["href"]
+                    commit_id = a_tag["href"].split("/")[-1]
+                    self._private_dic["sp_commits"][commit_id] = {
+                        "commit_url": commit_url,
+                        "commit_title": commit_title,
+                        "release_version": release_version,
+                    }
+        self.update_info("LATEST_VERSION", list(self._private_dic["sp_commits"].keys()))
 
-    def after_check(self):
-        bs_obj_2 = self.get_bs(self.request_url(self.info_dic["BUILD_CHANGELOG"]))
+    def is_updated(self):
+        if not self.info_dic["LATEST_VERSION"]:
+            return False
+        saved_info = Saved.get_saved_info(self.name)
+        if not saved_info or not saved_info.LATEST_VERSION.startswith("["):
+            # Forced overwrite
+            self.write_to_database()
+            return False
+        self_ids = set(self._private_dic["sp_commits"].keys())
+        saved_ids = set(json.loads(saved_info.LATEST_VERSION))
+        extra_ids = self_ids - saved_ids
+        if extra_ids:
+            self._private_dic["extra_ids"] = extra_ids
+        return bool(extra_ids)
+
+    def get_print_text(self):
+        raise NotImplementedError
+
+    @classmethod
+    def _get_print_text(cls, dic):
+        return "*%s Update*\n\n[Commit](%s)\n\nDownload tar.gz:\n[%s](%s)" % (
+            cls.fullname, dic["BUILD_CHANGELOG"], dic["BUILD_VERSION"], dic["DOWNLOAD_LINK"],
+        )
+
+    @classmethod
+    def get_detailed_version(cls, url):
+        bs_obj_2 = cls.get_bs(cls.request_url(url))
         commit_text = bs_obj_2.find("pre").get_text().splitlines()[2]
         if commit_text[-1] == ".":
             commit_text = commit_text[:-1]
-        self.update_info("BUILD_VERSION", commit_text)
+        return commit_text
 
-    def get_print_text(self):
-        return "*%s Update*\n\n[Commit](%s)\n\nDownload tar.gz:\n[%s](%s)" % (
-            self.fullname,
-            self.info_dic["BUILD_CHANGELOG"],
-            self.info_dic.get("BUILD_VERSION", self.info_dic["DOWNLOAD_LINK"].split("/")[-1]),
-            self.info_dic["DOWNLOAD_LINK"],
-        )
+    def send_message(self):
+        for id_ in self._private_dic["extra_ids"]:
+            commit_url = self._private_dic["sp_commits"][id_]["commit_url"]
+            release_version = self._private_dic["sp_commits"][id_]["release_version"]
+            try:
+                detailed_version = self.get_detailed_version(commit_url)
+            except:
+                detailed_version = id_
+            _send_message(self._get_print_text(
+                dic={
+                    "BUILD_CHANGELOG": commit_url,
+                    "BUILD_VERSION": detailed_version,
+                    "DOWNLOAD_LINK": "%s/+archive/%s/clang-%s.tar.gz" % (
+                        self._base_url, id_, release_version,
+                    ),
+                }
+            ))
 
 class WireGuard(CheckUpdate):
 
@@ -118,6 +155,7 @@ class WireGuard(CheckUpdate):
 class AdrarProject(SfProjectCheck):
     project_name = "unofficial-by-adrar"
     developer = "AdrarHussain"
+
 class AexP(AexCheck):
     fullname = "AospExtended Pie Official"
     sub_path = "whyred/pie"
@@ -133,6 +171,7 @@ class AexQ(AexCheck):
 class AexQGapps(AexCheck):
     fullname = "AospExtended Q (with Gapps) Official"
     sub_path = "whyred/q_gapps"
+
 class AexRU1(PlingCheck):
     fullname = "AospExtended 11 (Unofficial By SakilMondal)"
     p_id = 1423583
@@ -623,6 +662,7 @@ class Octavi(SfCheck):
     fullname = "Octavi OS Official"
     project_name = "octavi-os"
     sub_path = "Whyred"
+
 class PixelExtended(SfCheck):
     fullname = "Pixel Extended Q Official"
     project_name = "pixelextended"
