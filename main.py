@@ -168,7 +168,11 @@ def get_saved_json():
     # 以json格式返回已保存的数据
     with create_dbsession() as session:
         return json.dumps(
-            [result.get_kv() for result in sorted(session.query(Saved), key=lambda x: x.FULL_NAME)],
+            [
+                result.get_kv()
+                for result in sorted(session.query(Saved), key=lambda x: x.FULL_NAME)
+                if result.ID != "GoogleClangPrebuilt"
+            ],
             ensure_ascii=False,
         )
 
@@ -176,7 +180,7 @@ def show_saved_data():
     # 以MySQL命令行风格打印已保存的数据
     with create_dbsession() as session:
         results = session.query(Saved).with_entities(Saved.ID, Saved.FULL_NAME, Saved.LATEST_VERSION)
-        kv_dic = {k: (v1, v2) for k, v1, v2 in results}
+        kv_dic = {k: (v1, v2) for k, v1, v2 in results if k != "GoogleClangPrebuilt"}
     try:
         # 可以的话, 使用rich库
         import rich
