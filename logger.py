@@ -18,6 +18,7 @@ def write_log_info(*text):
     if ENABLE_LOGGER:
         for string in text:
             LOGGER.info(string)
+
 def write_log_warning(*text):
     if ENABLE_LOGGER:
         for string in text:

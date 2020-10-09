@@ -48,9 +48,12 @@ class GoogleClangPrebuilt(CheckUpdate):
 
     _base_url = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
 
-    def do_check(self):
+    def __init__(self):
+        super().__init__()
         self._private_dic["sp_commits"] = OrderedDict()
         self._private_dic["extra_ids"] = []
+
+    def do_check(self):
         bs_obj = self.get_bs(self.request_url(self._base_url + "/+log"))
         commits = bs_obj.find("ol", {"class": "CommitLog"}).find_all("li")
         for commit in commits:
@@ -103,6 +106,7 @@ class GoogleClangPrebuilt(CheckUpdate):
         return commit_text
 
     def send_message(self):
+        assert self.__is_checked, "Please execute the 'do_check' method first."
         for id_ in self._private_dic["extra_ids"]:
             commit_url = self._private_dic["sp_commits"][id_]["commit_url"]
             release_version = self._private_dic["sp_commits"][id_]["release_version"]
@@ -737,7 +741,8 @@ class ResurrectionRemix(CheckUpdate):
     fullname = "Resurrection Remix OS Q Official"
     enable_pagecache = True
 
-    def filter_rule(self, string):
+    @staticmethod
+    def filter_rule(string):
         return "VANILLA" in string.upper()
 
     def do_check(self):
@@ -775,7 +780,8 @@ class ResurrectionRemixGapps(ResurrectionRemix):
 
     fullname = "Resurrection Remix OS Q Official (Include Gapps)"
 
-    def filter_rule(self, string):
+    @staticmethod
+    def filter_rule(string):
         return "VANILLA" not in string.upper()
 
 class Revenge(CheckUpdate):

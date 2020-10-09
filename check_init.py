@@ -11,6 +11,7 @@ from urllib.parse import unquote, urlencode
 import requests
 from bs4 import BeautifulSoup
 from requests.packages import urllib3
+from sqlalchemy.orm import exc
 
 from config import ENABLE_MULTI_THREAD, PROXIES_DICT, TIMEOUT
 from database import create_dbsession, Saved
@@ -210,18 +211,19 @@ class CheckUpdate:
     def write_to_database(self):
         """ 将CheckUpdate实例的info_dic数据写入数据库 """
         with create_dbsession() as session:
-            if (self.name,) in session.query(Saved).with_entities(Saved.ID):
+            try:
                 saved_data = session.query(Saved).filter(Saved.ID == self.name).one()
-                saved_data.FULL_NAME = self.fullname
-                for key, value in self.__info_dic.items():
-                    setattr(saved_data, key, value)
-            else:
+            except exc.NoResultFound:
                 new_data = Saved(
                     ID=self.name,
                     FULL_NAME=self.fullname,
                     **self.__info_dic
                 )
                 session.add(new_data)
+            else:
+                saved_data.FULL_NAME = self.fullname
+                for key, value in self.__info_dic.items():
+                    setattr(saved_data, key, value)
             session.commit()
 
     def is_updated(self):
@@ -278,18 +280,10 @@ class SfCheck(CheckUpdate):
     sub_path = ""
 
     _MONTH_TO_NUMBER = {
-        "Jan": "01",
-        "Feb": "02",
-        "Mar": "03",
-        "Apr": "04",
-        "May": "05",
-        "Jun": "06",
-        "Jul": "07",
-        "Aug": "08",
-        "Sep": "09",
-        "Oct": "10",
-        "Nov": "11",
-        "Dec": "12",
+        "Jan": "01", "Feb": "02", "Mar": "03",
+        "Apr": "04", "May": "05", "Jun": "06",
+        "Jul": "07", "Aug": "08", "Sep": "09",
+        "Oct": "10", "Nov": "11", "Dec": "12",
     }
 
     def __init__(self):
@@ -489,7 +483,10 @@ class PeCheck(CheckUpdate):
             return
         self.update_info("LATEST_VERSION", build["data-build-version"])
         self.update_info("BUILD_DATE", build.find("span", {"class": "date"}).get_text().strip())
-        self.update_info("DOWNLOAD_LINK", self._url + build.find("a", {"class": "download__btn"})["href"])
+        self.update_info(
+            "DOWNLOAD_LINK",
+            self._url + build.find("a", {"class": "download__btn"})["href"]
+        )
         self.update_info(
             "FILE_SIZE",
             re.search(r"\((.*?)\)", build.find("a", {"class": "download__btn"}).get_text()).group(1)
@@ -555,6 +552,12 @@ class PlingCheck(CheckUpdate):
                         })
                     )
                 )
-                self.update_info("FILE_SIZE", "%0.2f MB" % (int(latest_build["size"]) / 1048576,))
+                self.update_info(
+                    "FILE_SIZE",
+                    "%0.2f MB" % (int(latest_build["size"]) / 1048576,)
+                )
             else:
-                self.update_info("DOWNLOAD_LINK", unquote(latest_build["tags"]).replace("link##", ""))
+                self.update_info(
+                    "DOWNLOAD_LINK",
+                    unquote(latest_build["tags"]).replace("link##", "")
+                )
