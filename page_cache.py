@@ -6,7 +6,7 @@ import threading
 class PageCache:
 
     """ 一个保存了页面源码的类
-    键为(<url>, <请求方法>, <url参数>), 值为页面源码
+    键为(<url>, <url参数>), 值为页面源码
     将PageCache对象嵌入到CheckUpdate.request_url方法中
     可以在请求之前检查是否已经请求过 (将检查三个要素: url, 请求方法, url参数)
     如果否, 则继续请求, 并在请求成功之后将请求方法, url, url参数, 页面源码保存至本对象
@@ -30,15 +30,13 @@ class PageCache:
             return frozenset(params.items())
         raise TypeError("'params' must be a dict or None")
 
-    def read(self, request_method, url, params):
+    def read(self, url, params):
         params = self.__params_change(params)
-        return self.__page_cache.get((request_method, url, params))
+        return self.__page_cache.get((url, params))
 
-    def save(self, request_method, url, params, page_source):
-        if request_method not in {"get", "post"}:
-            raise TypeError("'request_method' must be 'get' or 'post'")
+    def save(self, url, params, page_source):
         params = self.__params_change(params)
-        self.__page_cache[(request_method, url, params)] = page_source
+        self.__page_cache[(url, params)] = page_source
 
     def clear(self):
         with self.threading_lock:

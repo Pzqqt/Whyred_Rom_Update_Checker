@@ -129,8 +129,8 @@ class CheckUpdate:
             else:
                 raise Exception("Unknown request method: %s" % method_)
             params = kwargs_.get("params")
-            if cls.enable_pagecache:
-                saved_page_cache = PAGE_CACHE.read(method_, url_, params)
+            if cls.enable_pagecache and method_ == "get":
+                saved_page_cache = PAGE_CACHE.read(url_, params)
                 if saved_page_cache is not None:
                     return saved_page_cache
             timeout = kwargs_.pop("timeout", TIMEOUT)
@@ -143,7 +143,7 @@ class CheckUpdate:
             req.encoding = encoding_
             req_text = req.text
             if cls.enable_pagecache:
-                PAGE_CACHE.save(method_, url_, params, req_text)
+                PAGE_CACHE.save(url_, params, req_text)
             return req_text
 
         # 在多线程模式下, 同时只允许一个enable_pagecache属性为True的CheckUpdate对象进行请求
