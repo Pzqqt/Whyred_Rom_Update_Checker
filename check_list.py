@@ -309,22 +309,20 @@ class AospaU1(PlingCheck):
 class ArrowQ(CheckUpdate):
 
     fullname = "Arrow OS Q Official"
-    enable_pagecache = True
 
-    post_url_1 = "https://arrowos.net/device.php"
-    post_url_2 = "https://get.mirror1.arrowos.net/download.php"
+    device_version = "arrow-10.0"
     build_type_flag = "vanilla"
 
     def do_check(self):
         url_source = self.request_url(
-            self.post_url_1,
+            "https://arrowos.net/device.php",
             method="post",
             data={
                 "device": "whyred",
                 "deviceVariant": "official",
-                "deviceVersion": "arrow-10.0",
-                "supportedVersions": ["arrow-10.0"],
-                "supportedVariants": ["official"],
+                "deviceVersion": self.device_version,
+                "supportedVersions": [self.device_version, ],
+                "supportedVariants": ["official", ],
             }
         )
         bs_obj = self.get_bs(url_source)
@@ -345,22 +343,38 @@ class ArrowQ(CheckUpdate):
             "# Device side changes\n%s\n# Source changelog\nhttps://arrowos.net/changelog.php"
             % bs_obj.find(id="source-changelog").parent.find("p").get_text().strip()
         )
+        self.update_info("DOWNLOAD_LINK", "https://arrowos.net/download/whyred")
 
     def after_check(self):
         real_download_link = self.request_url(
-            self.post_url_2,
+            "https://get.mirror1.arrowos.net/download.php",
             method="post",
             data={
                 "file_sha256": self.info_dic["FILE_SHA256"],
-                "version": "arrow-10.0",
+                "version": self.device_version,
                 "variant": "official",
                 "filename": self.info_dic["LATEST_VERSION"],
             },
         )
-        self.update_info("DOWNLOAD_LINK", real_download_link)
+        real_download_link_2 = real_download_link.replace("mirror1", "mirror2")
+        self.update_info(
+            "DOWNLOAD_LINK",
+            "`%s`\n[Mirror 1](%s) | [Mirror 2](%s)" % (
+                self.info_dic["LATEST_VERSION"], real_download_link, real_download_link_2,
+            )
+        )
 
 class ArrowQGapps(ArrowQ):
     fullname = "Arrow OS Q Official (Include Gapps)"
+    build_type_flag = "gapps"
+
+class ArrowR(ArrowQ):
+    fullname = "Arrow OS 11 Official"
+    device_version = "arrow-11.0"
+
+class ArrowRGapps(ArrowQ):
+    fullname = "Arrow OS 11 Official (Include Gapps)"
+    device_version = "arrow-11.0"
     build_type_flag = "gapps"
 
 class Atom(SfCheck):
@@ -909,6 +923,8 @@ CHECK_LIST = (
     AospaU1,
     ArrowQ,
     ArrowQGapps,
+    ArrowR,
+    ArrowRGapps,
     Atom,
     BabaProject,
     BlissQ,
