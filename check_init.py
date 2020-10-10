@@ -254,7 +254,7 @@ class CheckUpdate:
                     assert not value.startswith("{")
                     if value.startswith("["):
                         value = "\n".join(["# %s\n[%s](%s)" % (k, v, v) for k, v in json.loads(value)])
-                    else:
+                    elif value.startswith("http"):
                         value = "[%s](%s)" % (self.info_dic.get("LATEST_VERSION", ""), value)
                 if value.startswith("http"):
                     value = "[%s](%s)" % (value, value)
