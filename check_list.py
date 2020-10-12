@@ -860,14 +860,10 @@ class StagQ(CheckUpdate):
         self.update_info("FILE_SIZE", "%0.2f MB" % (int(build_info["size"]) / 1048576,))
         self.update_info(
             "DOWNLOAD_LINK",
-            [
-                ("Official", base_url + build_info["name"]),
-                (
-                    "SourceForge",
-                    "https://sourceforge.net/projects/stagos-10/files/whyred/%s"
-                    % build_info["name"]
-                ),
-            ]
+            "# Official\n[{0}]({0})\n# SourceForge\n[{1}]({1})".format(
+                base_url + build_info["name"],
+                "https://sourceforge.net/projects/stagos-10/files/whyred/%s" % build_info["name"],
+            )
         )
 
 class Superior(SfCheck):

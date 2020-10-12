@@ -248,16 +248,13 @@ class CheckUpdate:
             if key != "LATEST_VERSION" and value is not None:
                 if key in "FILE_MD5 FILE_SHA1 FILE_SHA256 BUILD_DATE BUILD_TYPE BUILD_VERSION":
                     value = "`%s`" % value
-                if key == "BUILD_CHANGELOG" and not value.startswith("http"):
-                    value = "`%s`" % value
-                if key == "DOWNLOAD_LINK":
-                    assert not value.startswith("{")
-                    if value.startswith("["):
-                        value = "\n".join(["# %s\n[%s](%s)" % (k, v, v) for k, v in json.loads(value)])
-                    elif value.startswith("http"):
-                        value = "[%s](%s)" % (self.info_dic.get("LATEST_VERSION", ""), value)
-                if value.startswith("http"):
-                    value = "[%s](%s)" % (value, value)
+                if key == "BUILD_CHANGELOG":
+                    if value.startswith("http"):
+                        value = "[%s](%s)" % (value, value)
+                    else:
+                        value = "`%s`" % value
+                if key == "DOWNLOAD_LINK" and value.startswith("http"):
+                    value = "[%s](%s)" % (self.info_dic.get("LATEST_VERSION", ""), value)
                 print_str_list.append("\n%s:\n%s" % (_KEY_TO_PRINT[key], value))
         return "\n".join(print_str_list)
 
