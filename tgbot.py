@@ -3,8 +3,8 @@
 
 import traceback
 
-import requests
 import telebot
+from telebot.apihelper import requests
 
 from config import TG_TOKEN, TG_SENDTO, TIMEOUT, PROXIES_DICT
 from logger import write_log_warning

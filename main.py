@@ -78,7 +78,6 @@ def check_one(cls):
         print(traceback_string)
         write_log_warning(*traceback_string.splitlines())
         print_and_log("%s check failed!" % cls_obj.fullname, level="warning")
-        return False
     else:
         if cls_obj.is_updated() or FORCE_UPDATE:
             print_and_log(
