@@ -563,10 +563,6 @@ class HavocU1(SfCheck):
     project_name = "ikarosdev"
     sub_path = "HavocOS/whyred-gapps/"
 
-class HavocU2(SfCheck):
-    fullname = "Havoc OS FAKE (Unofficial By fakeyatogod)"
-    project_name = "fakehavoc"
-
 class HavocU3(SfCheck):
     fullname = "Havoc OS (Unofficial By Ikaros)"
     project_name = "ikarosdev"
@@ -702,6 +698,22 @@ class PeU1(PlingCheck):
     fullname = "Pixel Experience Q (Unofficial By Srfarias)"
     p_id = 1369478
     collection_id = 1584939374
+
+class PeU2(PlingCheck):
+
+    fullname = "Pixel Experience Q (Unofficial By SakilMondal)"
+    p_id = 1406086
+    collection_id = 1595519142
+
+    def filter_rule(self, string):
+        return "Plus" not in string
+
+class PePeU2(PeU2):
+
+    fullname = "Pixel Experience Q (Plus edition)(Unofficial By SakilMondal)"
+
+    def filter_rule(self, string):
+        return "Plus" in string
 
 class PixelPlusUI(SfCheck):
     fullname = "PixelPlusUI Official"
@@ -953,7 +965,6 @@ CHECK_LIST = (
     Havoc,
     HavocGapps,
     HavocU1,
-    HavocU2,
     HavocU3,
     Ion,
     Komodo,
@@ -973,6 +984,8 @@ CHECK_LIST = (
     PeQ,
     PeQPe,
     PeU1,
+    PeU2,
+    PePeU2,
     PixelPlusUI,
     PixysQ,
     PixysQGapps,
