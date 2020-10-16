@@ -268,11 +268,6 @@ class AosipDfGapps(H5aiCheck):
             )
         )
 
-class AosipDf3(PlingCheck):
-    fullname = "AOSiP DerpFest (By srfarias)"
-    p_id = 1338683
-    collection_id = 1574482242
-
 class Aospa(CheckUpdate):
 
     fullname = "Paranoid Android Official"
@@ -399,11 +394,6 @@ class BlissQ(SfCheck):
                 .replace(self.sub_path, self.sub_path + "Changelog-").replace(".zip", ".txt")
         )
 
-class BlissU1(PlingCheck):
-    fullname = "Bliss Rom (Unofficial By srfarias)"
-    p_id = 1354155
-    collection_id = 1579789983
-
 class Bootleggers(SfCheck):
     fullname = "Bootleggers Rom Official"
     project_name = "bootleggersrom"
@@ -502,11 +492,6 @@ class DarkstarProject(SfProjectCheck):
     developer = "Darkstar"
     sub_path = "whyred/"
 
-class DuRex(SfCheck):
-    fullname = "DU-REX Official"
-    project_name = "rafiester"
-    sub_path = "whyred/DuRex/"
-
 class EvolutionX(SfCheck):
 
     fullname = "EvolutionX Official"
@@ -578,11 +563,6 @@ class Komodo(SfCheck):
     project_name = "komodos-rom"
     sub_path = "whyred/"
 
-class KubilProject(SfProjectCheck):
-    project_name = "kubilproject"
-    sub_path = "Whyred/"
-    developer = "kubil"
-
 class Legion(SfCheck):
 
     fullname = "Legion OS Official"
@@ -630,32 +610,23 @@ class Lineage(CheckUpdate):
         if file_sha256 and file_sha256 != "Hash":
             self.update_info("FILE_SHA256", file_sha256)
 
-class LineageU1(PlingCheck):
-    fullname = "Lineage OS (Unofficial By srfarias)"
-    p_id = 1336266
-    collection_id = 1573678199
+class LineageU3(CheckUpdate):
 
-class LineageU2(SfCheck):
-    fullname = "Lineage OS (Unofficial By SubhrajyotiSen)"
-    project_name = "whyred-los"
-    sub_path = "rom/"
+    fullname = "Lineage OS 18.0 (Unofficial By SakilMondal)"
 
-class MiuiEu(SfCheck):
-
-    fullname = "Xiaomi.eu Multilang Developer ROM"
-    project_name = "xiaomi-eu-multilang-miui-roms"
-    sub_path = "xiaomi.eu/MIUI-WEEKLY-RELEASES/"
-
-    def filter_rule(self, string):
-        return "HMNote5Pro" in string
-
-class MiRoom(SfCheck):
-
-    fullname = "MiRoom ROM"
-    project_name = "miroom"
-
-    def filter_rule(self, string):
-        return "RedmiNote5" in string
+    def do_check(self):
+        base_url = "https://downloads.sakilmondal.me/Roms/LineageOS/"
+        json_dic = json.loads(self.request_url(
+            base_url,
+            "post",
+            params={"rootId": "14c0B067v_Dey0HLrjBDsppKCOv9U51oT"}
+        ))
+        if json_dic["files"]:
+            latest_build = json_dic["files"][-1]
+            self.update_info("LATEST_VERSION", latest_build["name"])
+            self.update_info("BUILD_DATE", latest_build["modifiedTime"])
+            self.update_info("FILE_SIZE", "%0.2f MB" % (int(latest_build["size"]) / 1048576,))
+            self.update_info("DOWNLOAD_LINK", base_url+latest_build["name"])
 
 class Neon(SfCheck):
     fullname = "Neon OS Official"
@@ -693,11 +664,6 @@ class PeQPe(PeQ):
     fullname = "Pixel Experience Q (Plus edition) Official"
     index = 1
     tag_name = "10 (Plus edition)"
-
-class PeU1(PlingCheck):
-    fullname = "Pixel Experience Q (Unofficial By Srfarias)"
-    p_id = 1369478
-    collection_id = 1584939374
 
 class PeU2(PlingCheck):
 
@@ -832,14 +798,6 @@ class Revenge(CheckUpdate):
             self.update_info("BUILD_DATE", build.find(attrs={"class": "date"}).get_text())
             break
 
-class Revolution(SfCheck):
-
-    fullname = "Revolution OS"
-    project_name = "revos"
-
-    def filter_rule(self, string):
-        return "RedmiNote5" in string
-
 class Sakura(SfCheck):
     fullname = "Project Sakura ROM Official"
     project_name = "projectsakura"
@@ -906,10 +864,6 @@ class Xtended(SfCheck):
     project_name = "xtended"
     sub_path = "whyred/"
 
-class XyzuanProject(SfProjectCheck):
-    project_name = "xyzuan"
-    developer = "xyzuan"
-
 CHECK_LIST = (
     Linux44Y,
     GoogleClangPrebuilt,
@@ -926,7 +880,6 @@ CHECK_LIST = (
     # Aosip,
     AosipDf,
     AosipDfGapps,
-    AosipDf3,
     Aospa,
     AospaU1,
     ArrowQ,
@@ -936,7 +889,6 @@ CHECK_LIST = (
     Atom,
     BabaProject,
     BlissQ,
-    BlissU1,
     Bootleggers,
     CandyQ,
     Carbon,
@@ -952,7 +904,6 @@ CHECK_LIST = (
     CrDroidQ,
     Cygnus,
     DarkstarProject,
-    DuRex,
     EvolutionX,
     Extended,
     ExtendedU1,
@@ -964,14 +915,10 @@ CHECK_LIST = (
     HavocU3,
     Ion,
     Komodo,
-    KubilProject,
     Legion,
     LegionGapps,
     Lineage,
-    LineageU1,
-    LineageU2,
-    MiuiEu,
-    MiRoom,
+    LineageU3,
     Neon,
     Nitrogen,
     NitrogenU1,
@@ -979,7 +926,6 @@ CHECK_LIST = (
     PixelExtended,
     PeQ,
     PeQPe,
-    PeU1,
     PeU2,
     PePeU2,
     PixelPlusUI,
@@ -992,7 +938,6 @@ CHECK_LIST = (
     ResurrectionRemix,
     ResurrectionRemixGapps,
     Revenge,
-    Revolution,
     Sakura,
     StagQ,
     Superior,
@@ -1002,5 +947,4 @@ CHECK_LIST = (
     TitaniumGapps,
     WhymemeProject,
     Xtended,
-    XyzuanProject,
 )
