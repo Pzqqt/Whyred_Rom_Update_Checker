@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+import os
 from collections import OrderedDict
 from contextlib import contextmanager
 
@@ -11,7 +12,9 @@ from sqlalchemy.orm import sessionmaker, exc
 from config import SQLITE_FILE
 
 _Base = declarative_base()
-_Engine = create_engine("sqlite:///%s" % SQLITE_FILE)
+_Engine = create_engine(
+    "sqlite:///%s" % os.path.join(os.path.dirname(os.path.abspath(__file__)), SQLITE_FILE)
+)
 _DBSession = sessionmaker(bind=_Engine)
 
 @contextmanager
