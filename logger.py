@@ -30,7 +30,8 @@ _PREFIX_FUNC_DIC = {
 }
 
 def print_and_log(string, level="info", custom_prefix=""):
-    prefix = custom_prefix if custom_prefix else _PREFIX_FUNC_DIC.get(level, ("-",))[0]
-    log_func = _PREFIX_FUNC_DIC.get(level, (None, write_log_info))[1]
+    prefix, log_func = _PREFIX_FUNC_DIC.get(level, ("-", write_log_info))
+    if custom_prefix:
+        prefix = custom_prefix
     print(prefix, string)
     log_func(string)
