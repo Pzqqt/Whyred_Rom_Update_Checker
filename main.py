@@ -221,6 +221,7 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--auto", help="Automatically loop check all items", action="store_true")
     parser.add_argument("-c", "--check", help="Check one item")
     parser.add_argument("-s", "--show", help="Show saved data", action="store_true")
+    parser.add_argument("-j", "--json", help="Show saved data as json", action="store_true")
 
     args = parser.parse_args()
 
@@ -234,5 +235,7 @@ if __name__ == "__main__":
         check_one(args.check)
     elif args.show:
         show_saved_data()
+    elif args.json:
+        print(get_saved_json())
     else:
         parser.print_usage()
