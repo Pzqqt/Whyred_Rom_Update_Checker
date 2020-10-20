@@ -643,6 +643,11 @@ class NitrogenU1(SfCheck):
     project_name = "nangis"
     sub_path = "NitrogenOS/Whyred/10/"
 
+class Nusantara(PlingCheck):
+    fullname = "Nusantara Project Official"
+    p_id = 1422405
+    collection_id = 1602832891
+
 class Octavi(SfCheck):
     fullname = "Octavi OS Official"
     project_name = "octavi-os"
@@ -803,6 +808,11 @@ class Sakura(SfCheck):
     project_name = "projectsakura"
     sub_path = "whyred/"
 
+class ShapeShift(SfCheck):
+    fullname = "ShapeShift OS Official"
+    project_name = "shapeshiftos"
+    sub_path = "whyred/"
+
 class StagQ(CheckUpdate):
 
     fullname = "Stag OS Q Official"
@@ -922,6 +932,7 @@ CHECK_LIST = (
     Neon,
     Nitrogen,
     NitrogenU1,
+    Nusantara,
     Octavi,
     PixelExtended,
     PeQ,
@@ -939,6 +950,7 @@ CHECK_LIST = (
     ResurrectionRemixGapps,
     Revenge,
     Sakura,
+    ShapeShift,
     StagQ,
     Superior,
     Syberia,
