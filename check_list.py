@@ -305,6 +305,7 @@ class ArrowQ(CheckUpdate):
 
     fullname = "Arrow OS Q Official"
 
+    devive_name = "whyred"
     device_version = "arrow-10.0"
     build_type_flag = "vanilla"
 
@@ -313,7 +314,7 @@ class ArrowQ(CheckUpdate):
             "https://arrowos.net/device.php",
             method="post",
             data={
-                "device": "whyred",
+                "device": self.devive_name,
                 "deviceVariant": "official",
                 "deviceVersion": self.device_version,
                 "supportedVersions": [self.device_version, ],
@@ -338,13 +339,14 @@ class ArrowQ(CheckUpdate):
             "# Device side changes\n%s\n# Source changelog\nhttps://arrowos.net/changelog.php"
             % bs_obj.find(id="source-changelog").parent.find("p").get_text().strip()
         )
-        self.update_info("DOWNLOAD_LINK", "https://arrowos.net/download/whyred")
+        self.update_info("DOWNLOAD_LINK", "https://arrowos.net/download/%s" % self.devive_name)
 
     def after_check(self):
         real_download_link = self.request_url(
             "https://get.mirror1.arrowos.net/download.php",
             method="post",
             data={
+                "device": self.devive_name,
                 "file_sha256": self.info_dic["FILE_SHA256"],
                 "version": self.device_version,
                 "variant": "official",
@@ -621,7 +623,7 @@ class LineageU3(CheckUpdate):
             "post",
             params={"rootId": "14c0B067v_Dey0HLrjBDsppKCOv9U51oT"}
         ))
-        if json_dic["files"]:
+        if json_dic and json_dic["files"]:
             latest_build = json_dic["files"][-1]
             self.update_info("LATEST_VERSION", latest_build["name"])
             self.update_info("BUILD_DATE", latest_build["modifiedTime"])
