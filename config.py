@@ -18,7 +18,10 @@ MAX_THREADS_NUM = 4
 # 是否启用日志
 ENABLE_LOGGER = True
 
-# 循环检查的间隔时间(默认: 180分钟)
+# LESS_LOG 为 True 时, 日志文件将不再写入无更新的记录
+LESS_LOG = False
+
+# 循环检查的间隔时间(单位: 秒)(默认: 180分钟)
 LOOP_CHECK_INTERVAL = 180 * 60
 
 # 代理服务器(为空时则不使用代理)

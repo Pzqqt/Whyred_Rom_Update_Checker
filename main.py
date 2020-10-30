@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 from requests import exceptions
 
 from config import (
-    ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM
+    ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM, LESS_LOG
 )
 from check_init import PAGE_CACHE
 from check_list import CHECK_LIST
@@ -95,7 +95,9 @@ def check_one(cls):
             if ENABLE_SENDMESSAGE:
                 cls_obj.send_message()
         else:
-            print_and_log("%s no update" % cls_obj.fullname)
+            print("- %s no update" % cls_obj.fullname)
+            if not LESS_LOG:
+                write_log_info("%s no update" % cls_obj.fullname)
         return True
 
 def single_thread_check():
