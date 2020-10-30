@@ -296,10 +296,9 @@ class Aospa(CheckUpdate):
             return True
         return int(self.info_dic["BUILD_DATE"]) > int(saved_info.BUILD_DATE)
 
-class AospaU1(PlingCheck):
+class AospaU1(SfCheck):
     fullname = "Aospa Quartz (Unofficial By orges)"
-    p_id = 1349975
-    collection_id = 1578163970
+    project_name = "aospa-whyred"
 
 class ArrowQ(CheckUpdate):
 
@@ -824,6 +823,8 @@ class StagQ(CheckUpdate):
         default_root_id = "1eTpnilGg2GMH135GYRTWdLnKEBxsKez1"
         json_text = self.request_url(base_url, method="post", params={"rootId": default_root_id})
         json_dic = json.loads(json_text)
+        if not (json_dic and json_dic["files"]):
+            return
         build_info = json_dic["files"][-1]
         self.update_info("BUILD_DATE", build_info["modifiedTime"])
         self.update_info("LATEST_VERSION", build_info["name"])
