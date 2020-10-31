@@ -6,7 +6,7 @@ import time
 from collections import OrderedDict
 
 from check_init import (
-    UAS, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck
+    CHROME_UA, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck
 )
 from database import Saved
 from tgbot import send_message as _send_message
@@ -54,7 +54,7 @@ class GoogleClangPrebuilt(CheckUpdate):
         self._private_dic["extra_ids"] = []
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url(self._base_url + "/+log"))
+        bs_obj = self.get_bs(self.request_url(self._base_url+"/+log"))
         commits = bs_obj.find("ol", {"class": "CommitLog"}).find_all("li")
         for commit in commits:
             a_tag = commit.find_all("a")[1]
@@ -191,7 +191,7 @@ class Aicp(CheckUpdate):
             headers={
                 "Origin": "https://dwnld.aicp-rom.com",
                 "Referer": "https://dwnld.aicp-rom.com/",
-                "User-Agent": UAS[0]
+                "User-Agent": CHROME_UA
             }
         )
         json_dic = json.loads(req_text).get("updates")

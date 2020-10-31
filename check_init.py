@@ -2,7 +2,6 @@
 # encoding: utf-8
 
 import json
-import random
 import re
 import time
 from collections import OrderedDict
@@ -21,14 +20,10 @@ from tgbot import send_message as _send_message
 # 禁用安全请求警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-UAS = [
-    ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-     "(KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"),
-    ("Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; en-us) AppleWebKit/534.50 "
-     "(KHTML, like Gecko) Version/5.1 Safari/534.50"),
-    "Opera/9.80 (Windows NT 6.1; U; en) Presto/2.8.131 Version/11.11",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1"
-]
+CHROME_UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36"
+)
 
 _KEY_TO_PRINT = {
     "BUILD_TYPE": "Build type",
@@ -113,7 +108,7 @@ class CheckUpdate:
     def request_url(cls, url, method="get", encoding="utf-8", **kwargs):
 
         """ 对requests进行了简单的包装
-        timeout, headers, proxies这三个参数有默认值, 也可以根据需要自定义这些参数
+        timeout, proxies这两个参数有默认值, 也可以根据需要自定义这些参数
         :param url: 要请求的url
         :param method: 请求方法, 可选: "get"(默认)或"post"
         :param encoding: 文本编码, 默认为utf-8
@@ -134,10 +129,9 @@ class CheckUpdate:
                 if saved_page_cache is not None:
                     return saved_page_cache
             timeout = kwargs_.pop("timeout", TIMEOUT)
-            headers = kwargs_.pop("headers", {"user-agent": random.choice(UAS)})
             proxies = kwargs_.pop("proxies", PROXIES_DICT)
             req = requests_func(
-                url_, timeout=timeout, headers=headers, proxies=proxies, **kwargs_
+                url_, timeout=timeout, proxies=proxies, **kwargs_
             )
             req.raise_for_status()
             req.encoding = encoding_
@@ -436,7 +430,7 @@ class AexCheck(CheckUpdate):
             headers={
                 "origin": "https://downloads.aospextended.com",
                 "referer": "https://downloads.aospextended.com/" + self.sub_path.split("/")[0],
-                "user-agent": UAS[0]
+                "user-agent": CHROME_UA
             },
             timeout=30,
         )
@@ -467,7 +461,7 @@ class PeCheck(CheckUpdate):
             fake_url,
             headers={
                 "referer": "%s/%s" % (self._url, self.model),
-                "user-agent": UAS[0],
+                "user-agent": CHROME_UA,
             }
         )
 
