@@ -56,13 +56,15 @@ def _get_time_str(time_num=None, offset=0):
         time_num = time.time()
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_num+offset))
 
-def check_one(cls):
+def check_one(cls, disable_pagecache=False):
     if isinstance(cls, str):
         cls_str = cls
         cls = {cls_.__name__: cls_ for cls_ in CHECK_LIST}.get(cls_str)
         if not cls:
             raise Exception("Can not found '%s' from CHECK_LIST!" % cls_str)
     cls_obj = cls()
+    if disable_pagecache:
+        cls_obj.enable_pagecache = False
     try:
         cls_obj.do_check()
     except exceptions.ReadTimeout:
@@ -234,7 +236,7 @@ if __name__ == "__main__":
     if args.auto:
         loop_check()
     elif args.check:
-        check_one(args.check)
+        check_one(args.check, disable_pagecache=True)
     elif args.show:
         show_saved_data()
     elif args.json:
