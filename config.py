@@ -21,7 +21,7 @@ ENABLE_LOGGER = True
 # 循环检查的间隔时间(默认: 180分钟)
 LOOP_CHECK_INTERVAL = 180 * 60
 
-# 代理服务器
+# 代理服务器(为空时则不使用代理)
 PROXIES = "127.0.0.1:1080"
 
 # 请求超时
@@ -39,7 +39,10 @@ TG_TOKEN = os.environ.get("TG_TOKEN", "")
 # 发送消息到...
 TG_SENDTO = os.environ.get("TG_SENDTO", "")
 
-if IS_SOCKS:
-    PROXIES_DICT = {"http": "socks5h://%s" % PROXIES, "https": "socks5h://%s" % PROXIES}
+if not PROXIES:
+    PROXIES_DICT = {}
 else:
-    PROXIES_DICT = {"http": PROXIES, "https": PROXIES}
+    if IS_SOCKS:
+        PROXIES_DICT = {"http": "socks5h://%s" % PROXIES, "https": "socks5h://%s" % PROXIES}
+    else:
+        PROXIES_DICT = {"http": PROXIES, "https": PROXIES}
