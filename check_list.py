@@ -340,26 +340,6 @@ class ArrowQ(CheckUpdate):
         )
         self.update_info("DOWNLOAD_LINK", "https://arrowos.net/download/%s" % self.device_name)
 
-    def after_check(self):
-        real_download_link = self.request_url(
-            "https://get.mirror1.arrowos.net/download.php",
-            method="post",
-            data={
-                "device": self.device_name,
-                "file_sha256": self.info_dic["FILE_SHA256"],
-                "version": self.device_version,
-                "variant": "official",
-                "filename": self.info_dic["LATEST_VERSION"],
-            },
-        )
-        real_download_link_2 = real_download_link.replace("mirror1", "mirror2")
-        self.update_info(
-            "DOWNLOAD_LINK",
-            "`%s`\n[Mirror 1](%s) | [Mirror 2](%s)" % (
-                self.info_dic["LATEST_VERSION"], real_download_link, real_download_link_2,
-            )
-        )
-
 class ArrowQGapps(ArrowQ):
     fullname = "Arrow OS Q Official (Include Gapps)"
     build_type_flag = "gapps"
