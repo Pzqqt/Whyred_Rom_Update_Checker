@@ -227,6 +227,8 @@ class Aosip(H5aiCheck):
     base_url = "https://get.aosip.dev"
     sub_url = "/whyred/"
 
+    _skip = True
+
     def do_check(self):
         super().do_check()
         self.update_info(
@@ -246,6 +248,8 @@ class AosipDf(H5aiCheck):
     base_url = "https://get.derpfest.org"
     sub_url = "/whyred-vanilla/builds/"
 
+    _skip = True
+
     def after_check(self):
         self.update_info(
             "FILE_MD5",
@@ -259,6 +263,8 @@ class AosipDfGapps(H5aiCheck):
     fullname = "AOSiP DerpFest Official (Include Gapps)"
     base_url = "https://get.derpfest.org"
     sub_url = "/whyred/builds/"
+
+    _skip = True
 
     def after_check(self):
         self.update_info(
@@ -678,6 +684,8 @@ class PixysQ(SfCheck):
     sub_path = "ten/whyred/"
     enable_pagecache = True
 
+    _skip = True
+
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
 
@@ -870,9 +878,9 @@ CHECK_LIST = (
     Aicp,
     Ancient,
     AncientGapps,
-    # Aosip,
-    # AosipDf,
-    # AosipDfGapps,
+    Aosip,
+    AosipDf,
+    AosipDfGapps,
     Aospa,
     AospaU1,
     ArrowQ,
