@@ -102,12 +102,12 @@ def check_one(cls, disable_pagecache=False):
                 write_log_info("%s no update" % cls_obj.fullname)
         return True
 
-def single_thread_check():
+def single_thread_check(check_list):
     # 单线程模式下连续检查失败5项则判定为网络异常, 并提前终止
     req_failed_flag = 0
     check_failed_list = []
     is_network_error = False
-    for cls in CHECK_LIST:
+    for cls in check_list:
         if not check_one(cls):
             req_failed_flag += 1
             check_failed_list.append(cls)
@@ -119,7 +119,7 @@ def single_thread_check():
         _sleep(2)
     return check_failed_list, is_network_error
 
-def multi_thread_check():
+def multi_thread_check(check_list):
     # 多线程模式下累计检查失败10项则判定为网络异常, 并在之后往线程池提交的任务中不再进行检查操作而是直接返回
     check_failed_list = []
     is_network_error = False
@@ -138,7 +138,7 @@ def multi_thread_check():
                     is_network_error = True
 
     with ThreadPoolExecutor(MAX_THREADS_NUM) as executor:
-        executor.map(_check_one, CHECK_LIST)
+        executor.map(_check_one, check_list)
     return check_failed_list, is_network_error
 
 def loop_check():
@@ -146,6 +146,7 @@ def loop_check():
     drop_ids = database_cleanup()
     write_log_info("Abandoned items: {%s}" % ", ".join(drop_ids))
     loop_check_func = multi_thread_check if ENABLE_MULTI_THREAD else single_thread_check
+    check_list = [cls for cls in CHECK_LIST if not cls._skip]
     while True:
         start_time = _get_time_str()
         print(" - " + start_time)
@@ -154,7 +155,7 @@ def loop_check():
         write_log_info("Start checking at %s" % start_time)
         # loop_check_func必须返回两个值,
         # 检查失败的项目的列表, 以及是否为网络错误或代理错误的Bool值
-        check_failed_list, is_network_error = loop_check_func()
+        check_failed_list, is_network_error = loop_check_func(check_list)
         if is_network_error:
             print_and_log("Network or proxy error! Sleep...", level="warning")
         else:

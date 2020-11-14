@@ -43,6 +43,7 @@ class CheckUpdate:
 
     fullname = None
     enable_pagecache = False
+    _skip = False
 
     def __init__(self):
         self._raise_if_missing_property("fullname")
