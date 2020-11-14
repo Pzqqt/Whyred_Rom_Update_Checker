@@ -409,11 +409,13 @@ class H5aiCheck(CheckUpdate):
         trs = bs_obj.find("div", {"id": "fallback"}).find("table").find_all("tr")[1:]
         trs = [tr for tr in trs if tr.find_all("td")[2].get_text().strip()]
         trs.sort(key=lambda x: x.find_all("td")[2].get_text(), reverse=True)
-        build = list(filter(lambda x: x.find("a").get_text().endswith(".zip"), trs))[0]
-        self.update_info("LATEST_VERSION", build.find("a").get_text())
-        self.update_info("BUILD_DATE", build.find_all("td")[2].get_text())
-        self.update_info("DOWNLOAD_LINK", self.base_url + build.find_all("td")[1].find("a")["href"])
-        self.update_info("FILE_SIZE", build.find_all("td")[3].get_text())
+        builds = list(filter(lambda x: x.find("a").get_text().endswith(".zip"), trs))
+        if builds:
+            build = builds[0]
+            self.update_info("LATEST_VERSION", build.find("a").get_text())
+            self.update_info("BUILD_DATE", build.find_all("td")[2].get_text())
+            self.update_info("DOWNLOAD_LINK", self.base_url+build.find_all("td")[1].find("a")["href"])
+            self.update_info("FILE_SIZE", build.find_all("td")[3].get_text())
 
 class AexCheck(CheckUpdate):
 
