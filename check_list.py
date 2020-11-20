@@ -364,6 +364,27 @@ class Atom(SfCheck):
     project_name = "atom-os-project"
     sub_path = "whyred/"
 
+class Awaken(PlingCheck):
+
+    fullname = "Project Awaken Official (By SakilMondal)"
+    p_id = 1446633
+    collection_id = 1605615713
+
+    def do_check(self):
+        super().do_check()
+        self.update_info("LATEST_VERSION", self._private_dic["latest_build"]["version"])
+
+    def filter_rule(self, build_dic):
+        return PlingCheck.filter_rule(build_dic) and "GAPPS" not in build_dic["version"].upper()
+
+class AwakenGapps(Awaken):
+
+    fullname = "Project Awaken Official (Include Gapps)(By SakilMondal)"
+
+    def filter_rule(self, build_dic):
+        return PlingCheck.filter_rule(build_dic) and "GAPPS" in build_dic["version"].upper()
+
+
 class BabaProject(SfProjectCheck):
     project_name = "babarom"
     developer = "Baba Sahare"
@@ -902,6 +923,8 @@ CHECK_LIST = (
     ArrowR,
     ArrowRGapps,
     Atom,
+    Awaken,
+    AwakenGapps,
     BabaProject,
     BlissQ,
     Bootleggers,
