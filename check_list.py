@@ -459,12 +459,12 @@ class Cosmic(SfCheck):
     project_name = "cosmic-os"
     sub_path = "whyred/"
 
-class CrDroid(SfCheck):
+class CrDroidP(SfCheck):
     fullname = "CrDroid Pie Official"
     project_name = "crdroidpie"
     sub_path = "WHYRED/"
 
-class CrDroidQ(SfCheck):
+class CrDroid(SfCheck):
     fullname = "CrDroid Q Official"
     project_name = "crdroid"
     sub_path = "whyred"
@@ -677,24 +677,38 @@ class PixelPlusUI(SfCheck):
     fullname = "PixelPlusUI Official"
     project_name = "pixelplusui-project"
 
-class PixysQ(SfCheck):
+class PixysR(CheckUpdate):
 
-    fullname = "Pixys OS Q Official"
-    project_name = "pixys-os"
-    sub_path = "ten/whyred/"
+    fullname = "Pixys OS R Official"
     enable_pagecache = True
 
-    _skip = True
+    base_url = "https://pixysos.com"
+    device = "whyred"
+    android_version_tag = "eleven"
+    tab_index = 1
 
-    def filter_rule(self, string):
-        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
+    def do_check(self):
+        bs_obj = self.get_bs(self.request_url(self.base_url+"/"+self.device))
+        div_tab = bs_obj.find("div", {"data-tab-content": self.android_version_tag})
+        div_tab_outer = div_tab.select(".tab__outer")[self.tab_index]
+        builds = div_tab_outer.select(".build__header")
+        if builds:
+            latest_build = builds[0]
+            self.update_info(
+                "BUILD_CHANGELOG", latest_build.select_one(".clogs").get_text().strip()
+            )
+            latest_build_info = latest_build.select_one(".build__info div")
+            latest_build_info_text = latest_build_info.get_text().strip().replace(":\n", ":")
+            self.update_info("LATEST_VERSION", self.grep(latest_build_info_text, "File Name"))
+            self.update_info("FILE_MD5", self.grep(latest_build_info_text, "md5 (hash)"))
+            self.update_info("BUILD_DATE", self.grep(latest_build_info_text, "Date & Time"))
+            self.update_info("FILE_SIZE", self.grep(latest_build_info_text, "Size"))
+            self.update_info("BUILD_VERSION", self.grep(latest_build_info_text, "Version"))
+            self.update_info("DOWNLOAD_LINK", self.base_url+latest_build_info.find("a")["href"])
 
-class PixysQGapps(PixysQ):
-
-    fullname = "Pixys OS Q Official (Include Gapps)"
-
-    def filter_rule(self, string):
-        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
+class PixysRGapps(PixysR):
+    fullname = "Pixys OS R Official (Include Gapps)"
+    tab_index = 2
 
 class Posp(SfCheck):
     fullname = "POSP Official"
@@ -901,8 +915,8 @@ CHECK_LIST = (
     Corvus,
     CorvusGapps,
     Cosmic,
+    CrDroidP,
     CrDroid,
-    CrDroidQ,
     Cygnus,
     DarkstarProject,
     EvolutionX,
@@ -931,8 +945,8 @@ CHECK_LIST = (
     PeU2,
     PePeU2,
     PixelPlusUI,
-    PixysQ,
-    PixysQGapps,
+    PixysR,
+    PixysRGapps,
     Posp,
     RaghuVarmaProject,
     RandomStuffProject,
