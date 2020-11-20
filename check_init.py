@@ -513,9 +513,10 @@ class PlingCheck(CheckUpdate):
         self._raise_if_missing_property("p_id", "collection_id")
         super().__init__()
 
-    def filter_rule(self, string):
+    @staticmethod
+    def filter_rule(build_dic):
         """ 文件名过滤规则 """
-        return True
+        return int(build_dic["active"])
 
     def do_check(self):
         url = "https://www.pling.com/p/%s/getfilesajax" % self.p_id
@@ -529,31 +530,38 @@ class PlingCheck(CheckUpdate):
         }
         json_dic = json.loads(self.request_url(url, params=params))
         if json_dic["files"]:
-            latest_build = [f for f in json_dic["files"] if self.filter_rule(f["name"])][-1]
+            latest_build = [f for f in json_dic["files"] if self.filter_rule(f)][-1]
+            self._private_dic["latest_build"] = latest_build
             self.update_info("LATEST_VERSION", latest_build["name"])
             self.update_info("BUILD_DATE", latest_build["updated_timestamp"])
             self.update_info("FILE_MD5", latest_build["md5sum"])
-            if latest_build["tags"] is None:
-                real_download_link = "https://www.pling.com/p/%s/startdownload?%s" % (
-                    self.p_id,
-                    urlencode({
-                        "file_id": latest_build["id"],
-                        "file_name": latest_build["name"],
-                        "file_type": latest_build["type"],
-                        "file_size": latest_build["size"],
-                    })
-                )
-                self.update_info(
-                    "FILE_SIZE",
-                    "%0.2f MB" % (int(latest_build["size"]) / 1048576,)
-                )
-            else:
-                real_download_link = unquote(latest_build["tags"]).replace("link##", "")
             self.update_info(
-                "DOWNLOAD_LINK",
-                "`%s`\n[Pling](%s) | [Direct](%s)" % (
-                    self.info_dic["LATEST_VERSION"],
-                    "https://www.pling.com/p/%s/#files-panel" % self.p_id,
-                    real_download_link,
-                )
+                "DOWNLOAD_LINK", "https://www.pling.com/p/%s/#files-panel" % self.p_id
             )
+
+    def after_check(self):
+        latest_build = self._private_dic["latest_build"]
+        if latest_build["tags"] is None:
+            real_download_link = "https://www.pling.com/p/%s/startdownload?%s" % (
+                self.p_id,
+                urlencode({
+                    "file_id": latest_build["id"],
+                    "file_name": latest_build["name"],
+                    "file_type": latest_build["type"],
+                    "file_size": latest_build["size"],
+                })
+            )
+            self.update_info(
+                "FILE_SIZE",
+                "%0.2f MB" % (int(latest_build["size"]) / 1048576,)
+            )
+        else:
+            real_download_link = unquote(latest_build["tags"]).replace("link##", "")
+        self.update_info(
+            "DOWNLOAD_LINK",
+            "`%s`\n[Pling](%s) | [Direct](%s)" % (
+                self.info_dic["LATEST_VERSION"],
+                "https://www.pling.com/p/%s/#files-panel" % self.p_id,
+                real_download_link,
+            )
+        )

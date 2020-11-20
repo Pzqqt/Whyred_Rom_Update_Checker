@@ -444,15 +444,15 @@ class Corvus(PlingCheck):
     collection_id = 1586848776
     enable_pagecache = True
 
-    def filter_rule(self, string):
-        return "GAPPS" not in string.upper()
+    def filter_rule(self, build_dic):
+        return PlingCheck.filter_rule(build_dic) and "GAPPS" not in build_dic["name"].upper()
 
 class CorvusGapps(Corvus):
 
     fullname = "Corvus OS Official (Include Gapps)"
 
-    def filter_rule(self, string):
-        return "GAPPS" in string.upper()
+    def filter_rule(self, build_dic):
+        return PlingCheck.filter_rule(build_dic) and "GAPPS" in build_dic["name"].upper()
 
 class Cosmic(SfCheck):
     fullname = "Cosmic OS Official"
@@ -663,15 +663,15 @@ class PeU2(PlingCheck):
     p_id = 1406086
     collection_id = 1595519142
 
-    def filter_rule(self, string):
-        return "Plus" not in string
+    def filter_rule(self, build_dic):
+        return PlingCheck.filter_rule(build_dic) and "Plus" not in build_dic["name"].upper()
 
 class PePeU2(PeU2):
 
     fullname = "Pixel Experience Q (Plus edition)(Unofficial By SakilMondal)"
 
-    def filter_rule(self, string):
-        return "Plus" in string
+    def filter_rule(self, build_dic):
+        return PlingCheck.filter_rule(build_dic) and "Plus" in build_dic["name"].upper()
 
 class PixelPlusUI(SfCheck):
     fullname = "PixelPlusUI Official"
