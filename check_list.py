@@ -685,14 +685,14 @@ class PeU2(PlingCheck):
     collection_id = 1595519142
 
     def filter_rule(self, build_dic):
-        return PlingCheck.filter_rule(build_dic) and "Plus" not in build_dic["name"].upper()
+        return PlingCheck.filter_rule(build_dic) and "PLUS" not in build_dic["name"].upper()
 
 class PePeU2(PeU2):
 
     fullname = "Pixel Experience Q (Plus edition)(Unofficial By SakilMondal)"
 
     def filter_rule(self, build_dic):
-        return PlingCheck.filter_rule(build_dic) and "Plus" in build_dic["name"].upper()
+        return PlingCheck.filter_rule(build_dic) and "PLUS" in build_dic["name"].upper()
 
 class PixelPlusUI(SfCheck):
     fullname = "PixelPlusUI Official"
