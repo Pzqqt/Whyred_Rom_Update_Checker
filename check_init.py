@@ -305,7 +305,7 @@ class SfCheck(CheckUpdate):
     def do_check(self):
         url = "https://sourceforge.net/projects/%s/rss" % self.project_name
         bs_obj = self.get_bs(self.request_url(url, params={"path": "/"+self.sub_path}))
-        builds = list(bs_obj.find_all("item"))
+        builds = list(bs_obj.select("item"))
         if not builds:
             return
         builds.sort(key=lambda x: self.date_transform(x.pubdate.string), reverse=True)
@@ -407,16 +407,16 @@ class H5aiCheck(CheckUpdate):
     def do_check(self):
         url = self.base_url + self.sub_url
         bs_obj = self.get_bs(self.request_url(url, verify=False))
-        trs = bs_obj.find("div", {"id": "fallback"}).find("table").find_all("tr")[1:]
-        trs = [tr for tr in trs if tr.find_all("td")[2].get_text().strip()]
-        trs.sort(key=lambda x: x.find_all("td")[2].get_text(), reverse=True)
+        trs = bs_obj.select_one("#fallback").find("table").select("tr")[1:]
+        trs = [tr for tr in trs if tr.select("td")[2].get_text().strip()]
+        trs.sort(key=lambda x: x.select("td")[2].get_text(), reverse=True)
         builds = list(filter(lambda x: x.find("a").get_text().endswith(".zip"), trs))
         if builds:
             build = builds[0]
             self.update_info("LATEST_VERSION", build.find("a").get_text())
-            self.update_info("BUILD_DATE", build.find_all("td")[2].get_text())
-            self.update_info("DOWNLOAD_LINK", self.base_url+build.find_all("td")[1].find("a")["href"])
-            self.update_info("FILE_SIZE", build.find_all("td")[3].get_text())
+            self.update_info("BUILD_DATE", build.select("td")[2].get_text())
+            self.update_info("DOWNLOAD_LINK", self.base_url+build.select("td")[1].find("a")["href"])
+            self.update_info("FILE_SIZE", build.select("td")[3].get_text())
 
 class AexCheck(CheckUpdate):
 
@@ -470,30 +470,30 @@ class PeCheck(CheckUpdate):
 
     def do_check(self):
         bs_obj = self.get_bs(self.request_url("%s/%s" % (self._url, self.model), headers={}))
-        builds = bs_obj.find_all("div", {"class": "version__item"})[self.index]
+        builds = bs_obj.select(".version__item")[self.index]
         assert builds.find("button").get_text().strip() == self.tag_name
-        build = builds.find("div", {"class": "build__item"})
+        build = builds.select_one(".build__item")
         if build is None:
             return
         self.update_info("LATEST_VERSION", build["data-build-version"])
-        self.update_info("BUILD_DATE", build.find("span", {"class": "date"}).get_text().strip())
+        self.update_info("BUILD_DATE", build.select_one(".date").get_text().strip())
         self.update_info(
             "DOWNLOAD_LINK",
-            self._url + build.find("a", {"class": "download__btn"})["href"]
+            self._url + build.select_one(".download__btn")["href"]
         )
         self.update_info(
             "FILE_SIZE",
-            re.search(r"\((.*?)\)", build.find("a", {"class": "download__btn"}).get_text()).group(1)
+            re.search(r"\((.*?)\)", build.select_one(".download__btn").get_text()).group(1)
         )
         self.update_info(
             "FILE_MD5",
-            self.grep(build.find("ul", {"class": "download__meta"}).get_text(), "MD5 hash")
+            self.grep(build.select_one(".download__meta").get_text(), "MD5 hash")
         )
         self.update_info(
             "BUILD_CHANGELOG",
-            build.find(attrs={"class": "changelogs__list"}).get_text().strip()
+            build.select_one(".changelogs__list").get_text().strip()
         )
-        build_id = build.find("a", {"class": "download__btn"})["data-file-uid"]
+        build_id = build.select_one(".download__btn")["data-file-uid"]
         self._private_dic = {
             "fake_download_link": "".join([self._url, "/download/", build_id]),
         }

@@ -18,8 +18,8 @@ class Linux44Y(CheckUpdate):
     def do_check(self):
         url = "https://www.kernel.org"
         bs_obj = self.get_bs(self.request_url(url))
-        for tr_obj in bs_obj.find("table", {"id": "releases"}).find_all("tr"):
-            kernel_version = tr_obj.find_all("td")[1].get_text()
+        for tr_obj in bs_obj.select_one("#releases").select("tr"):
+            kernel_version = tr_obj.select("td")[1].get_text()
             if kernel_version.startswith("4.4."):
                 self.update_info("LATEST_VERSION", kernel_version)
                 self.update_info(
@@ -55,9 +55,9 @@ class GoogleClangPrebuilt(CheckUpdate):
 
     def do_check(self):
         bs_obj = self.get_bs(self.request_url(self._base_url+"/+log"))
-        commits = bs_obj.find("ol", {"class": "CommitLog"}).find_all("li")
+        commits = bs_obj.select_one(".CommitLog").select("li")
         for commit in commits:
-            a_tag = commit.find_all("a")[1]
+            a_tag = commit.select("a")[1]
             commit_title = a_tag.get_text()
             if commit_title.startswith("Update prebuilt Clang to"):
                 release_version = commit_title.split()[4]
@@ -329,20 +329,20 @@ class ArrowQ(CheckUpdate):
         bs_obj = self.get_bs(url_source)
         self.update_info(
             "LATEST_VERSION",
-            bs_obj.find(id="%s-filename" % self.build_type_flag)["name"]
+            bs_obj.select_one("#%s-filename" % self.build_type_flag)["name"]
         )
-        build_info_text = bs_obj.find(id="%s-filename" % self.build_type_flag).parent.get_text()
+        build_info_text = bs_obj.select_one("#%s-filename" % self.build_type_flag).parent.get_text()
         self.update_info("FILE_SIZE", self.grep(build_info_text, "Size"))
         self.update_info("BUILD_VERSION", self.grep(build_info_text, "Version"))
         self.update_info("BUILD_DATE", self.grep(build_info_text, "Date"))
         self.update_info(
             "FILE_SHA256",
-            bs_obj.find(id="%s-file_sha256" % self.build_type_flag).get_text().strip()
+            bs_obj.select_one("#%s-file_sha256" % self.build_type_flag).get_text().strip()
         )
         self.update_info(
             "BUILD_CHANGELOG",
             "# Device side changes\n%s\n# Source changelog\nhttps://arrowos.net/changelog.php"
-            % bs_obj.find(id="source-changelog").parent.find("p").get_text().strip()
+            % bs_obj.select_one("#source-changelog").parent.find("p").get_text().strip()
         )
         self.update_info("DOWNLOAD_LINK", "https://arrowos.net/download/%s" % self.device_name)
 
@@ -418,11 +418,11 @@ class Carbon(CheckUpdate):
 
     def do_check(self):
         bs_obj = self.get_bs(self.request_url("https://get.carbonrom.org/device-whyred.html"))
-        latest_build = bs_obj.find("tbody").find("tr").find_all("td")
+        latest_build = bs_obj.find("tbody").find("tr").select("td")
         self.update_info("BUILD_TYPE", latest_build[1].get_text().strip())
         self.update_info("LATEST_VERSION", latest_build[2].find("dd").get_text().strip())
         self.update_info("DOWNLOAD_LINK", latest_build[2].find("dd").find("a")["href"])
-        self.update_info("FILE_MD5", latest_build[2].find_all("dd")[1].get_text().strip())
+        self.update_info("FILE_MD5", latest_build[2].select("dd")[1].get_text().strip())
         self.update_info("FILE_SIZE", latest_build[3].get_text().strip())
         self.update_info("BUILD_DATE", latest_build[4].get_text().strip())
 
@@ -595,7 +595,7 @@ class Lineage(CheckUpdate):
     def do_check(self):
         bs_obj = self.get_bs(self.request_url("https://download.lineageos.org/whyred"))
         build = bs_obj.find("tbody").find("tr")
-        tds = build.find_all("td")
+        tds = build.select("td")
         if len(tds) == 7:
             build_type, build_version, build_file, build_size, _, _, build_date = tds
         elif len(tds) == 5:
@@ -769,11 +769,11 @@ class ResurrectionRemix(CheckUpdate):
     def do_check(self):
         base_url = "https://get.resurrectionremix.com/"
         bs_obj = self.get_bs(self.request_url(base_url, params={"dir": "ten/whyred"}))
-        files = bs_obj.find("ul", {"id": "directory-listing"}).find_all("li")[1:]
+        files = bs_obj.select_one("#directory-listing").select("li")[1:]
         files = sorted(
             files,
             key=lambda x:
-                time.strptime(x.find_all("span")[2].get_text().strip(), "%Y-%m-%d %H:%M:%S")
+                time.strptime(x.select("span")[2].get_text().strip(), "%Y-%m-%d %H:%M:%S")
         )
         for file in files[::-1]:
             file_info = file.find("a")
@@ -781,8 +781,8 @@ class ResurrectionRemix(CheckUpdate):
             if file_name.endswith(".zip") and self.filter_rule(file_name):
                 self.update_info("LATEST_VERSION", file_name)
                 self.update_info("DOWNLOAD_LINK", base_url + file_info["href"])
-                self.update_info("FILE_SIZE", file_info.find_all("span")[1].get_text().strip())
-                self.update_info("BUILD_DATE", file_info.find_all("span")[2].get_text().strip())
+                self.update_info("FILE_SIZE", file_info.select("span")[1].get_text().strip())
+                self.update_info("BUILD_DATE", file_info.select("span")[2].get_text().strip())
                 break
 
     def after_check(self):
@@ -812,19 +812,19 @@ class Revenge(CheckUpdate):
     def do_check(self):
         url = "https://osdn.net/projects/revengeos/storage/whyred/"
         bs_obj = self.get_bs(self.request_url(url))
-        builds = bs_obj.find(attrs={"id": "filelist"}).find_all("tr", {"class": "file"})
-        builds.sort(key=lambda tr: -int(tr.find(attrs={"class": "date"})["data-num"]))
+        builds = bs_obj.select_one("#filelist").select(".file")
+        builds.sort(key=lambda tr: -int(tr.select_one(".date")["data-num"]))
         for build in builds:
-            file_name = build.find("td", {"class": "name"})["data-name"]
+            file_name = build.select_one(".name")["data-name"]
             if not SfCheck.filter_rule(file_name):
                 continue
-            file_size = build.find("td", {"class": "size filesize"}).get_text()
+            file_size = build.select_one(".filesize").get_text()
             if float(file_size.split()[0]) < 500:
                 continue
             self.update_info("LATEST_VERSION", file_name)
             self.update_info("FILE_SIZE", file_size)
             self.update_info("DOWNLOAD_LINK", url + file_name)
-            self.update_info("BUILD_DATE", build.find(attrs={"class": "date"}).get_text())
+            self.update_info("BUILD_DATE", build.select_one(".date").get_text())
             break
 
 class Sakura(SfCheck):
