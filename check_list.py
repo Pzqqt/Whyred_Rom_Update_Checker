@@ -669,14 +669,19 @@ class PixelExtended(SfCheck):
 class PeQ(PeCheck):
     fullname = "Pixel Experience Q Official"
     model = "whyred"
-    index = 0
+    index = 1
     tag_name = "10"
     enable_pagecache = True
 
 class PeQPe(PeQ):
     fullname = "Pixel Experience Q (Plus edition) Official"
-    index = 1
+    index = 2
     tag_name = "10 (Plus edition)"
+
+class PeR(PeQ):
+    fullname = "Pixel Experience 11 Official"
+    index = 0
+    tag_name = "11"
 
 class PeU2(PlingCheck):
 
@@ -965,6 +970,7 @@ CHECK_LIST = (
     PixelExtended,
     PeQ,
     PeQPe,
+    PeR,
     PeU2,
     PePeU2,
     PixelPlusUI,
