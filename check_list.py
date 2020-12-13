@@ -433,7 +433,7 @@ class CarbonU1(SfCheck):
 
 class Cesium(SfCheck):
     fullname = "Cesium OS Official"
-    project_name = "cesiumos"
+    project_name = "cesiumos-org"
     sub_path = "whyred/"
 
 class Cherish(SfCheck):
@@ -618,23 +618,10 @@ class Lineage(CheckUpdate):
         if file_sha256 and file_sha256 != "Hash":
             self.update_info("FILE_SHA256", file_sha256)
 
-class LineageU3(CheckUpdate):
-
+class LineageU3(PlingCheck):
     fullname = "Lineage OS 18.0 (Unofficial By SakilMondal)"
-
-    def do_check(self):
-        base_url = "https://downloads.sakilmondal.me/Roms/LineageOS/"
-        json_dic = json.loads(self.request_url(
-            base_url,
-            "post",
-            params={"rootId": "14c0B067v_Dey0HLrjBDsppKCOv9U51oT"}
-        ))
-        if json_dic and json_dic["files"]:
-            latest_build = json_dic["files"][-1]
-            self.update_info("LATEST_VERSION", latest_build["name"])
-            self.update_info("BUILD_DATE", latest_build["modifiedTime"])
-            self.update_info("FILE_SIZE", "%0.2f MB" % (int(latest_build["size"]) / 1048576,))
-            self.update_info("DOWNLOAD_LINK", base_url+latest_build["name"])
+    p_id = 1422431
+    collection_id = 1600161531
 
 class Neon(SfCheck):
     fullname = "Neon OS Official"
