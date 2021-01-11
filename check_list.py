@@ -703,7 +703,10 @@ class PixysR(CheckUpdate):
     def do_check(self):
         bs_obj = self.get_bs(self.request_url(self.base_url+"/"+self.device))
         div_tab = bs_obj.find("div", {"data-tab-content": self.android_version_tag})
-        div_tab_outer = div_tab.select(".tab__outer")[self.tab_index]
+        try:
+            div_tab_outer = div_tab.select(".tab__outer")[self.tab_index]
+        except IndexError:
+            return
         builds = div_tab_outer.select(".build__header")
         if builds:
             latest_build = builds[0]
