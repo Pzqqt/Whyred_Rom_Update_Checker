@@ -106,7 +106,6 @@ class GoogleClangPrebuilt(CheckUpdate):
         return commit_text
 
     def send_message(self):
-        assert self.__is_checked, "Please execute the 'do_check' method first."
         for id_ in self._private_dic["extra_ids"]:
             commit_url = self._private_dic["sp_commits"][id_]["commit_url"]
             release_version = self._private_dic["sp_commits"][id_]["release_version"]
