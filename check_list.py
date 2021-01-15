@@ -313,6 +313,11 @@ class ArrowQ(CheckUpdate):
     device_version = "arrow-10.0"
     build_type_flag = "vanilla"
 
+    def __init__(self):
+        super().__init__()
+        saved_info = Saved.get_saved_info(self.name)
+        self.previous_changelog = saved_info.BUILD_CHANGELOG if saved_info else None
+
     def do_check(self):
         url_source = self.request_url(
             "https://arrowos.net/device.php",
@@ -344,6 +349,11 @@ class ArrowQ(CheckUpdate):
             % bs_obj.select_one("#source-changelog").parent.find("p").get_text().strip()
         )
         self.update_info("DOWNLOAD_LINK", "https://arrowos.net/download/%s" % self.device_name)
+
+    def send_message(self):
+        if self.previous_changelog == self.info_dic["BUILD_CHANGELOG"]:
+            return
+        super().send_message()
 
 class ArrowQGapps(ArrowQ):
     fullname = "Arrow OS Q Official (Include Gapps)"
