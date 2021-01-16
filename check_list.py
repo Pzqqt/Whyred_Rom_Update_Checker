@@ -509,6 +509,26 @@ class DarkstarProject(SfProjectCheck):
     developer = "Darkstar"
     sub_path = "whyred/"
 
+class Descendant(CheckUpdate):
+
+    fullname = "Descendant Official"
+
+    def do_check(self):
+        base_url = "https://downloads.descendant.me"
+        bs_obj = self.get_bs(self.request_url(base_url))
+        latest_build_tr = None
+        for tr_obj in bs_obj.select_one("#downloadList").select_one("tbody").select("tr"):
+            if "whyred" in tr_obj.text:
+                latest_build_tr = tr_obj
+                break
+        if latest_build_tr is None:
+            return
+        for index, key in enumerate("LATEST_VERSION FILE_MD5 FILE_SIZE BUILD_DATE".split()):
+            self.update_info(key, latest_build_tr.select("td")[index].text.strip())
+        self.update_info("DOWNLOAD_LINK", "%s%s" % (
+            base_url, latest_build_tr.select_one("a")["href"]
+        ))
+
 class EvolutionX(SfCheck):
 
     fullname = "EvolutionX Official"
@@ -946,6 +966,7 @@ CHECK_LIST = (
     CrDroid,
     Cygnus,
     DarkstarProject,
+    Descendant,
     EvolutionX,
     Extended,
     ExtendedU1,
