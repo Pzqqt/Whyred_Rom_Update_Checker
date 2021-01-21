@@ -900,6 +900,7 @@ class ShapeShift(SfCheck):
 class StagQ(CheckUpdate):
 
     fullname = "Stag OS Q Official"
+    _skip = True
 
     def do_check(self):
         base_url = "https://downloads.stag.workers.dev/whyred/"
