@@ -529,15 +529,19 @@ class PlingCheck(CheckUpdate):
             "page": 1,
         }
         json_dic = json.loads(self.request_url(url, params=params))
-        if json_dic["files"]:
-            latest_build = [f for f in json_dic["files"] if self.filter_rule(f)][-1]
-            self._private_dic["latest_build"] = latest_build
-            self.update_info("LATEST_VERSION", latest_build["name"])
-            self.update_info("BUILD_DATE", latest_build["updated_timestamp"])
-            self.update_info("FILE_MD5", latest_build["md5sum"])
-            self.update_info(
-                "DOWNLOAD_LINK", "https://www.pling.com/p/%s/#files-panel" % self.p_id
-            )
+        if not json_dic["files"]:
+            return
+        json_dic_filtered_files = [f for f in json_dic["files"] if self.filter_rule(f)]
+        if not json_dic_filtered_files:
+            return
+        latest_build = json_dic_filtered_files[-1]
+        self._private_dic["latest_build"] = latest_build
+        self.update_info("LATEST_VERSION", latest_build["name"])
+        self.update_info("BUILD_DATE", latest_build["updated_timestamp"])
+        self.update_info("FILE_MD5", latest_build["md5sum"])
+        self.update_info(
+            "DOWNLOAD_LINK", "https://www.pling.com/p/%s/#files-panel" % self.p_id
+        )
 
     def after_check(self):
         latest_build = self._private_dic["latest_build"]

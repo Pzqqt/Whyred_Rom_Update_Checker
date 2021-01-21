@@ -48,7 +48,7 @@ class Saved(_Base):
     def get_kv(self):
         """ 返回Saved对象存储的键值字典 """
         return OrderedDict([
-            (k, self.__dict__.get(k))
+            (k, getattr(self, k))
             for k in (
                 "ID FULL_NAME LATEST_VERSION BUILD_TYPE BUILD_VERSION "
                 "BUILD_DATE BUILD_CHANGELOG FILE_MD5 FILE_SHA1 FILE_SHA256 "
