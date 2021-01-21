@@ -159,6 +159,19 @@ class AdrarProject(SfProjectCheck):
     project_name = "unofficial-by-adrar"
     developer = "AdrarHussain"
 
+class AdrarProject2(PlingCheck):
+
+    fullname = "New rom release by AdrarHussain"
+    p_id = 1459808
+    collection_id = 1608020949
+    enable_pagecache = True
+
+    def filter_rule(self, build_dic):
+        return all([
+            PlingCheck.filter_rule(build_dic),
+            not build_dic["name"].startswith("RR"),
+        ])
+
 class AexP(AexCheck):
     fullname = "AospExtended Pie Official"
     sub_path = "whyred/pie"
@@ -829,6 +842,29 @@ class ResurrectionRemixGapps(ResurrectionRemix):
     def filter_rule(string):
         return "VANILLA" not in string.upper()
 
+class ResurrectionRemixU1(AdrarProject2):
+
+    fullname = "Resurrection Remix OS Q (Unofficial By AdrarHussain)"
+
+    def filter_rule(self, build_dic):
+        return all([
+            PlingCheck.filter_rule(build_dic),
+            build_dic["name"].startswith("RR"),
+            "VANILLA" in build_dic["name"].upper(),
+        ])
+
+class ResurrectionRemixGappsU1(AdrarProject2):
+
+    fullname = "Resurrection Remix OS Q (Unofficial By AdrarHussain)(Include Gapps)"
+
+    def filter_rule(self, build_dic):
+        return all([
+            PlingCheck.filter_rule(build_dic),
+            build_dic["name"].startswith("RR"),
+            "VANILLA" not in build_dic["name"].upper(),
+        ])
+
+
 class Revenge(CheckUpdate):
 
     fullname = "Revenge OS Official"
@@ -929,6 +965,7 @@ CHECK_LIST = (
     GoogleClangPrebuilt,
     WireGuard,
     AdrarProject,
+    AdrarProject2,
     AexP,
     AexPGapps,
     AexQ,
@@ -1002,6 +1039,8 @@ CHECK_LIST = (
     Rebellion,
     ResurrectionRemix,
     ResurrectionRemixGapps,
+    ResurrectionRemixU1,
+    ResurrectionRemixGappsU1,
     Revenge,
     Sakura,
     ShapeShift,
