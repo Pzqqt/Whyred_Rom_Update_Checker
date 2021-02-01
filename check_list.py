@@ -315,7 +315,7 @@ class Aospa(CheckUpdate):
         return int(self.info_dic["BUILD_DATE"]) > int(saved_info.BUILD_DATE)
 
 class AospaU1(SfCheck):
-    fullname = "Aospa Quartz (Unofficial By orges)"
+    fullname = "Paranoid Android (Unofficial By orges)"
     project_name = "aospa-whyred"
 
 class ArrowQ(CheckUpdate):
