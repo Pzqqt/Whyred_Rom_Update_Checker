@@ -8,10 +8,10 @@ A simple tool to check whyred's Rom update.
 - Use your Telegram BOT to send you updated news.
 
 ## Required
-- Python 3.7+
+- Python 3.5+
 
 ## Required Python Extension Packages
-- beautifulSoup4
+- BeautifulSoup4
 - requests
 - sqlalchemy
 - pyTelegramBotAPI
