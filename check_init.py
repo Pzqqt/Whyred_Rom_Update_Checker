@@ -467,14 +467,14 @@ class PeCheck(CheckUpdate):
         self._raise_if_missing_property("tag_name")
         super().__init__()
 
-    def get_true_url(self, fake_url):
-        return self.request_url(
+    def get_real_url(self, fake_url):
+        return json.loads(self.request_url(
             fake_url,
             headers={
                 "referer": "%s/%s" % (self._url, self.model),
                 "user-agent": CHROME_UA,
             }
-        )
+        )).get("download_url")
 
     def do_check(self):
         bs_obj = self.get_bs(self.request_url("%s/%s" % (self._url, self.model), headers={}))
@@ -507,10 +507,9 @@ class PeCheck(CheckUpdate):
         }
 
     def after_check(self):
-        self.update_info(
-            "DOWNLOAD_LINK",
-            self.get_true_url(self._private_dic["fake_download_link"])
-        )
+        real_url = self.get_real_url(self._private_dic["fake_download_link"])
+        if real_url:
+            self.update_info("DOWNLOAD_LINK", real_url)
 
 class PlingCheck(CheckUpdate):
 
