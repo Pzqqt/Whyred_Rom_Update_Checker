@@ -921,6 +921,35 @@ class StagQ(CheckUpdate):
             )
         )
 
+class StagR(SfCheck):
+
+    fullname = "Stag OS R Official"
+    project_name = "stagos-11"
+    sub_path = "whyred/"
+
+    def filter_rule(self, string):
+        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
+
+    def after_check(self):
+        self.update_info(
+            "DOWNLOAD_LINK",
+            "`%s`\n[SourceForge](%s) | [Mirror](%s)" % (
+                self.info_dic["LATEST_VERSION"],
+                self.info_dic["DOWNLOAD_LINK"],
+                "https://releases.stag-os.workers.dev/%s%s" % (
+                    self.sub_path, self.info_dic["LATEST_VERSION"]
+                ),
+            )
+        )
+
+class StagRGapps(StagR):
+
+    fullname = "Stag OS R Official (Include Gapps)"
+
+    def filter_rule(self, string):
+        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
+
+
 class Superior(SfCheck):
     fullname = "Superior OS Official"
     project_name = "superioros"
@@ -1046,6 +1075,8 @@ CHECK_LIST = (
     Sakura,
     ShapeShift,
     StagQ,
+    StagR,
+    StagRGapps,
     Superior,
     Syberia,
     SyberiaU1,
