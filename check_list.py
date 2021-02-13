@@ -551,10 +551,10 @@ class EvolutionX(SfCheck):
     def after_check(self):
         self.update_info(
             "BUILD_CHANGELOG",
-            self.request_url(
+            (
                 "https://raw.githubusercontent.com/Evolution-X-Devices/official_devices/"
                 "master/changelogs/whyred/%s.txt" % self.info_dic["LATEST_VERSION"]
-            ).strip()
+            )
         )
 
 class Extended(SfCheck):
