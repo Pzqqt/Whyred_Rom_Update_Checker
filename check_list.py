@@ -5,6 +5,8 @@ import json
 import time
 from collections import OrderedDict
 
+from requests import exceptions as requests_exceptions
+
 from check_init import (
     CHROME_UA, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck
 )
@@ -406,7 +408,6 @@ class AwakenGapps(Awaken):
     def filter_rule(self, build_dic):
         return PlingCheck.filter_rule(build_dic) and "GAPPS" in build_dic["version"].upper()
 
-
 class BabaProject(SfProjectCheck):
     project_name = "babarom"
     developer = "Baba Sahare"
@@ -665,6 +666,11 @@ class LineageU3(PlingCheck):
     p_id = 1422431
     collection_id = 1600161531
 
+class MalfunctionProject(SfProjectCheck):
+    project_name = "sp4ce"
+    sub_path = "whyred/"
+    developer = "Malfunction"
+
 class Neon(SfCheck):
     fullname = "Neon OS Official"
     project_name = "neonrelease"
@@ -685,10 +691,46 @@ class Nusantara(PlingCheck):
     p_id = 1422405
     collection_id = 1602832891
 
-class Octavi(SfCheck):
+class Octavi(CheckUpdate):
     fullname = "Octavi OS Official"
-    project_name = "octavi-os"
-    sub_path = "Whyred"
+    enable_pagecache = True
+    base_url = "https://downloads.octavi-os.com/"
+
+    def do_check(self):
+        bs_obj = self.get_bs(self.request_url(self.base_url + "?dir=Whyred"))
+        builds = bs_obj.select("#file-list > li > a")
+        for build in builds:
+            build_name = build.select_one(".truncate").text.strip()
+            if self.filter_rule(build_name):
+                self.update_info("LATEST_VERSION", build_name)
+                self.update_info("DOWNLOAD_LINK", self.base_url + build["href"])
+                self.update_info("FILE_SIZE", build.select("div > div")[-2].text.strip())
+                self.update_info("BUILD_DATE", build.select("div > div")[-1].text.strip())
+                break
+
+    def after_check(self):
+        try:
+            file_info_dic = json.loads(self.request_url(
+                self.base_url + "?info=Whyred/" + self.info_dic["LATEST_VERSION"]
+            ))
+        except requests_exceptions.HTTPError as error:
+            if "too large" in str(error):
+                return
+            raise
+        file_info_hashes = file_info_dic.get("hashes", {})
+        self.update_info("FILE_MD5", file_info_hashes.get("md5"))
+        self.update_info("FILE_SHA1", file_info_hashes.get("sha1"))
+        self.update_info("FILE_SHA256", file_info_hashes.get("sha256"))
+
+    @staticmethod
+    def filter_rule(string):
+        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
+
+class OctaviGapps(Octavi):
+    fullname = "Octavi OS Official (Include Gapps)"
+
+    def filter_rule(self, string):
+        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
 class PixelExtended(SfCheck):
     fullname = "Pixel Extended Q Official"
@@ -892,6 +934,11 @@ class Sakura(SfCheck):
     project_name = "projectsakura"
     sub_path = "whyred/"
 
+class SalmanProject(PlingCheck):
+    fullname = "New rom release by Salman"
+    p_id = 1420225
+    collection_id = 1599592124
+
 class ShapeShift(SfCheck):
     fullname = "ShapeShift OS Official"
     project_name = "shapeshiftos"
@@ -1049,11 +1096,13 @@ CHECK_LIST = (
     LegionGapps,
     Lineage,
     LineageU3,
+    MalfunctionProject,
     Neon,
     Nitrogen,
     NitrogenU1,
     Nusantara,
     Octavi,
+    OctaviGapps,
     PixelExtended,
     PeQ,
     PeQPe,
@@ -1072,6 +1121,7 @@ CHECK_LIST = (
     ResurrectionRemixU1,
     ResurrectionRemixGappsU1,
     Revenge,
+    SalmanProject,
     Sakura,
     ShapeShift,
     StagQ,
