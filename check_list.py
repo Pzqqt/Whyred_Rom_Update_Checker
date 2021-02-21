@@ -835,6 +835,7 @@ class Rebellion(SfCheck):
     fullname = "RebellionOS Official"
     project_name = "rebellion-os"
     sub_path = "whyred/"
+    _skip = True
 
 class ResurrectionRemix(CheckUpdate):
 
