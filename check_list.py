@@ -737,22 +737,17 @@ class PixelExtended(SfCheck):
     project_name = "pixelextended"
     sub_path = "Whyred/"
 
-class PeQ(PeCheck):
-    fullname = "Pixel Experience Q Official"
-    model = "whyred"
-    index = 1
-    tag_name = "10"
-    enable_pagecache = True
-
-class PeQPe(PeQ):
-    fullname = "Pixel Experience Q (Plus edition) Official"
-    index = 2
-    tag_name = "10 (Plus edition)"
-
-class PeR(PeQ):
+class PeR(PeCheck):
     fullname = "Pixel Experience 11 Official"
+    model = "whyred"
     index = 0
     tag_name = "11"
+    enable_pagecache = True
+
+class PeRPe(PeR):
+    fullname = "Pixel Experience 11 (Plus edition) Official"
+    index = 1
+    tag_name = "11 (Plus edition)"
 
 class PeU2(PlingCheck):
 
@@ -1105,9 +1100,8 @@ CHECK_LIST = (
     Octavi,
     OctaviGapps,
     PixelExtended,
-    PeQ,
-    PeQPe,
     PeR,
+    PeRPe,
     PeU2,
     PePeU2,
     PixelPlusUI,
