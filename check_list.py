@@ -190,6 +190,10 @@ class AexQGapps(AexCheck):
     fullname = "AospExtended Q (with Gapps) Official"
     sub_path = "whyred/q_gapps"
 
+class AexR(AexCheck):
+    fullname = "AospExtended 11 Official"
+    sub_path = "whyred/r"
+
 class AexRU1(PlingCheck):
     fullname = "AospExtended 11 (Unofficial By SakilMondal)"
     p_id = 1423583
@@ -1007,6 +1011,11 @@ class SyberiaU1(SfCheck):
     fullname = "Syberia OS (Unofficial By Orges)"
     project_name = "syberia-whyded"
 
+class TenX(SfCheck):
+    fullname = "TenX OS Official"
+    project_name = "tenx-os"
+    sub_path = "Whyred/"
+
 class Titanium(SfCheck):
 
     fullname = "Titanium OS Official"
@@ -1043,6 +1052,7 @@ CHECK_LIST = (
     AexPGapps,
     AexQ,
     AexQGapps,
+    AexR,
     AexRU1,
     Aicp,
     Ancient,
@@ -1125,6 +1135,7 @@ CHECK_LIST = (
     Superior,
     Syberia,
     SyberiaU1,
+    TenX,
     Titanium,
     TitaniumGapps,
     WhymemeProject,
