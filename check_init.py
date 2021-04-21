@@ -355,6 +355,7 @@ class SfProjectCheck(SfCheck):
                 ("AospExtended", "AospExtended"),
                 ("Arrow", "Arrow OS"),
                 ("atom", "Atom OS"),
+                ("awaken", "Awaken OS"),
                 ("Bliss", "Bliss Rom"),
                 ("Bootleggers", "Bootleggers Rom"),
                 ("Blaze", "Blaze-AOSP Rom"),
@@ -462,9 +463,7 @@ class PeCheck(CheckUpdate):
     _url = "https://download.pixelexperience.org"
 
     def __init__(self):
-        self._raise_if_missing_property("model")
-        self._raise_if_missing_property("index")
-        self._raise_if_missing_property("tag_name")
+        self._raise_if_missing_property("model", "index", "tag_name")
         super().__init__()
 
     def get_real_url(self, fake_url):
@@ -522,7 +521,7 @@ class PlingCheck(CheckUpdate):
 
     @staticmethod
     def filter_rule(build_dic):
-        """ 文件名过滤规则 """
+        """ 文件过滤规则 """
         return int(build_dic["active"])
 
     def do_check(self):
