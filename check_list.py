@@ -324,6 +324,10 @@ class AospaU1(SfCheck):
     fullname = "Paranoid Android (Unofficial By orges)"
     project_name = "aospa-whyred"
 
+class ArnavProject(SfProjectCheck):
+    project_name = "roms-by-arnav"
+    developer = "Arnav"
+
 class ArrowQ(CheckUpdate):
 
     fullname = "Arrow OS Q Official"
@@ -920,27 +924,10 @@ class ResurrectionRemixGappsU1(AdrarProject2):
         ])
 
 
-class Revenge(CheckUpdate):
-
+class Revenge(SfCheck):
     fullname = "Revenge OS Official"
-
-    def do_check(self):
-        url = "https://osdn.net/projects/revengeos/storage/whyred/"
-        bs_obj = self.get_bs(self.request_url(url))
-        builds = bs_obj.select_one("#filelist").select(".file")
-        builds.sort(key=lambda tr: -int(tr.select_one(".date")["data-num"]))
-        for build in builds:
-            file_name = build.select_one(".name")["data-name"]
-            if not SfCheck.filter_rule(file_name):
-                continue
-            file_size = build.select_one(".filesize").get_text()
-            if float(file_size.split()[0]) < 500:
-                continue
-            self.update_info("LATEST_VERSION", file_name)
-            self.update_info("FILE_SIZE", file_size)
-            self.update_info("DOWNLOAD_LINK", url + file_name)
-            self.update_info("BUILD_DATE", build.select_one(".date").get_text())
-            break
+    project_name = "revengeos"
+    sub_path = "whyred/"
 
 class Sakura(SfCheck):
     fullname = "Project Sakura ROM Official"
@@ -1009,6 +996,9 @@ class StagRGapps(StagR):
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
+class Styx(SfCheck):
+    fullname = "Styx OS Official"
+    project_name = "styx-os"
 
 class Superior(SfCheck):
     fullname = "Superior OS Official"
@@ -1075,6 +1065,7 @@ CHECK_LIST = (
     AosipDfGapps,
     Aospa,
     AospaU1,
+    ArnavProject,
     ArrowQ,
     ArrowQGapps,
     ArrowR,
@@ -1145,6 +1136,7 @@ CHECK_LIST = (
     StagQ,
     StagR,
     StagRGapps,
+    Styx,
     Superior,
     Syberia,
     SyberiaU1,
