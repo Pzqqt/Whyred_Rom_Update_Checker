@@ -25,13 +25,10 @@ LESS_LOG = False
 LOOP_CHECK_INTERVAL = 180 * 60
 
 # 代理服务器(为空时则不使用代理)
-PROXIES = "127.0.0.1:1080"
+PROXIES = "http://127.0.0.1:1080"
 
 # 请求超时
 TIMEOUT = 20
-
-# 是否为 Socks5 代理
-IS_SOCKS = False
 
 # 是否启用 TG BOT 发送消息的功能
 ENABLE_SENDMESSAGE = False
@@ -45,7 +42,5 @@ TG_SENDTO = os.environ.get("TG_SENDTO", "")
 if not PROXIES:
     PROXIES_DICT = {}
 else:
-    if IS_SOCKS:
-        PROXIES_DICT = {"http": "socks5h://%s" % PROXIES, "https": "socks5h://%s" % PROXIES}
-    else:
-        PROXIES_DICT = {"http": PROXIES, "https": PROXIES}
+    PROXIES_DICT = {"http": PROXIES, "https": PROXIES}
+
