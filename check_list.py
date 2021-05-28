@@ -585,14 +585,40 @@ class HarooonProject(SfProjectCheck):
     project_name = "whyded-releases"
     developer = "Harooon"
 
-class Havoc(SfCheck):
+class Havoc(CheckUpdate):
 
     fullname = "Havoc OS Official"
-    project_name = "havoc-os"
-    sub_path = "whyred/"
     enable_pagecache = True
+    base_url = "https://download.havoc-os.com/"
 
-    def filter_rule(self, string):
+    def do_check(self):
+        bs_obj = self.get_bs(self.request_url(self.base_url+"?dir=whyred"))
+        builds = bs_obj.select("#file-list > li > a")
+        for build in builds:
+            build_name = build.select_one(".truncate").text.strip()
+            if self.filter_rule(build_name):
+                self.update_info("LATEST_VERSION", build_name)
+                self.update_info("DOWNLOAD_LINK", self.base_url+build["href"])
+                self.update_info("FILE_SIZE", build.select("div > div")[-2].text.strip())
+                self.update_info("BUILD_DATE", build.select("div > div")[-1].text.strip())
+                break
+
+    def after_check(self):
+        try:
+            file_info_dic = json.loads(self.request_url(
+                self.base_url + "?info=whyred/" + self.info_dic["LATEST_VERSION"]
+            ))
+        except requests_exceptions.HTTPError as error:
+            if "too large" in str(error):
+                return
+            raise
+        file_info_hashes = file_info_dic.get("hashes", {})
+        self.update_info("FILE_MD5", file_info_hashes.get("md5", None))
+        self.update_info("FILE_SHA1", file_info_hashes.get("sha1", None))
+        self.update_info("FILE_SHA256", file_info_hashes.get("sha256", None))
+
+    @staticmethod
+    def filter_rule(string):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
 
 class HavocGapps(Havoc):
