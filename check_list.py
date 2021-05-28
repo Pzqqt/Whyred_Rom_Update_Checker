@@ -537,7 +537,7 @@ class Descendant(CheckUpdate):
 
     def do_check(self):
         base_url = "https://downloads.descendant.me"
-        bs_obj = self.get_bs(self.request_url(base_url))
+        bs_obj = self.get_bs(self.request_url(base_url, proxies=None))
         latest_build_tr = None
         for tr_obj in bs_obj.select_one("#downloadList").select_one("tbody").select("tr"):
             if "whyred" in tr_obj.text:
@@ -853,53 +853,22 @@ class Rebellion(SfCheck):
     sub_path = "whyred/"
     _skip = True
 
-class ResurrectionRemix(CheckUpdate):
+class ResurrectionRemix(SfCheck):
 
     fullname = "Resurrection Remix OS Q Official"
+    project_name = "resurrectionremix-ten"
+    sub_path = "whyred/"
     enable_pagecache = True
 
-    @staticmethod
-    def filter_rule(string):
-        return "VANILLA" in string.upper()
-
-    def do_check(self):
-        base_url = "https://get.resurrectionremix.com/"
-        bs_obj = self.get_bs(self.request_url(base_url, params={"dir": "ten/whyred"}))
-        files = bs_obj.select_one("#directory-listing").select("li")[1:]
-        files = sorted(
-            files,
-            key=lambda x:
-                time.strptime(x.select("span")[2].get_text().strip(), "%Y-%m-%d %H:%M:%S")
-        )
-        for file in files[::-1]:
-            file_info = file.find("a")
-            file_name = file_info["data-name"]
-            if file_name.endswith(".zip") and self.filter_rule(file_name):
-                self.update_info("LATEST_VERSION", file_name)
-                self.update_info("DOWNLOAD_LINK", base_url + file_info["href"])
-                self.update_info("FILE_SIZE", file_info.select("span")[1].get_text().strip())
-                self.update_info("BUILD_DATE", file_info.select("span")[2].get_text().strip())
-                break
-
-    def after_check(self):
-        json_str = self.request_url(
-            "https://get.resurrectionremix.com/",
-            params={"hash": "ten/whyred/%s" % self.info_dic["LATEST_VERSION"]}
-        )
-        if json_str is not None:
-            json_dic = json.loads(json_str)
-            if json_dic.get("md5").isalnum():
-                self.update_info("FILE_MD5", json_dic.get("md5"))
-            if json_dic.get("sha1").isalnum():
-                self.update_info("FILE_SHA1", json_dic.get("sha1"))
+    def filter_rule(self, string):
+        return SfCheck.filter_rule(string) and "VANILLA" in string.upper()
 
 class ResurrectionRemixGapps(ResurrectionRemix):
 
     fullname = "Resurrection Remix OS Q Official (Include Gapps)"
 
-    @staticmethod
-    def filter_rule(string):
-        return "VANILLA" not in string.upper()
+    def filter_rule(self, string):
+        return SfCheck.filter_rule(string) and "VANILLA" not in string.upper()
 
 class ResurrectionRemixU1(AdrarProject2):
 
