@@ -551,6 +551,33 @@ class Descendant(CheckUpdate):
             base_url, latest_build_tr.select_one("a")["href"]
         ))
 
+class E(CheckUpdate):
+
+    fullname = "/e/ Rom Official"
+    base_url = "https://images.ecloud.global/dev/whyred/"
+
+    def do_check(self):
+        bs_obj = self.get_bs(self.request_url(self.base_url))
+        a_tags = bs_obj.select("a")
+        for a_tag in a_tags:
+            if a_tag["href"].endswith(".zip"):
+                self.update_info("LATEST_VERSION", a_tag.get_text())
+                self.update_info("DOWNLOAD_LINK", self.base_url+a_tag["href"])
+                self.update_info("BUILD_CHANGELOG", "https://gitlab.e.foundation/e/os/releases/-/releases")
+                break
+        else:
+            raise Exception("Parsing failed!")
+
+    def after_check(self):
+        self.update_info(
+            "FILE_MD5",
+            self.get_hash_from_file(self.info_dic["DOWNLOAD_LINK"] + ".md5sum")
+        )
+        self.update_info(
+            "FILE_SHA256",
+            self.get_hash_from_file(self.info_dic["DOWNLOAD_LINK"] + ".sha256sum")
+        )
+
 class EvolutionX(SfCheck):
 
     fullname = "EvolutionX Official"
@@ -1086,6 +1113,7 @@ CHECK_LIST = (
     Cygnus,
     DarkstarProject,
     Descendant,
+    E,
     EvolutionX,
     Extended,
     ExtendedU1,
