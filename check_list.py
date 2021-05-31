@@ -2,7 +2,6 @@
 # encoding: utf-8
 
 import json
-import time
 from collections import OrderedDict
 
 from requests import exceptions as requests_exceptions

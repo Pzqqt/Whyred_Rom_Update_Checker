@@ -34,10 +34,10 @@ TIMEOUT = 20
 ENABLE_SENDMESSAGE = False
 
 # TG BOT TOKEN
-TG_TOKEN = os.environ.get("TG_TOKEN", "")
+TG_TOKEN = os.getenv("TG_TOKEN", "")
 
 # 发送消息到...
-TG_SENDTO = os.environ.get("TG_SENDTO", "")
+TG_SENDTO = os.getenv("TG_SENDTO", "")
 
 if not PROXIES:
     PROXIES_DICT = {}
