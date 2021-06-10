@@ -15,6 +15,7 @@ A simple tool to check whyred's Rom update.
 - requests
 - sqlalchemy
 - pyTelegramBotAPI
+- lxml
 
 ## License
 - [MIT](https://github.com/Pzqqt/Whyred_Rom_Update_Checker/blob/master/LICENSE)
