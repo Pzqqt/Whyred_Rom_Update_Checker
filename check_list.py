@@ -3,8 +3,11 @@
 
 import json
 from collections import OrderedDict
+from datetime import datetime
+import re
 
 from requests import exceptions as requests_exceptions
+from telebot.apihelper import ApiTelegramException
 
 from check_init import (
     CHROME_UA, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck
@@ -488,6 +491,22 @@ class Colt(SfCheck):
     project_name = "coltos"
     sub_path = "Whyred/"
 
+class Conquer(SfCheck):
+
+    fullname = "Conquer OS Official"
+    project_name = "conqueros"
+    enable_pagecache = True
+
+    def filter_rule(self, string):
+        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
+
+class ConquerGapps(Conquer):
+
+    fullname = "Conquer OS Official (Include Gapps)"
+
+    def filter_rule(self, string):
+        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
+
 class Corvus(PlingCheck):
 
     fullname = "Corvus OS Official"
@@ -516,7 +535,7 @@ class CrDroidP(SfCheck):
     sub_path = "WHYRED/"
 
 class CrDroid(SfCheck):
-    fullname = "CrDroid Q Official"
+    fullname = "CrDroid Official"
     project_name = "crdroid"
     sub_path = "whyred"
 
@@ -528,6 +547,11 @@ class Cygnus(SfCheck):
 class DarkstarProject(SfProjectCheck):
     project_name = "project-dark"
     developer = "Darkstar"
+    sub_path = "whyred/"
+
+class DerpFest(SfCheck):
+    fullname = "DerpFest Official"
+    project_name = "derpfest"
     sub_path = "whyred/"
 
 class Descendant(CheckUpdate):
@@ -549,6 +573,29 @@ class Descendant(CheckUpdate):
         self.update_info("DOWNLOAD_LINK", "%s%s" % (
             base_url, latest_build_tr.select_one("a")["href"]
         ))
+
+class Dot(CheckUpdate):
+
+    fullname = "Dot OS Official"
+    enable_pagecache = True
+
+    section_id = "vanilladetails"
+
+    def do_check(self):
+        bs_obj = self.get_bs(self.request_url("https://www.droidontime.com/whyred"))
+        section = bs_obj.select_one("#%s" % self.section_id)
+        self.update_info("FILE_SIZE", self.grep(section.find("h1").get_text(), "File Size").strip())
+        div_build_info_detail = section.select_one(".bg-gray-200").get_text()
+        self.update_info("BUILD_VERSION", self.grep(div_build_info_detail, "Version").strip())
+        self.update_info("LATEST_VERSION", self.grep(div_build_info_detail, "File name").strip())
+        self.update_info("FILE_MD5", self.grep(div_build_info_detail, "File hash").strip())
+        div_build_info_footer = section.select_one(".justify-between")
+        self.update_info("BUILD_DATE", div_build_info_footer.find("svg").parent.get_text().strip())
+        self.update_info("DOWNLOAD_LINK", div_build_info_footer.find("a")["href"])
+
+class DotGapps(Dot):
+    fullname = "Dot OS Official (Include Gapps)"
+    section_id = "gappsdetails"
 
 class E(CheckUpdate):
 
@@ -616,9 +663,10 @@ class Havoc(CheckUpdate):
     fullname = "Havoc OS Official"
     enable_pagecache = True
     base_url = "https://download.havoc-os.com/"
+    dir_path = "whyred"
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url(self.base_url+"?dir=whyred"))
+        bs_obj = self.get_bs(self.request_url("".join([self.base_url, "?dir=", self.dir_path])))
         builds = bs_obj.select("#file-list > li > a")
         for build in builds:
             build_name = build.select_one(".truncate").text.strip()
@@ -631,17 +679,19 @@ class Havoc(CheckUpdate):
 
     def after_check(self):
         try:
-            file_info_dic = json.loads(self.request_url(
-                self.base_url + "?info=whyred/" + self.info_dic["LATEST_VERSION"]
-            ))
+            json_text = self.request_url(
+                "".join([self.base_url, "?info=", self.dir_path, "/", self.info_dic["LATEST_VERSION"]])
+            )
         except requests_exceptions.HTTPError as error:
             if "too large" in str(error):
                 return
             raise
-        file_info_hashes = file_info_dic.get("hashes", {})
-        self.update_info("FILE_MD5", file_info_hashes.get("md5", None))
-        self.update_info("FILE_SHA1", file_info_hashes.get("sha1", None))
-        self.update_info("FILE_SHA256", file_info_hashes.get("sha256", None))
+        if "<script" in json_text:
+            json_text = re.sub(r"<script.*?script>", "", json_text, flags=re.S).strip()
+        file_info_hashes = json.loads(json_text).get("hashes", {})
+        self.update_info("FILE_MD5", file_info_hashes.get("md5"))
+        self.update_info("FILE_SHA1", file_info_hashes.get("sha1"))
+        self.update_info("FILE_SHA256", file_info_hashes.get("sha256"))
 
     @staticmethod
     def filter_rule(string):
@@ -736,6 +786,22 @@ class Neon(SfCheck):
     project_name = "neonrelease"
     sub_path = "whyred/"
 
+class Nezuko(SfCheck):
+
+    fullname = "Nezuko OS Official"
+    project_name = "nezukoos"
+    enable_pagecache = True
+
+    def filter_rule(self, string):
+        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
+
+class NezukoGapps(Nezuko):
+
+    fullname = "Nezuko OS Official (Include Gapps)"
+
+    def filter_rule(self, string):
+        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
+
 class Nitrogen(SfCheck):
     fullname = "Nitrogen OS Official"
     project_name = "nitrogen-project"
@@ -751,42 +817,14 @@ class Nusantara(PlingCheck):
     p_id = 1422405
     collection_id = 1602832891
 
-class Octavi(CheckUpdate):
+class Octavi(Havoc):
     fullname = "Octavi OS Official"
     enable_pagecache = True
     base_url = "https://downloads.octavi-os.com/"
-
-    def do_check(self):
-        bs_obj = self.get_bs(self.request_url(self.base_url + "?dir=Whyred"))
-        builds = bs_obj.select("#file-list > li > a")
-        for build in builds:
-            build_name = build.select_one(".truncate").text.strip()
-            if self.filter_rule(build_name):
-                self.update_info("LATEST_VERSION", build_name)
-                self.update_info("DOWNLOAD_LINK", self.base_url + build["href"])
-                self.update_info("FILE_SIZE", build.select("div > div")[-2].text.strip())
-                self.update_info("BUILD_DATE", build.select("div > div")[-1].text.strip())
-                break
-
-    def after_check(self):
-        try:
-            file_info_dic = json.loads(self.request_url(
-                self.base_url + "?info=Whyred/" + self.info_dic["LATEST_VERSION"]
-            ))
-        except requests_exceptions.HTTPError as error:
-            if "too large" in str(error):
-                return
-            raise
-        file_info_hashes = file_info_dic.get("hashes", {})
-        self.update_info("FILE_MD5", file_info_hashes.get("md5"))
-        self.update_info("FILE_SHA1", file_info_hashes.get("sha1"))
-        self.update_info("FILE_SHA256", file_info_hashes.get("sha256"))
-
-    @staticmethod
-    def filter_rule(string):
-        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
+    dir_path = "Whyred"
 
 class OctaviGapps(Octavi):
+
     fullname = "Octavi OS Official (Include Gapps)"
 
     def filter_rule(self, string):
@@ -945,10 +983,34 @@ class ResurrectionRemixGappsU1(AdrarProject2):
         ])
 
 
-class Revenge(SfCheck):
+class Revenge(CheckUpdate):
+
     fullname = "Revenge OS Official"
-    project_name = "revengeos"
-    sub_path = "whyred/"
+
+    def do_check(self):
+        latest_info = json.loads(self.request_url(
+            "https://raw.githubusercontent.com/RevengeOS-Devices/official_devices/master/whyred/device.json"
+        ))
+        if not latest_info.get("error"):
+            self.update_info("LATEST_VERSION", latest_info["filename"])
+            self.update_info("BUILD_DATE", datetime.fromtimestamp(latest_info["datetime"]).ctime())
+            self.update_info("FILE_MD5", latest_info["filehash"])
+            self.update_info("FILE_SIZE", "%0.1f MB" % (int(latest_info["size"]) / 1024 / 1024))
+            self.update_info("DOWNLOAD_LINK", latest_info["url"])
+            self.update_info("BUILD_VERSION", latest_info["version"])
+
+    def after_check(self):
+        self.update_info(
+            "BUILD_CHANGELOG",
+            self.request_url("https://download.revengeos.com/download/whyred/changelog.txt").strip()
+        )
+
+    def send_message(self):
+        try:
+            super().send_message()
+        except ApiTelegramException:
+            self.update_info("BUILD_CHANGELOG", "https://download.revengeos.com/download/whyred/changelog.txt")
+            super().send_message()
 
 class Sakura(SfCheck):
     fullname = "Project Sakura ROM Official"
@@ -1104,6 +1166,8 @@ CHECK_LIST = (
     Cherish,
     CherishGapps,
     Colt,
+    Conquer,
+    ConquerGapps,
     Corvus,
     CorvusGapps,
     Cosmic,
@@ -1111,7 +1175,10 @@ CHECK_LIST = (
     CrDroid,
     Cygnus,
     DarkstarProject,
+    DerpFest,
     Descendant,
+    Dot,
+    DotGapps,
     E,
     EvolutionX,
     Extended,
@@ -1130,6 +1197,8 @@ CHECK_LIST = (
     LineageU3,
     MalfunctionProject,
     Neon,
+    Nezuko,
+    NezukoGapps,
     Nitrogen,
     NitrogenU1,
     Nusantara,
