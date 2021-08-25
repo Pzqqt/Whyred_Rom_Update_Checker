@@ -2,13 +2,14 @@
 # encoding: utf-8
 
 import logging
+import os
 
 from config import LOG_FILE, ENABLE_LOGGER
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(level=logging.INFO)
 
-_HANDLER = logging.FileHandler(LOG_FILE)
+_HANDLER = logging.FileHandler(os.path.join(os.path.dirname(os.path.abspath(__file__)), LOG_FILE))
 _HANDLER.setLevel(logging.INFO)
 _HANDLER.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 
