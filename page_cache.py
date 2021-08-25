@@ -20,7 +20,7 @@ class PageCache:
 
     def __init__(self):
         self.__page_cache = dict()
-        self.threading_lock = threading.Lock()
+        self.threading_lock = threading.RLock()
 
     @staticmethod
     def __params_change(params):
@@ -32,11 +32,13 @@ class PageCache:
 
     def read(self, url, params):
         params = self.__params_change(params)
-        return self.__page_cache.get((url, params))
+        with self.threading_lock:
+            return self.__page_cache.get((url, params))
 
     def save(self, url, params, page_source):
         params = self.__params_change(params)
-        self.__page_cache[(url, params)] = page_source
+        with self.threading_lock:
+            self.__page_cache[(url, params)] = page_source
 
     def clear(self):
         with self.threading_lock:
