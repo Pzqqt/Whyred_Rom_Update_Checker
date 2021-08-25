@@ -46,7 +46,7 @@ class CheckUpdate:
     _skip = False
 
     def __init__(self):
-        self._raise_if_missing_property("fullname")
+        self._abort_if_missing_property("fullname")
         self.__info_dic = OrderedDict([
             ("LATEST_VERSION", None),
             ("BUILD_TYPE", None),
@@ -90,7 +90,7 @@ class CheckUpdate:
     def info_dic(self):
         return self.__info_dic
 
-    def _raise_if_missing_property(self, *props):
+    def _abort_if_missing_property(self, *props):
         if None in (getattr(self, key, None) for key in props):
             raise Exception(
                 "Subclasses inherited from the %s class must specify the '%s' property when defining!"
@@ -279,7 +279,7 @@ class SfCheck(CheckUpdate):
     }
 
     def __init__(self):
-        self._raise_if_missing_property("project_name")
+        self._abort_if_missing_property("project_name")
         super().__init__()
 
     @classmethod
@@ -389,7 +389,7 @@ class SfProjectCheck(SfCheck):
     developer = None
 
     def __init__(self):
-        self._raise_if_missing_property("developer")
+        self._abort_if_missing_property("developer")
         self.fullname = "New rom release by %s" % self.developer
         super().__init__()
 
@@ -410,7 +410,7 @@ class H5aiCheck(CheckUpdate):
     sub_url = None
 
     def __init__(self):
-        self._raise_if_missing_property("base_url", "sub_url")
+        self._abort_if_missing_property("base_url", "sub_url")
         super().__init__()
 
     def do_check(self):
@@ -432,7 +432,7 @@ class AexCheck(CheckUpdate):
     sub_path = None
 
     def __init__(self):
-        self._raise_if_missing_property("sub_path")
+        self._abort_if_missing_property("sub_path")
         super().__init__()
 
     def do_check(self):
@@ -463,7 +463,7 @@ class PeCheck(CheckUpdate):
     _url = "https://download.pixelexperience.org"
 
     def __init__(self):
-        self._raise_if_missing_property("model", "index", "tag_name")
+        self._abort_if_missing_property("model", "index", "tag_name")
         super().__init__()
 
     def get_real_url(self, fake_url):
@@ -516,7 +516,7 @@ class PlingCheck(CheckUpdate):
     collection_id = None
 
     def __init__(self):
-        self._raise_if_missing_property("p_id", "collection_id")
+        self._abort_if_missing_property("p_id", "collection_id")
         super().__init__()
 
     @staticmethod

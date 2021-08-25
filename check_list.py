@@ -93,7 +93,7 @@ class GoogleClangPrebuilt(CheckUpdate):
         return bool(extra_ids)
 
     def get_print_text(self):
-        raise NotImplementedError
+        raise NotImplemented
 
     @classmethod
     def _get_print_text(cls, dic):
