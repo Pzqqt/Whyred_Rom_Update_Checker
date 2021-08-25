@@ -863,6 +863,11 @@ class PePeU2(PeU2):
     def filter_rule(self, build_dic):
         return PlingCheck.filter_rule(build_dic) and "PLUS" in build_dic["name"].upper()
 
+class PeruBacchaProject(SfProjectCheck):
+    project_name = "aosp-project"
+    sub_path = "Whyred/"
+    developer = "PeruBaccha"
+
 class PixelPlusUI(SfCheck):
     fullname = "PixelPlusUI Official"
     project_name = "pixelplusui-project"
@@ -1209,6 +1214,7 @@ CHECK_LIST = (
     PeRPe,
     PeU2,
     PePeU2,
+    PeruBacchaProject,
     PixelPlusUI,
     PixysR,
     PixysRGapps,
