@@ -575,3 +575,41 @@ class PlingCheck(CheckUpdate):
                 real_download_link,
             )
         )
+
+class GithubReleases(CheckUpdate):
+
+    repository_url = None
+
+    def __init__(self):
+        self._abort_if_missing_property("repository_url")
+        super().__init__()
+
+    def do_check(self):
+        url = "https://github.com/%s/releases" % self.repository_url
+        bs_obj = self.get_bs(self.request_url(url))
+        release_commit = bs_obj.select_one(".release").select_one(".commit")
+        release_header_a = release_commit.select_one(".release-header a")
+        self.update_info("BUILD_VERSION", release_header_a.get_text())
+        self.update_info("LATEST_VERSION", "https://github.com" + release_header_a["href"])
+        assets = "\n".join([
+            "[%s%s](%s)" % (
+                div.select_one("a").get_text().strip(),
+                " (%s)" % div.select_one("small").get_text() if div.select_one("small") else "",
+                "https://github.com" + div.select_one("a")["href"]
+            )
+            for div in release_commit.select_one("details .Box").select(".Box-body")
+        ])
+        self.update_info("DOWNLOAD_LINK", assets)
+
+    def get_print_text(self):
+        print_str_list = [
+            "*%s Update*" % self.fullname,
+            time.strftime("%Y-%m-%d", time.localtime(time.time())),
+            "",
+            "Release tag:",
+            "[%s](%s)" % (self.info_dic["BUILD_VERSION"], self.info_dic["LATEST_VERSION"]),
+            "",
+            "Assets:",
+            self.info_dic["DOWNLOAD_LINK"],
+        ]
+        return "\n".join(print_str_list)
