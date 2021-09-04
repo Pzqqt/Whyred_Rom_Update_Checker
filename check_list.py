@@ -10,7 +10,7 @@ from requests import exceptions as requests_exceptions
 from telebot.apihelper import ApiTelegramException
 
 from check_init import (
-    CHROME_UA, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck
+    CHROME_UA, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck, GithubReleases
 )
 from database import Saved
 from tgbot import send_message as _send_message
@@ -158,6 +158,22 @@ class WireGuard(CheckUpdate):
             self.info_dic["DOWNLOAD_LINK"].split("/")[-1],
             self.info_dic["DOWNLOAD_LINK"],
         )
+
+class CascadiaCode(GithubReleases):
+    fullname = "Cascadia Code Font"
+    repository_url = "microsoft/cascadia-code"
+
+class ClashForWindows(GithubReleases):
+    fullname = "Clash for Windows"
+    repository_url = "Fndroid/clash_for_windows_pkg"
+
+class Sandboxie(GithubReleases):
+    fullname = "Sandboxie (By DavidXanatos)"
+    repository_url = "sandboxie-plus/Sandboxie"
+
+class Ventoy(GithubReleases):
+    fullname = "Ventoy"
+    repository_url = "ventoy/Ventoy"
 
 class AdrarProject(SfProjectCheck):
     project_name = "unofficial-by-adrar"
@@ -1137,6 +1153,10 @@ CHECK_LIST = (
     Linux44Y,
     GoogleClangPrebuilt,
     WireGuard,
+    CascadiaCode,
+    ClashForWindows,
+    Sandboxie,
+    Ventoy,
     AdrarProject,
     AdrarProject2,
     AexP,
