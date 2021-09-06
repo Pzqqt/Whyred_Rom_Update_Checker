@@ -10,7 +10,7 @@ from urllib.parse import unquote, urlencode
 import requests
 from bs4 import BeautifulSoup
 from requests.packages import urllib3
-from sqlalchemy.orm import exc
+from sqlalchemy.orm import exc as sqlalchemy_exc
 
 from config import ENABLE_MULTI_THREAD, PROXIES_DICT, TIMEOUT
 from database import create_dbsession, Saved
@@ -211,7 +211,7 @@ class CheckUpdate:
         with create_dbsession() as session:
             try:
                 saved_data = session.query(Saved).filter(Saved.ID == self.name).one()
-            except exc.NoResultFound:
+            except sqlalchemy_exc.NoResultFound:
                 new_data = Saved(
                     ID=self.name,
                     FULL_NAME=self.fullname,
@@ -231,8 +231,9 @@ class CheckUpdate:
         """
         if self.__info_dic["LATEST_VERSION"] is None:
             return False
-        saved_info = Saved.get_saved_info(self.name)
-        if saved_info is None:
+        try:
+            saved_info = Saved.get_saved_info(self.name)
+        except sqlalchemy_exc.NoResultFound:
             return True
         return self.__info_dic["LATEST_VERSION"] != saved_info.LATEST_VERSION
 
@@ -333,8 +334,9 @@ class SfCheck(CheckUpdate):
             return False
         if self.info_dic["BUILD_DATE"] is None:
             return False
-        saved_info = Saved.get_saved_info(self.name)
-        if saved_info is None:
+        try:
+            saved_info = Saved.get_saved_info(self.name)
+        except sqlalchemy_exc.NoResultFound:
             return True
         latest_date = self.date_transform(str(self.info_dic["BUILD_DATE"]))
         try:

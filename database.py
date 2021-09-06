@@ -7,7 +7,7 @@ from contextlib import contextmanager
 
 from sqlalchemy import create_engine, Column, String
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, exc
+from sqlalchemy.orm import sessionmaker
 
 from config import SQLITE_FILE
 
@@ -65,9 +65,6 @@ class Saved(_Base):
         :return: Saved对象或None
         """
         with create_dbsession() as session:
-            try:
-                return session.query(cls).filter(cls.ID == name).one()
-            except exc.NoResultFound:
-                return None
+            return session.query(cls).filter(cls.ID == name).one()
 
 _Base.metadata.create_all(_Engine)

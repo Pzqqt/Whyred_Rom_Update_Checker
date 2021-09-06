@@ -8,6 +8,7 @@ import re
 
 from requests import exceptions as requests_exceptions
 from telebot.apihelper import ApiTelegramException
+from sqlalchemy.orm import exc as sqlalchemy_exc
 
 from check_init import (
     CHROME_UA, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck, GithubReleases
@@ -80,8 +81,9 @@ class GoogleClangPrebuilt(CheckUpdate):
     def is_updated(self):
         if not self.info_dic["LATEST_VERSION"]:
             return False
-        saved_info = Saved.get_saved_info(self.name)
-        if not saved_info or not saved_info.LATEST_VERSION.startswith("["):
+        try:
+            saved_info = Saved.get_saved_info(self.name)
+        except sqlalchemy_exc.NoResultFound:
             # Forced overwrite
             self.write_to_database()
             return False
@@ -333,8 +335,9 @@ class Aospa(CheckUpdate):
             return False
         if self.info_dic["BUILD_DATE"] is None:
             return False
-        saved_info = Saved.get_saved_info(self.name)
-        if saved_info is None:
+        try:
+            saved_info = Saved.get_saved_info(self.name)
+        except sqlalchemy_exc.NoResultFound:
             return True
         return int(self.info_dic["BUILD_DATE"]) > int(saved_info.BUILD_DATE)
 
@@ -356,8 +359,12 @@ class ArrowQ(CheckUpdate):
 
     def __init__(self):
         super().__init__()
-        saved_info = Saved.get_saved_info(self.name)
-        self.previous_changelog = saved_info.BUILD_CHANGELOG if saved_info else None
+        try:
+            saved_info = Saved.get_saved_info(self.name)
+        except sqlalchemy_exc.NoResultFound:
+            self.previous_changelog = ""
+        else:
+            self.previous_changelog = saved_info.BUILD_CHANGELOG
 
     def do_check(self):
         url_source = self.request_url(
