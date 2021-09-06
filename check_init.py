@@ -61,11 +61,15 @@ class CheckUpdate:
         ])
         self._private_dic = {}
         self.__is_checked = False
-        # 在初始化实例时装饰self.do_check和self.after_check方法
+        # 在初始化实例时装饰这些方法
         # 使得实例执行self.do_check方法之后自动将self.__is_checked赋值为True
-        # 并且在self.__is_checked不为True时不允许执行self.after_check方法
+        # 并且在self.__is_checked不为True时不允许执行某些方法
         self.do_check = self.__hook_do_check(self.do_check)
-        self.after_check = self.__hook_after_check(self.after_check)
+        self.after_check = self.__hook_is_checked(self.after_check)
+        self.write_to_database = self.__hook_is_checked(self.write_to_database)
+        self.is_updated = self.__hook_is_checked(self.is_updated)
+        self.get_print_text = self.__hook_is_checked(self.get_print_text)
+        self.send_message = self.__hook_is_checked(self.send_message)
 
     def __hook_do_check(self, method):
         def hook(*args, **kwargs):
@@ -75,11 +79,10 @@ class CheckUpdate:
             # 必须返回 None
         return hook
 
-    def __hook_after_check(self, method):
+    def __hook_is_checked(self, method):
         def hook(*args, **kwargs):
             assert self.__is_checked, "Please execute the 'do_check' method first."
-            method(*args, **kwargs)
-            # 必须返回 None
+            return method(*args, **kwargs)
         return hook
 
     @property
