@@ -600,25 +600,34 @@ class Descendant(CheckUpdate):
 class Dot(CheckUpdate):
 
     fullname = "Dot OS Official"
-    enable_pagecache = True
-
-    section_id = "vanilladetails"
+    build_type = "vanilla"
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url("https://www.droidontime.com/whyred"))
-        section = bs_obj.select_one("#%s" % self.section_id)
-        self.update_info("FILE_SIZE", self.grep(section.find("h1").get_text(), "File Size").strip())
-        div_build_info_detail = section.select_one(".bg-gray-200").get_text()
-        self.update_info("BUILD_VERSION", self.grep(div_build_info_detail, "Version").strip())
-        self.update_info("LATEST_VERSION", self.grep(div_build_info_detail, "File name").strip())
-        self.update_info("FILE_MD5", self.grep(div_build_info_detail, "File hash").strip())
-        div_build_info_footer = section.select_one(".justify-between")
-        self.update_info("BUILD_DATE", div_build_info_footer.find("svg").parent.get_text().strip())
-        self.update_info("DOWNLOAD_LINK", div_build_info_footer.find("a")["href"])
+        json_info = json.loads(
+            self.request_url("https://api.droidontime.com/api/ota/whyred/releases/" + self.build_type)
+        )
+        latest_release = json_info["releases"][0]
+        self.update_info("LATEST_VERSION", latest_release["fileName"])
+        self.update_info("FILE_MD5", latest_release["hash"])
+        self.update_info("FILE_SIZE", "%0.2f MB" % (int(latest_release["size"]) / 1048576,))
+        self.update_info("BUILD_VERSION", latest_release["version"])
+        self.update_info("DOWNLOAD_LINK", latest_release["url"])
+
+    def after_check(self):
+        self.update_info(
+            "DOWNLOAD_LINK",
+            "`%s`\n[Official](%s) | [SourceForge](%s)" % (
+                self.info_dic["LATEST_VERSION"],
+                self.info_dic["DOWNLOAD_LINK"],
+                "https://sourceforge.net/projects/dotos-downloads/files/dot11/whyred/%s/%s/download" % (
+                    self.build_type, self.info_dic["LATEST_VERSION"]
+                ),
+            )
+        )
 
 class DotGapps(Dot):
     fullname = "Dot OS Official (Include Gapps)"
-    section_id = "gappsdetails"
+    build_type = "gapps"
 
 class E(CheckUpdate):
 
