@@ -315,6 +315,7 @@ class AosipDfGapps(H5aiCheck):
 class Aospa(CheckUpdate):
 
     fullname = "Paranoid Android Official"
+    _skip = True
 
     def do_check(self):
         req_text = self.request_url("https://api.aospa.co/updates/whyred")
