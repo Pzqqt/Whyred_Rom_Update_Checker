@@ -941,23 +941,9 @@ class PixysRGapps(PixysR):
     fullname = "Pixys OS R Official (Include Gapps)"
     tab_index = 2
 
-class Posp(CheckUpdate):
-
+class Posp(GithubReleases):
     fullname = "POSP Official"
-
-    def do_check(self):
-        bs_obj = self.get_bs(self.request_url(
-            "https://github.com/PotatoDevices/device_xiaomi_whyred/releases/latest"
-        ))
-        div_release = bs_obj.select_one(".release")
-        self.update_info(
-            "BUILD_VERSION",
-            div_release.select_one(".release-header a").get_text().strip()
-        )
-        div_file = bs_obj.select_one("details small").parent
-        self.update_info("LATEST_VERSION", div_file.find("span").get_text().strip())
-        self.update_info("DOWNLOAD_LINK", "https://github.com" + div_file.find("a")["href"])
-        self.update_info("FILE_SIZE", div_file.find("small").get_text().strip())
+    repository_url = "PotatoDevices/device_xiaomi_whyred"
 
 class RaghuVarmaProject(SfProjectCheck):
     project_name = "whyred-rv"
