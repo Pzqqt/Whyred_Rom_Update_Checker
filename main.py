@@ -177,7 +177,7 @@ def get_saved_json():
                 for result in sorted(session.query(Saved), key=lambda x: x.FULL_NAME)
                 if result.ID != "GoogleClangPrebuilt"
             ],
-            ensure_ascii=False,
+            # ensure_ascii=False,
         )
 
 def show_saved_data():
