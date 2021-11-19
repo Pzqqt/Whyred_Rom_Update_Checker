@@ -873,6 +873,7 @@ class PeR(PeCheck):
     index = 0
     tag_name = "11"
     enable_pagecache = True
+    _skip = True
 
 class PeRPe(PeR):
     fullname = "Pixel Experience 11 (Plus edition) Official"
