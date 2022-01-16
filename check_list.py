@@ -667,6 +667,10 @@ class EvolutionX(SfCheck):
             )
         )
 
+class EvolutionXU1(PlingCheck):
+    fullname = "EvolutionX (Unofficial By @The_Santy)"
+    p_id = 1545610
+
 class Extended(SfCheck):
     fullname = "ExtendedUI Official"
     project_name = "extendedui"
@@ -947,6 +951,10 @@ class Posp(GithubReleases):
     fullname = "POSP Official"
     repository_url = "PotatoDevices/device_xiaomi_whyred"
 
+class ProjectRadiant(SfCheck):
+    fullname = "Project Radiant Official"
+    project_name = "projectradiant"
+
 class RaghuVarmaProject(SfProjectCheck):
     project_name = "whyred-rv"
     developer = "Raghu Varma"
@@ -1210,6 +1218,7 @@ CHECK_LIST = (
     DotGapps,
     E,
     EvolutionX,
+    EvolutionXU1,
     Extended,
     ExtendedU1,
     GengKapakProject,
@@ -1243,6 +1252,7 @@ CHECK_LIST = (
     PixysR,
     PixysRGapps,
     Posp,
+    ProjectRadiant,
     RaghuVarmaProject,
     RandomStuffProject,
     Rebellion,
