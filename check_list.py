@@ -901,9 +901,20 @@ class PeruBacchaProject(SfProjectCheck):
     sub_path = "Whyred/"
     developer = "PeruBaccha"
 
-class PixelPlusUI(SfCheck):
+class PixelPlusUI(PlingCheck):
     fullname = "PixelPlusUI Official"
-    project_name = "pixelplusui-project"
+    p_id = 1513365
+    collection_id = 1619581439
+
+    def after_check(self):
+        super().after_check()
+        self.update_info(
+            "BUILD_CHANGELOG",
+            self.request_url(
+                "https://github.com/PixelPlusUI-Devices/official_devices/raw/master/changelogs/whyred/%s.txt"
+                % self.info_dic["LATEST_VERSION"]
+            )
+        )
 
 class PixysR(CheckUpdate):
 
