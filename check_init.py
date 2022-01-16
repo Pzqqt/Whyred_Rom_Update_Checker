@@ -518,10 +518,9 @@ class PeCheck(CheckUpdate):
 class PlingCheck(CheckUpdate):
 
     p_id = None
-    collection_id = None
 
     def __init__(self):
-        self._abort_if_missing_property("p_id", "collection_id")
+        self._abort_if_missing_property("p_id")
         super().__init__()
 
     @staticmethod
@@ -530,19 +529,11 @@ class PlingCheck(CheckUpdate):
         return int(build_dic["active"])
 
     def do_check(self):
-        url = "https://www.pling.com/p/%s/getfilesajax" % self.p_id
-        params = {
-            "format": "json",
-            "ignore_status_code": 1,
-            "status": "all",
-            "collection_id": self.collection_id,
-            "perpage": 1000,
-            "page": 1,
-        }
-        json_dic = json.loads(self.request_url(url, params=params))
-        if not json_dic["files"]:
+        url = "https://www.pling.com/p/%s/loadFiles" % self.p_id
+        json_dic = json.loads(self.request_url(url))
+        if not json_dic:
             return
-        json_dic_filtered_files = [f for f in json_dic["files"] if self.filter_rule(f)]
+        json_dic_filtered_files = [f for f in json_dic if self.filter_rule(f)]
         if not json_dic_filtered_files:
             return
         latest_build = json_dic_filtered_files[-1]
@@ -566,12 +557,14 @@ class PlingCheck(CheckUpdate):
                     "file_size": latest_build["size"],
                 })
             )
-            self.update_info(
-                "FILE_SIZE",
-                "%0.2f MB" % (int(latest_build["size"]) / 1048576,)
-            )
         else:
             real_download_link = unquote(latest_build["tags"]).replace("link##", "")
+        file_size = latest_build["size"]
+        if file_size:
+            self.update_info(
+                "FILE_SIZE",
+                "%0.2f MB" % (int(file_size) / 1048576,)
+            )
         self.update_info(
             "DOWNLOAD_LINK",
             "`%s`\n[Pling](%s) | [Direct](%s)" % (

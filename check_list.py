@@ -185,7 +185,6 @@ class AdrarProject2(PlingCheck):
 
     fullname = "New rom release by AdrarHussain"
     p_id = 1459808
-    collection_id = 1608020949
     enable_pagecache = True
 
     def filter_rule(self, build_dic):
@@ -217,7 +216,6 @@ class AexR(AexCheck):
 class AexRU1(PlingCheck):
     fullname = "AospExtended 11 (Unofficial By SakilMondal)"
     p_id = 1423583
-    collection_id = 1600503087
 
 class Aicp(CheckUpdate):
 
@@ -425,7 +423,6 @@ class Awaken(PlingCheck):
 
     fullname = "Project Awaken Official (By SakilMondal)"
     p_id = 1446633
-    collection_id = 1605615713
 
     def do_check(self):
         super().do_check()
@@ -534,7 +531,6 @@ class Corvus(PlingCheck):
 
     fullname = "Corvus OS Official"
     p_id = 1375302
-    collection_id = 1586848776
     enable_pagecache = True
 
     def filter_rule(self, build_dic):
@@ -679,7 +675,6 @@ class Extended(SfCheck):
 class ExtendedU1(PlingCheck):
     fullname = "ExtendedUI (Unofficial By Nesquirt)"
     p_id = 1374700
-    collection_id = 1586685069
 
 class GengKapakProject(SfProjectCheck):
     project_name = "gengkapak"
@@ -806,7 +801,6 @@ class Lineage(CheckUpdate):
 class LineageU3(PlingCheck):
     fullname = "Lineage OS 18.0 (Unofficial By SakilMondal)"
     p_id = 1422431
-    collection_id = 1600161531
 
 class MalfunctionProject(SfProjectCheck):
     project_name = "sp4ce"
@@ -847,7 +841,6 @@ class NitrogenU1(SfCheck):
 class Nusantara(PlingCheck):
     fullname = "Nusantara Project Official"
     p_id = 1422405
-    collection_id = 1602832891
 
 class Octavi(Havoc):
     fullname = "Octavi OS Official"
@@ -884,7 +877,6 @@ class PeU2(PlingCheck):
 
     fullname = "Pixel Experience Q (Unofficial By SakilMondal)"
     p_id = 1406086
-    collection_id = 1595519142
 
     def filter_rule(self, build_dic):
         return PlingCheck.filter_rule(build_dic) and "PLUS" not in build_dic["name"].upper()
@@ -904,7 +896,6 @@ class PeruBacchaProject(SfProjectCheck):
 class PixelPlusUI(PlingCheck):
     fullname = "PixelPlusUI Official"
     p_id = 1513365
-    collection_id = 1619581439
 
     def after_check(self):
         super().after_check()
@@ -1055,7 +1046,6 @@ class Sakura(SfCheck):
 class SalmanProject(PlingCheck):
     fullname = "New rom release by Salman"
     p_id = 1420225
-    collection_id = 1599592124
 
 class ShapeShift(SfCheck):
     fullname = "ShapeShift OS Official"
