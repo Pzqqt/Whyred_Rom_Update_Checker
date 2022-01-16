@@ -454,6 +454,7 @@ class H5aiCheck(CheckUpdate):
 
 class AexCheck(CheckUpdate):
     sub_path = None
+    _skip = True
 
     def __init__(self):
         self._abort_if_missing_property("sub_path")
