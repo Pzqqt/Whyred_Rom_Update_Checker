@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 import json
+import time
 from collections import OrderedDict
 from datetime import datetime
 import re
@@ -19,13 +20,15 @@ from tgbot import send_message as _send_message
 class Linux44Y(CheckUpdate):
 
     fullname = "Linux Kernel stable v4.4.y"
+    re_pattern = r'4\.4\.\d+'
+    enable_pagecache = True
 
     def do_check(self):
         url = "https://www.kernel.org"
         bs_obj = self.get_bs(self.request_url(url))
         for tr_obj in bs_obj.select_one("#releases").select("tr"):
             kernel_version = tr_obj.select("td")[1].get_text()
-            if kernel_version.startswith("4.4."):
+            if re.match(self.re_pattern, kernel_version):
                 self.update_info("LATEST_VERSION", kernel_version)
                 self.update_info(
                     "DOWNLOAD_LINK",
@@ -46,6 +49,10 @@ class Linux44Y(CheckUpdate):
             self.info_dic["DOWNLOAD_LINK"],
             self.info_dic["BUILD_CHANGELOG"],
         )
+
+class Linux414Y(Linux44Y):
+    fullname = "Linux Kernel stable v4.14.y"
+    re_pattern = r'4\.14\.\d+'
 
 class GoogleClangPrebuilt(CheckUpdate):
 
@@ -628,19 +635,25 @@ class DotGapps(Dot):
 class E(CheckUpdate):
 
     fullname = "/e/ Rom Official"
-    base_url = "https://images.ecloud.global/dev/whyred/"
+    BASE_URL = "https://images.ecloud.global/dev/whyred/"
+
+    @staticmethod
+    def parse_build_date(file_name):
+        return time.strptime(re.search(r'\d{14}', file_name)[0][:8], "%Y%m%d")
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url(self.base_url))
-        a_tags = bs_obj.select("a")
-        for a_tag in a_tags:
-            if a_tag["href"].endswith(".zip"):
-                self.update_info("LATEST_VERSION", a_tag.get_text())
-                self.update_info("DOWNLOAD_LINK", self.base_url+a_tag["href"])
-                self.update_info("BUILD_CHANGELOG", "https://gitlab.e.foundation/e/os/releases/-/releases")
-                break
-        else:
-            raise Exception("Parsing failed!")
+        bs_obj = self.get_bs(self.request_url(self.BASE_URL))
+        files = [a_tag for a_tag in bs_obj.select("a") if a_tag["href"].endswith(".zip")]
+        if not files:
+            return
+        try:
+            files.sort(key=lambda a_tag: self.parse_build_date(a_tag.get_text()), reverse=True)
+        except TypeError:
+            pass
+        latest_build = files[0]
+        self.update_info("LATEST_VERSION", latest_build.get_text().strip())
+        self.update_info("DOWNLOAD_LINK", self.BASE_URL + latest_build["href"])
+        self.update_info("BUILD_CHANGELOG", "https://gitlab.e.foundation/e/os/releases/-/releases")
 
     def after_check(self):
         self.update_info(
@@ -650,6 +663,20 @@ class E(CheckUpdate):
         self.update_info(
             "FILE_SHA256",
             self.get_hash_from_file(self.info_dic["DOWNLOAD_LINK"] + ".sha256sum")
+        )
+
+    def is_updated(self):
+        result = super().is_updated()
+        if not result:
+            return False
+        try:
+            saved_info = Saved.get_saved_info(self.name)
+        except sqlalchemy_exc.NoResultFound:
+            return True
+        return (
+            self.parse_build_date(self.info_dic["LATEST_VERSION"])
+            >
+            self.parse_build_date(saved_info.LATEST_VERSION)
         )
 
 class EvolutionX(SfCheck):
@@ -915,6 +942,7 @@ class PixysR(CheckUpdate):
 
     fullname = "Pixys OS R Official"
     enable_pagecache = True
+    _skip = True
 
     base_url = "https://pixysos.com"
     device = "whyred"
@@ -946,6 +974,11 @@ class PixysR(CheckUpdate):
 class PixysRGapps(PixysR):
     fullname = "Pixys OS R Official (Include Gapps)"
     tab_index = 2
+
+class PixysSGapps(PixysRGapps):
+    fullname = "Pixys OS 12 Official (Include Gapps)"
+    android_version_tag = "twelve"
+    _skip = False
 
 class Posp(GithubReleases):
     fullname = "POSP Official"
@@ -1163,6 +1196,7 @@ class Xtended(SfCheck):
 
 CHECK_LIST = (
     Linux44Y,
+    Linux414Y,
     GoogleClangPrebuilt,
     WireGuard,
     CascadiaCode,
@@ -1251,6 +1285,7 @@ CHECK_LIST = (
     PixelPlusUI,
     PixysR,
     PixysRGapps,
+    PixysSGapps,
     Posp,
     ProjectRadiant,
     RaghuVarmaProject,
