@@ -57,8 +57,7 @@ class Linux414Y(Linux44Y):
 class GoogleClangPrebuilt(CheckUpdate):
 
     fullname = "Google Clang Prebuilt"
-
-    _base_url = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
+    BASE_URL = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
 
     def __init__(self):
         super().__init__()
@@ -66,7 +65,7 @@ class GoogleClangPrebuilt(CheckUpdate):
         self._private_dic["extra_ids"] = []
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url(self._base_url+"/+log"))
+        bs_obj = self.get_bs(self.request_url(self.BASE_URL + "/+log"))
         commits = bs_obj.select_one(".CommitLog").select("li")
         for commit in commits:
             a_tag = commit.select("a")[1]
@@ -131,7 +130,7 @@ class GoogleClangPrebuilt(CheckUpdate):
                     "BUILD_CHANGELOG": commit_url,
                     "BUILD_VERSION": detailed_version,
                     "DOWNLOAD_LINK": "%s/+archive/%s/clang-%s.tar.gz" % (
-                        self._base_url, id_, release_version,
+                        self.BASE_URL, id_, release_version,
                     ),
                 }
             ))
@@ -458,8 +457,10 @@ class BlissQ(SfCheck):
     def after_check(self):
         self.update_info(
             "BUILD_CHANGELOG",
-            self.info_dic["DOWNLOAD_LINK"] \
-                .replace(self.sub_path, self.sub_path + "Changelog-").replace(".zip", ".txt")
+            (
+                self.info_dic["DOWNLOAD_LINK"].replace(self.sub_path, self.sub_path + "Changelog-")
+                                              .replace(".zip", ".txt")
+            )
         )
 
 class Bootleggers(SfCheck):
@@ -944,13 +945,13 @@ class PixysR(CheckUpdate):
     enable_pagecache = True
     _skip = True
 
-    base_url = "https://pixysos.com"
+    BASE_URL = "https://pixysos.com"
     device = "whyred"
     android_version_tag = "eleven"
     tab_index = 1
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url(self.base_url+"/"+self.device))
+        bs_obj = self.get_bs(self.request_url(self.BASE_URL + "/" + self.device))
         div_tab = bs_obj.find("div", {"data-tab-content": self.android_version_tag})
         try:
             div_tab_outer = div_tab.select(".tab__outer")[self.tab_index]
@@ -960,7 +961,7 @@ class PixysR(CheckUpdate):
         if builds:
             latest_build = builds[0]
             self.update_info(
-                "BUILD_CHANGELOG", latest_build.select_one(".clogs").get_text().strip()
+                "BUILD_CHANGELOG", latest_build.select_one(".clogs").get_text().strip() or None
             )
             latest_build_info = latest_build.select_one(".build__info div")
             latest_build_info_text = latest_build_info.get_text().strip().replace(":\n", ":")
@@ -969,7 +970,7 @@ class PixysR(CheckUpdate):
             self.update_info("BUILD_DATE", self.grep(latest_build_info_text, "Date & Time"))
             self.update_info("FILE_SIZE", self.grep(latest_build_info_text, "Size"))
             self.update_info("BUILD_VERSION", self.grep(latest_build_info_text, "Version"))
-            self.update_info("DOWNLOAD_LINK", self.base_url+latest_build_info.find("a")["href"])
+            self.update_info("DOWNLOAD_LINK", self.BASE_URL + latest_build_info.find("a")["href"])
 
 class PixysRGapps(PixysR):
     fullname = "Pixys OS R Official (Include Gapps)"
