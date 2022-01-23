@@ -223,6 +223,10 @@ class AexRU1(PlingCheck):
     fullname = "AospExtended 11 (Unofficial By SakilMondal)"
     p_id = 1423583
 
+class AexSU1(PlingCheck):
+    fullname = "AospExtended 12 (Unofficial By SakilMondal)"
+    p_id = 1613676
+
 class Aicp(CheckUpdate):
 
     fullname = "AICP Official"
@@ -420,6 +424,15 @@ class ArrowRGapps(ArrowQ):
     device_version = "arrow-11.0"
     build_type_flag = "gapps"
 
+class ArrowS(ArrowQ):
+    fullname = "Arrow OS 12 Official"
+    device_version = "arrow-12.0"
+
+class ArrowSGapps(ArrowQ):
+    fullname = "Arrow OS 12 Official (Include Gapps)"
+    device_version = "arrow-12.0"
+    build_type_flag = "gapps"
+
 class Atom(SfCheck):
     fullname = "Atom OS Official"
     project_name = "atom-os-project"
@@ -497,22 +510,19 @@ class Cesium(SfCheck):
     project_name = "cesiumos-org"
     sub_path = "whyred/"
 
-class Cherish(SfCheck):
-
+class Cherish(PlingCheck):
     fullname = "Cherish OS Official"
-    project_name = "cherish-os"
-    sub_path = "device/whyred/"
+    p_id = 1460395
     enable_pagecache = True
 
-    def filter_rule(self, string):
-        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
+    def filter_rule(self, build_dic):
+        return PlingCheck.filter_rule(build_dic) and "GAPPS" not in build_dic["name"].upper()
 
 class CherishGapps(Cherish):
-
     fullname = "Cherish OS Official (Include Gapps)"
 
-    def filter_rule(self, string):
-        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
+    def filter_rule(self, build_dic):
+        return PlingCheck.filter_rule(build_dic) and "GAPPS" in build_dic["name"].upper()
 
 class Colt(SfCheck):
     fullname = "Colt OS Official"
@@ -874,21 +884,23 @@ class Nusantara(PlingCheck):
     fullname = "Nusantara Project Official"
     p_id = 1422405
 
-class Octavi(Havoc):
+class Octavi(PlingCheck):
     fullname = "Octavi OS Official"
+    p_id = 1620047
     enable_pagecache = True
-    base_url = "https://downloads.octavi-os.com/"
-    dir_path = "Whyred"
+
+    def filter_rule(self, build_dic):
+        return PlingCheck.filter_rule(build_dic) and "GAPPS" not in build_dic["name"].upper()
 
 class OctaviGapps(Octavi):
 
     fullname = "Octavi OS Official (Include Gapps)"
 
-    def filter_rule(self, string):
-        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
+    def filter_rule(self, build_dic):
+        return PlingCheck.filter_rule(build_dic) and "GAPPS" in build_dic["name"].upper()
 
 class PixelExtended(SfCheck):
-    fullname = "Pixel Extended Q Official"
+    fullname = "Pixel Extended Official"
     project_name = "pixelextended"
     sub_path = "Whyred/"
 
@@ -904,6 +916,11 @@ class PeRPe(PeR):
     fullname = "Pixel Experience 11 (Plus edition) Official"
     index = 1
     tag_name = "11 (Plus edition)"
+
+class PeS(PeR):
+    fullname = "Pixel Experience 12 Official"
+    tag_name = "12"
+    _skip = False
 
 class PeU2(PlingCheck):
 
@@ -984,6 +1001,10 @@ class PixysSGapps(PixysRGapps):
 class Posp(GithubReleases):
     fullname = "POSP Official"
     repository_url = "PotatoDevices/device_xiaomi_whyred"
+
+class ProjectElixir(PlingCheck):
+    fullname = "Project Elixir Official"
+    p_id = 1673869
 
 class ProjectRadiant(SfCheck):
     fullname = "Project Radiant Official"
@@ -1212,6 +1233,7 @@ CHECK_LIST = (
     AexQGapps,
     AexR,
     AexRU1,
+    AexSU1,
     Aicp,
     Ancient,
     AncientGapps,
@@ -1225,6 +1247,8 @@ CHECK_LIST = (
     ArrowQGapps,
     ArrowR,
     ArrowRGapps,
+    ArrowS,
+    ArrowSGapps,
     Atom,
     Awaken,
     AwakenGapps,
@@ -1280,6 +1304,7 @@ CHECK_LIST = (
     PixelExtended,
     PeR,
     PeRPe,
+    PeS,
     PeU2,
     PePeU2,
     PeruBacchaProject,
@@ -1288,6 +1313,7 @@ CHECK_LIST = (
     PixysRGapps,
     PixysSGapps,
     Posp,
+    ProjectElixir,
     ProjectRadiant,
     RaghuVarmaProject,
     RandomStuffProject,
