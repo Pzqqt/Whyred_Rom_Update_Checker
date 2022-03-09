@@ -17,11 +17,11 @@ from check_init import (
 from database import Saved
 from tgbot import send_message as _send_message
 
-class Linux44Y(CheckUpdate):
+class Linux414Y(CheckUpdate):
 
-    fullname = "Linux Kernel stable v4.4.y"
-    re_pattern = r'4\.4\.\d+'
-    enable_pagecache = True
+    fullname = "Linux Kernel stable v4.14.y"
+    re_pattern = r'4\.14\.\d+'
+    # enable_pagecache = True
 
     def do_check(self):
         url = "https://www.kernel.org"
@@ -49,10 +49,6 @@ class Linux44Y(CheckUpdate):
             self.info_dic["DOWNLOAD_LINK"],
             self.info_dic["BUILD_CHANGELOG"],
         )
-
-class Linux414Y(Linux44Y):
-    fullname = "Linux Kernel stable v4.14.y"
-    re_pattern = r'4\.14\.\d+'
 
 class GoogleClangPrebuilt(CheckUpdate):
 
@@ -199,25 +195,13 @@ class AdrarProject2(PlingCheck):
             not build_dic["name"].startswith("RR"),
         ])
 
-class AexP(AexCheck):
-    fullname = "AospExtended Pie Official"
-    sub_path = "whyred/pie"
+class AexS(AexCheck):
+    fullname = "AospExtended 12 Official"
+    sub_path = "whyred/s"
 
-class AexPGapps(AexCheck):
-    fullname = "AospExtended Pie (with Gapps) Official"
-    sub_path = "whyred/pie_gapps"
-
-class AexQ(AexCheck):
-    fullname = "AospExtended Q Official"
-    sub_path = "whyred/q"
-
-class AexQGapps(AexCheck):
-    fullname = "AospExtended Q (with Gapps) Official"
-    sub_path = "whyred/q_gapps"
-
-class AexR(AexCheck):
-    fullname = "AospExtended 11 Official"
-    sub_path = "whyred/r"
+class AexSGapps(AexCheck):
+    fullname = "AospExtended 12 (with Gapps) Official"
+    sub_path = "whyred/s_gapps"
 
 class AexRU1(PlingCheck):
     fullname = "AospExtended 11 (Unofficial By SakilMondal)"
@@ -1217,7 +1201,6 @@ class Xtended(SfCheck):
     sub_path = "whyred/"
 
 CHECK_LIST = (
-    Linux44Y,
     Linux414Y,
     GoogleClangPrebuilt,
     WireGuard,
@@ -1227,11 +1210,8 @@ CHECK_LIST = (
     Ventoy,
     AdrarProject,
     AdrarProject2,
-    AexP,
-    AexPGapps,
-    AexQ,
-    AexQGapps,
-    AexR,
+    AexS,
+    AexSGapps,
     AexRU1,
     AexSU1,
     Aicp,
