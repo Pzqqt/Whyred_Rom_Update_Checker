@@ -307,6 +307,7 @@ class AosipDfGapps(H5aiCheck):
 class Aospa(CheckUpdate):
 
     fullname = "Paranoid Android Official"
+    _skip = True
 
     def do_check(self):
         req_text = self.request_url("https://api.aospa.co/updates/whyred")
@@ -344,6 +345,7 @@ class ArnavProject(SfProjectCheck):
 class ArrowQ(CheckUpdate):
 
     fullname = "Arrow OS Q Official"
+    _skip = True
 
     device_name = "whyred"
     device_version = "arrow-10.0"
@@ -402,17 +404,18 @@ class ArrowQGapps(ArrowQ):
 class ArrowR(ArrowQ):
     fullname = "Arrow OS 11 Official"
     device_version = "arrow-11.0"
+    _skip = False
 
-class ArrowRGapps(ArrowQ):
+class ArrowRGapps(ArrowR):
     fullname = "Arrow OS 11 Official (Include Gapps)"
     device_version = "arrow-11.0"
     build_type_flag = "gapps"
 
-class ArrowS(ArrowQ):
+class ArrowS(ArrowR):
     fullname = "Arrow OS 12 Official"
     device_version = "arrow-12.0"
 
-class ArrowSGapps(ArrowQ):
+class ArrowSGapps(ArrowR):
     fullname = "Arrow OS 12 Official (Include Gapps)"
     device_version = "arrow-12.0"
     build_type_flag = "gapps"
@@ -421,11 +424,13 @@ class Atom(SfCheck):
     fullname = "Atom OS Official"
     project_name = "atom-os-project"
     sub_path = "whyred/"
+    _skip = True
 
 class Awaken(PlingCheck):
 
     fullname = "Project Awaken Official (By SakilMondal)"
     p_id = 1446633
+    _skip = True
 
     def do_check(self):
         super().do_check()
@@ -441,34 +446,22 @@ class AwakenGapps(Awaken):
     def filter_rule(self, build_dic):
         return PlingCheck.filter_rule(build_dic) and "GAPPS" in build_dic["version"].upper()
 
-class BabaProject(SfProjectCheck):
-    project_name = "babarom"
-    developer = "Baba Sahare"
-
-class BlissQ(SfCheck):
-
-    fullname = "Bliss Rom Q Official"
+class BlissR(SfCheck):
+    fullname = "Bliss Rom 11 Official"
     project_name = "blissroms"
-    sub_path = "Q/whyred/"
-
-    def after_check(self):
-        self.update_info(
-            "BUILD_CHANGELOG",
-            (
-                self.info_dic["DOWNLOAD_LINK"].replace(self.sub_path, self.sub_path + "Changelog-")
-                                              .replace(".zip", ".txt")
-            )
-        )
+    sub_path = "R/whyred/"
 
 class Bootleggers(SfCheck):
     fullname = "Bootleggers Rom Official"
     project_name = "bootleggersrom"
     sub_path = "builds/whyred/"
+    _skip = True
 
 class CandyQ(SfCheck):
     fullname = "Candy Rom Q Official"
     project_name = "candyroms"
     sub_path = "Official/ten/whyred/"
+    _skip = True
 
 class Carbon(CheckUpdate):
 
@@ -489,11 +482,6 @@ class CarbonU1(SfCheck):
     project_name = "fakecarbon"
     sub_path = "carbon/"
 
-class Cesium(SfCheck):
-    fullname = "Cesium OS Official"
-    project_name = "cesiumos-org"
-    sub_path = "whyred/"
-
 class Cherish(PlingCheck):
     fullname = "Cherish OS Official"
     p_id = 1460395
@@ -512,6 +500,7 @@ class Colt(SfCheck):
     fullname = "Colt OS Official"
     project_name = "coltos"
     sub_path = "Whyred/"
+    _skip = True
 
 class Conquer(SfCheck):
 
@@ -549,11 +538,13 @@ class Cosmic(SfCheck):
     fullname = "Cosmic OS Official"
     project_name = "cosmic-os"
     sub_path = "whyred/"
+    _skip = True
 
 class CrDroidP(SfCheck):
     fullname = "CrDroid Pie Official"
     project_name = "crdroidpie"
     sub_path = "WHYRED/"
+    _skip = True
 
 class CrDroid(SfCheck):
     fullname = "CrDroid Official"
@@ -564,11 +555,7 @@ class Cygnus(SfCheck):
     fullname = "CygnusOS Official"
     project_name = "cygnus-android"
     sub_path = "whyred/"
-
-class DarkstarProject(SfProjectCheck):
-    project_name = "project-dark"
-    developer = "Darkstar"
-    sub_path = "whyred/"
+    _skip = True
 
 class DerpFest(SfCheck):
     fullname = "DerpFest Official"
@@ -578,6 +565,7 @@ class DerpFest(SfCheck):
 class Descendant(CheckUpdate):
 
     fullname = "Descendant Official"
+    _skip = True
 
     def do_check(self):
         base_url = "https://downloads.descendant.me"
@@ -697,19 +685,17 @@ class Extended(SfCheck):
     fullname = "ExtendedUI Official"
     project_name = "extendedui"
     sub_path = "whyred/"
+    _skip = True
 
 class ExtendedU1(PlingCheck):
     fullname = "ExtendedUI (Unofficial By Nesquirt)"
     p_id = 1374700
+    _skip = True
 
 class GengKapakProject(SfProjectCheck):
     project_name = "gengkapak"
     developer = "GengKapak Project"
     sub_path = "ROM/whyred/"
-
-class HarooonProject(SfProjectCheck):
-    project_name = "whyded-releases"
-    developer = "Harooon"
 
 class Havoc(CheckUpdate):
 
@@ -761,21 +747,25 @@ class HavocU1(SfCheck):
     fullname = "Havoc OS (Unofficial By Ikaros)(Include Gapps)"
     project_name = "ikarosdev"
     sub_path = "HavocOS/whyred-gapps/"
+    _skip = True
 
 class HavocU3(SfCheck):
     fullname = "Havoc OS (Unofficial By Ikaros)"
     project_name = "ikarosdev"
     sub_path = "HavocOS/Havoc-alpha/"
+    _skip = True
 
 class Ion(SfCheck):
     fullname = "ION Official"
     project_name = "i-o-n"
     sub_path = "device/xiaomi/whyred/"
+    _skip = True
 
 class Komodo(SfCheck):
     fullname = "Komodo OS Official"
     project_name = "komodos-rom"
     sub_path = "whyred/"
+    _skip = True
 
 class Legion(SfCheck):
 
@@ -790,6 +780,7 @@ class Legion(SfCheck):
 class LegionGapps(Legion):
 
     fullname = "Legion OS Official (Include Gapps)"
+    _skip = True
 
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
@@ -837,6 +828,7 @@ class Neon(SfCheck):
     fullname = "Neon OS Official"
     project_name = "neonrelease"
     sub_path = "whyred/"
+    _skip = True
 
 class Nezuko(SfCheck):
 
@@ -858,11 +850,13 @@ class Nitrogen(SfCheck):
     fullname = "Nitrogen OS Official"
     project_name = "nitrogen-project"
     sub_path = "whyred/"
+    _skip = True
 
 class NitrogenU1(SfCheck):
     fullname = "Nitrogen OS (Unofficial By Bagaskara815)"
     project_name = "nangis"
     sub_path = "NitrogenOS/Whyred/10/"
+    _skip = True
 
 class Nusantara(PlingCheck):
     fullname = "Nusantara Project Official"
@@ -910,6 +904,7 @@ class PeU2(PlingCheck):
 
     fullname = "Pixel Experience Q (Unofficial By SakilMondal)"
     p_id = 1406086
+    _skip = True
 
     def filter_rule(self, build_dic):
         return PlingCheck.filter_rule(build_dic) and "PLUS" not in build_dic["name"].upper()
@@ -997,11 +992,13 @@ class ProjectRadiant(SfCheck):
 class RaghuVarmaProject(SfProjectCheck):
     project_name = "whyred-rv"
     developer = "Raghu Varma"
+    _skip = True
 
 class RandomStuffProject(SfProjectCheck):
 
     project_name = "random-stuff-for-whyred"
     developer = "James"
+    _skip = True
 
     def is_updated(self):
         result = super().is_updated()
@@ -1009,12 +1006,6 @@ class RandomStuffProject(SfProjectCheck):
             return False
         # Ignore test builds
         return "/test/" not in self.info_dic["DOWNLOAD_LINK"]
-
-class Rebellion(SfCheck):
-    fullname = "RebellionOS Official"
-    project_name = "rebellion-os"
-    sub_path = "whyred/"
-    _skip = True
 
 class ResurrectionRemix(SfCheck):
 
@@ -1098,6 +1089,7 @@ class ShapeShift(SfCheck):
     fullname = "ShapeShift OS Official"
     project_name = "shapeshiftos"
     sub_path = "whyred/"
+    _skip = True
 
 class StagQ(CheckUpdate):
 
@@ -1164,10 +1156,12 @@ class Syberia(SfCheck):
     fullname = "Syberia OS Official"
     project_name = "syberiaos"
     sub_path = "whyred/"
+    _skip = True
 
 class SyberiaU1(SfCheck):
     fullname = "Syberia OS (Unofficial By Orges)"
     project_name = "syberia-whyded"
+    _skip = True
 
 class TenX(SfCheck):
     fullname = "TenX OS Official"
@@ -1180,6 +1174,7 @@ class Titanium(SfCheck):
     project_name = "titaniumos"
     sub_path = "whyred/"
     enable_pagecache = True
+    _skip = True
 
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
@@ -1232,13 +1227,11 @@ CHECK_LIST = (
     Atom,
     Awaken,
     AwakenGapps,
-    BabaProject,
-    BlissQ,
+    BlissR,
     Bootleggers,
     CandyQ,
     Carbon,
     CarbonU1,
-    Cesium,
     Cherish,
     CherishGapps,
     Colt,
@@ -1250,7 +1243,6 @@ CHECK_LIST = (
     CrDroidP,
     CrDroid,
     Cygnus,
-    DarkstarProject,
     DerpFest,
     Descendant,
     Dot,
@@ -1261,7 +1253,6 @@ CHECK_LIST = (
     Extended,
     ExtendedU1,
     GengKapakProject,
-    HarooonProject,
     Havoc,
     HavocGapps,
     HavocU1,
@@ -1297,7 +1288,6 @@ CHECK_LIST = (
     ProjectRadiant,
     RaghuVarmaProject,
     RandomStuffProject,
-    Rebellion,
     ResurrectionRemix,
     ResurrectionRemixGapps,
     ResurrectionRemixU1,
