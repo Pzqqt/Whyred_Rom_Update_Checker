@@ -163,6 +163,54 @@ class WireGuard(CheckUpdate):
             self.info_dic["DOWNLOAD_LINK"],
         )
 
+class BeyondCompare4(CheckUpdate):
+    fullname = "Beyond Compare 4"
+    BASE_URL = "https://www.scootersoftware.com"
+
+    def do_check(self):
+        bs_obj = self.get_bs(self.request_url("%s/download.php?zz=dl4" % self.BASE_URL))
+        p_obj = bs_obj.select_one('form[name="prog-form"] > p')
+        self.update_info(
+            "LATEST_VERSION",
+            re.search(r'(\d+\.\d+\.\d+, build \d+),', p_obj.get_text().replace('\xa0', '')).group(1)
+        )
+        self.update_info("DOWNLOAD_LINK", "%s/download.php" % self.BASE_URL)
+        self.update_info("BUILD_CHANGELOG", "%s/download.php?zz=v4changelog" % self.BASE_URL)
+
+class WslKernel(CheckUpdate):
+    fullname = "Windows Subsystem for Linux Kernel"
+    URL = "https://www.catalog.update.microsoft.com/Search.aspx?q=wsl"
+
+    def do_check(self):
+        bs_obj = self.get_bs(self.request_url(self.URL))
+        trs = bs_obj.select('#ctl00_catalogBody_updateMatches tr')[1:]
+        if not trs:
+            return
+        self._private_dic["file_list"] = [
+            (
+                tr["id"],  # id
+                tr.select_one("a").get_text().strip(),  # Title
+                tr.select("td")[6].select_one("span").get_text().strip(),  # Size
+            )
+            for tr in trs
+        ]
+        self.update_info("LATEST_VERSION", self._private_dic["file_list"])
+
+    def get_print_text(self):
+        return "\n".join([
+            "*%s Update*" % self.fullname,
+            time.strftime("%Y-%m-%d", time.localtime(time.time())),
+            "",
+            "File list:",
+            "\n".join([
+                "[%s (%s)](%s)" % (item[1], item[2], self.URL) for item in self._private_dic["file_list"]
+            ]),
+        ])
+
+class Apktool(GithubReleases):
+    fullname = "Apktool"
+    repository_url = "iBotPeaches/Apktool"
+
 class CascadiaCode(GithubReleases):
     fullname = "Cascadia Code Font"
     repository_url = "microsoft/cascadia-code"
@@ -1199,6 +1247,9 @@ CHECK_LIST = (
     Linux414Y,
     GoogleClangPrebuilt,
     WireGuard,
+    BeyondCompare4,
+    WslKernel,
+    Apktool,
     CascadiaCode,
     ClashForWindows,
     Sandboxie,
