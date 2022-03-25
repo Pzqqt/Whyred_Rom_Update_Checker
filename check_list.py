@@ -954,7 +954,6 @@ class PeRPe(PeR):
 class PeS(PeR):
     fullname = "Pixel Experience 12 Official"
     tag_name = "12"
-    _skip = False
 
 class PeU2(PlingCheck):
 
