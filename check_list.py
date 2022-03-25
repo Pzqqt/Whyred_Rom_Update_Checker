@@ -219,6 +219,14 @@ class ClashForWindows(GithubReleases):
     fullname = "Clash for Windows"
     repository_url = "Fndroid/clash_for_windows_pkg"
 
+class Magisk(GithubReleases):
+    fullname = "Magisk Stable"
+    repository_url = "topjohnwu/Magisk"
+
+class Notepad3(GithubReleases):
+    fullname = "Notepad3"
+    repository_url = "rizonesoft/Notepad3"
+
 class Sandboxie(GithubReleases):
     fullname = "Sandboxie (By DavidXanatos)"
     repository_url = "sandboxie-plus/Sandboxie"
@@ -1252,6 +1260,8 @@ CHECK_LIST = (
     Apktool,
     CascadiaCode,
     ClashForWindows,
+    Magisk,
+    Notepad3,
     Sandboxie,
     Ventoy,
     AdrarProject,
