@@ -530,10 +530,10 @@ class PlingCheck(CheckUpdate):
 
     def do_check(self):
         url = "https://www.pling.com/p/%s/loadFiles" % self.p_id
-        json_dic = json.loads(self.request_url(url))
-        if not json_dic:
+        json_dic_files = json.loads(self.request_url(url)).get("files")
+        if not json_dic_files:
             return
-        json_dic_filtered_files = [f for f in json_dic if self.filter_rule(f)]
+        json_dic_filtered_files = [f for f in json_dic_files if self.filter_rule(f)]
         if not json_dic_filtered_files:
             return
         latest_build = json_dic_filtered_files[-1]
