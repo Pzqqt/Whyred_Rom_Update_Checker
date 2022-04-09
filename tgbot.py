@@ -23,7 +23,7 @@ def send_message(text, user=TG_SENDTO):
             print("\n%s\n! Error: failed to post message to Telegram!" % traceback_string)
             write_log_warning(*traceback_string.splitlines())
             write_log_warning("Failed to post message to Telegram!")
-        break
-    else:
-        print("! Fuck GFW!")
-        write_log_warning("Fuck GFW!")
+        else:
+            return
+    print("! Fuck GFW!")
+    write_log_warning("Fuck GFW!")

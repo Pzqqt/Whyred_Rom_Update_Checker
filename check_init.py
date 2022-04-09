@@ -271,7 +271,6 @@ class CheckUpdate:
         )
 
 class SfCheck(CheckUpdate):
-
     project_name = None
     sub_path = ""
 
@@ -346,6 +345,7 @@ class SfCheck(CheckUpdate):
         return latest_date > saved_date
 
 class SfProjectCheck(SfCheck):
+    developer = None
 
     # file name keyword: full name
     _KNOWN_ROM = OrderedDict(
@@ -391,7 +391,6 @@ class SfProjectCheck(SfCheck):
             key=lambda item: -len(item[0])
         )
     )
-    developer = None
 
     def __init__(self):
         self._abort_if_missing_property("developer")
@@ -410,7 +409,6 @@ class SfProjectCheck(SfCheck):
             self.fullname = fullname_bak
 
 class H5aiCheck(CheckUpdate):
-
     base_url = None
     sub_url = None
 
@@ -433,7 +431,6 @@ class H5aiCheck(CheckUpdate):
             self.update_info("FILE_SIZE", build.select("td")[3].get_text())
 
 class AexCheck(CheckUpdate):
-
     sub_path = None
 
     def __init__(self):
@@ -460,7 +457,6 @@ class AexCheck(CheckUpdate):
         self.update_info("BUILD_CHANGELOG", json_dic.get("changelog"))
 
 class PeCheck(CheckUpdate):
-
     model = None
     index = None
     tag_name = None
@@ -516,7 +512,6 @@ class PeCheck(CheckUpdate):
             self.update_info("DOWNLOAD_LINK", real_url)
 
 class PlingCheck(CheckUpdate):
-
     p_id = None
 
     def __init__(self):
@@ -575,7 +570,6 @@ class PlingCheck(CheckUpdate):
         )
 
 class GithubReleases(CheckUpdate):
-
     repository_url = None
     BASE_URL = "https://github.com"
 
@@ -588,7 +582,7 @@ class GithubReleases(CheckUpdate):
         bs_obj = self.get_bs(self.request_url(url))
         release_commit = bs_obj.select_one('div[data-test-selector="release-card"]')
         release_header_a = release_commit.select_one('[data-pjax="#repo-content-pjax-container"] a')
-        self.update_info("BUILD_VERSION", release_header_a.get_text())
+        self.update_info("BUILD_VERSION", release_header_a.get_text().strip())
         self.update_info("LATEST_VERSION", self.BASE_URL + release_header_a["href"])
         self.update_info(
             "DOWNLOAD_LINK",

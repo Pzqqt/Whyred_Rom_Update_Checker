@@ -18,7 +18,6 @@ from database import Saved
 from tgbot import send_message as _send_message
 
 class Linux414Y(CheckUpdate):
-
     fullname = "Linux Kernel stable v4.14.y"
     re_pattern = r'4\.14\.\d+'
     # enable_pagecache = True
@@ -51,7 +50,6 @@ class Linux414Y(CheckUpdate):
         )
 
 class GoogleClangPrebuilt(CheckUpdate):
-
     fullname = "Google Clang Prebuilt"
     BASE_URL = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
 
@@ -132,7 +130,6 @@ class GoogleClangPrebuilt(CheckUpdate):
             ))
 
 class WireGuard(CheckUpdate):
-
     fullname = "WireGuard for Linux 3.10 - 5.5"
 
     def do_check(self):
@@ -240,7 +237,6 @@ class AdrarProject(SfProjectCheck):
     developer = "AdrarHussain"
 
 class AdrarProject2(PlingCheck):
-
     fullname = "New rom release by AdrarHussain"
     p_id = 1459808
     enable_pagecache = True
@@ -268,7 +264,6 @@ class AexSU1(PlingCheck):
     p_id = 1613676
 
 class Aicp(CheckUpdate):
-
     fullname = "AICP Official"
 
     def do_check(self):
@@ -291,7 +286,6 @@ class Aicp(CheckUpdate):
             self.update_info("BUILD_CHANGELOG", latest_build["url"] + ".html")
 
 class Ancient(SfCheck):
-
     fullname = "Ancient OS"
     project_name = "ancientrom"
     sub_path = "whyred"
@@ -301,14 +295,12 @@ class Ancient(SfCheck):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
 
 class AncientGapps(Ancient):
-
     fullname = "Ancient OS (Include Gapps)"
 
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
 class Aosip(H5aiCheck):
-
     fullname = "AOSiP Official"
     base_url = "https://get.aosip.dev"
     sub_url = "/whyred/"
@@ -329,7 +321,6 @@ class Aosip(H5aiCheck):
         )
 
 class AosipDf(H5aiCheck):
-
     fullname = "AOSiP DerpFest Official"
     base_url = "https://get.derpfest.org"
     sub_url = "/whyred-vanilla/builds/"
@@ -345,7 +336,6 @@ class AosipDf(H5aiCheck):
         )
 
 class AosipDfGapps(H5aiCheck):
-
     fullname = "AOSiP DerpFest Official (Include Gapps)"
     base_url = "https://get.derpfest.org"
     sub_url = "/whyred/builds/"
@@ -361,7 +351,6 @@ class AosipDfGapps(H5aiCheck):
         )
 
 class Aospa(CheckUpdate):
-
     fullname = "Paranoid Android Official"
     _skip = True
 
@@ -399,7 +388,6 @@ class ArnavProject(SfProjectCheck):
     developer = "Arnav"
 
 class ArrowQ(CheckUpdate):
-
     fullname = "Arrow OS Q Official"
     _skip = True
 
@@ -483,7 +471,6 @@ class Atom(SfCheck):
     _skip = True
 
 class Awaken(PlingCheck):
-
     fullname = "Project Awaken Official (By SakilMondal)"
     p_id = 1446633
     _skip = True
@@ -496,7 +483,6 @@ class Awaken(PlingCheck):
         return PlingCheck.filter_rule(build_dic) and "GAPPS" not in build_dic["version"].upper()
 
 class AwakenGapps(Awaken):
-
     fullname = "Project Awaken Official (Include Gapps)(By SakilMondal)"
 
     def filter_rule(self, build_dic):
@@ -520,7 +506,6 @@ class CandyQ(SfCheck):
     _skip = True
 
 class Carbon(CheckUpdate):
-
     fullname = "Carbon Rom Official"
 
     def do_check(self):
@@ -559,7 +544,6 @@ class Colt(SfCheck):
     _skip = True
 
 class Conquer(SfCheck):
-
     fullname = "Conquer OS Official"
     project_name = "conqueros"
     enable_pagecache = True
@@ -568,14 +552,12 @@ class Conquer(SfCheck):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
 
 class ConquerGapps(Conquer):
-
     fullname = "Conquer OS Official (Include Gapps)"
 
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
 class Corvus(PlingCheck):
-
     fullname = "Corvus OS Official"
     p_id = 1375302
     enable_pagecache = True
@@ -584,7 +566,6 @@ class Corvus(PlingCheck):
         return PlingCheck.filter_rule(build_dic) and "GAPPS" not in build_dic["name"].upper()
 
 class CorvusGapps(Corvus):
-
     fullname = "Corvus OS Official (Include Gapps)"
 
     def filter_rule(self, build_dic):
@@ -619,7 +600,6 @@ class DerpFest(SfCheck):
     sub_path = "whyred/"
 
 class Descendant(CheckUpdate):
-
     fullname = "Descendant Official"
     _skip = True
 
@@ -640,7 +620,6 @@ class Descendant(CheckUpdate):
         ))
 
 class Dot(CheckUpdate):
-
     fullname = "Dot OS Official"
     build_type = "vanilla"
 
@@ -672,7 +651,6 @@ class DotGapps(Dot):
     build_type = "gapps"
 
 class E(CheckUpdate):
-
     fullname = "/e/ Rom Official"
     BASE_URL = "https://images.ecloud.global/dev/whyred/"
 
@@ -719,7 +697,6 @@ class E(CheckUpdate):
         )
 
 class EvolutionX(SfCheck):
-
     fullname = "EvolutionX Official"
     project_name = "evolution-x"
     sub_path = "whyred/"
@@ -754,7 +731,6 @@ class GengKapakProject(SfProjectCheck):
     sub_path = "ROM/whyred/"
 
 class Havoc(CheckUpdate):
-
     fullname = "Havoc OS Official"
     enable_pagecache = True
     base_url = "https://download.havoc-os.com/"
@@ -793,7 +769,6 @@ class Havoc(CheckUpdate):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
 
 class HavocGapps(Havoc):
-
     fullname = "Havoc OS Official (Include Gapps)"
 
     def filter_rule(self, string):
@@ -824,7 +799,6 @@ class Komodo(SfCheck):
     _skip = True
 
 class Legion(SfCheck):
-
     fullname = "Legion OS Official"
     project_name = "legionrom"
     sub_path = "whyred/"
@@ -834,7 +808,6 @@ class Legion(SfCheck):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
 
 class LegionGapps(Legion):
-
     fullname = "Legion OS Official (Include Gapps)"
     _skip = True
 
@@ -842,7 +815,6 @@ class LegionGapps(Legion):
         return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
 
 class Lineage(CheckUpdate):
-
     fullname = "Lineage OS Official"
 
     def do_check(self):
@@ -887,7 +859,6 @@ class Neon(SfCheck):
     _skip = True
 
 class Nezuko(SfCheck):
-
     fullname = "Nezuko OS Official"
     project_name = "nezukoos"
     enable_pagecache = True
@@ -896,7 +867,6 @@ class Nezuko(SfCheck):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
 
 class NezukoGapps(Nezuko):
-
     fullname = "Nezuko OS Official (Include Gapps)"
 
     def filter_rule(self, string):
@@ -927,7 +897,6 @@ class Octavi(PlingCheck):
         return PlingCheck.filter_rule(build_dic) and "GAPPS" not in build_dic["name"].upper()
 
 class OctaviGapps(Octavi):
-
     fullname = "Octavi OS Official (Include Gapps)"
 
     def filter_rule(self, build_dic):
@@ -956,7 +925,6 @@ class PeS(PeR):
     tag_name = "12"
 
 class PeU2(PlingCheck):
-
     fullname = "Pixel Experience Q (Unofficial By SakilMondal)"
     p_id = 1406086
     _skip = True
@@ -965,7 +933,6 @@ class PeU2(PlingCheck):
         return PlingCheck.filter_rule(build_dic) and "PLUS" not in build_dic["name"].upper()
 
 class PePeU2(PeU2):
-
     fullname = "Pixel Experience Q (Plus edition)(Unofficial By SakilMondal)"
 
     def filter_rule(self, build_dic):
@@ -991,7 +958,6 @@ class PixelPlusUI(PlingCheck):
         )
 
 class PixysR(CheckUpdate):
-
     fullname = "Pixys OS R Official"
     enable_pagecache = True
     _skip = True
@@ -1050,7 +1016,6 @@ class RaghuVarmaProject(SfProjectCheck):
     _skip = True
 
 class RandomStuffProject(SfProjectCheck):
-
     project_name = "random-stuff-for-whyred"
     developer = "James"
     _skip = True
@@ -1063,7 +1028,6 @@ class RandomStuffProject(SfProjectCheck):
         return "/test/" not in self.info_dic["DOWNLOAD_LINK"]
 
 class ResurrectionRemix(SfCheck):
-
     fullname = "Resurrection Remix OS Q Official"
     project_name = "resurrectionremix-ten"
     sub_path = "whyred/"
@@ -1073,14 +1037,12 @@ class ResurrectionRemix(SfCheck):
         return SfCheck.filter_rule(string) and "VANILLA" in string.upper()
 
 class ResurrectionRemixGapps(ResurrectionRemix):
-
     fullname = "Resurrection Remix OS Q Official (Include Gapps)"
 
     def filter_rule(self, string):
         return SfCheck.filter_rule(string) and "VANILLA" not in string.upper()
 
 class ResurrectionRemixU1(AdrarProject2):
-
     fullname = "Resurrection Remix OS Q (Unofficial By AdrarHussain)"
 
     def filter_rule(self, build_dic):
@@ -1091,7 +1053,6 @@ class ResurrectionRemixU1(AdrarProject2):
         ])
 
 class ResurrectionRemixGappsU1(AdrarProject2):
-
     fullname = "Resurrection Remix OS Q (Unofficial By AdrarHussain)(Include Gapps)"
 
     def filter_rule(self, build_dic):
@@ -1103,7 +1064,6 @@ class ResurrectionRemixGappsU1(AdrarProject2):
 
 
 class Revenge(CheckUpdate):
-
     fullname = "Revenge OS Official"
 
     def do_check(self):
@@ -1147,7 +1107,6 @@ class ShapeShift(SfCheck):
     _skip = True
 
 class StagQ(CheckUpdate):
-
     fullname = "Stag OS Q Official"
     _skip = True
 
@@ -1171,7 +1130,6 @@ class StagQ(CheckUpdate):
         )
 
 class StagR(SfCheck):
-
     fullname = "Stag OS R Official"
     project_name = "stagos-11"
     sub_path = "whyred/"
@@ -1192,7 +1150,6 @@ class StagR(SfCheck):
         )
 
 class StagRGapps(StagR):
-
     fullname = "Stag OS R Official (Include Gapps)"
 
     def filter_rule(self, string):
@@ -1224,7 +1181,6 @@ class TenX(SfCheck):
     sub_path = "Whyred/"
 
 class Titanium(SfCheck):
-
     fullname = "Titanium OS Official"
     project_name = "titaniumos"
     sub_path = "whyred/"
@@ -1235,7 +1191,6 @@ class Titanium(SfCheck):
         return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
 
 class TitaniumGapps(Titanium):
-
     fullname = "Titanium OS Official (Include Gapps)"
 
     def filter_rule(self, string):

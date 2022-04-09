@@ -30,7 +30,6 @@ def create_dbsession(**kw):
 # 所以不需要加锁
 
 class Saved(_Base):
-
     __tablename__ = "saved"
     ID = Column(String, primary_key=True, nullable=False)
     FULL_NAME = Column(String, nullable=False)
