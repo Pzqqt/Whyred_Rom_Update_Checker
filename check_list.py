@@ -183,9 +183,10 @@ class WslKernel(CheckUpdate):
         trs = bs_obj.select('#ctl00_catalogBody_updateMatches tr')[1:]
         if not trs:
             return
+        trs.sort(key=lambda tr: time.strptime(tr.select("td")[4].get_text().strip(), "%m/%d/%Y"), reverse=True)
         self._private_dic["file_list"] = [
             (
-                tr["id"],  # id
+                tr["id"].rsplit('_', 1)[0],  # id
                 tr.select_one("a").get_text().strip(),  # Title
                 tr.select("td")[6].select_one("span").get_text().strip(),  # Size
             )
