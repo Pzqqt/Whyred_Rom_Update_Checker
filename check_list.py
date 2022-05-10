@@ -12,7 +12,8 @@ from telebot.apihelper import ApiTelegramException
 from sqlalchemy.orm import exc as sqlalchemy_exc
 
 from check_init import (
-    CHROME_UA, CheckUpdate, SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck, GithubReleases
+    CHROME_UA, CheckUpdate, CheckUpdateWithBuildDate,
+    SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck, GithubReleases
 )
 from database import Saved
 from tgbot import send_message as _send_message
@@ -351,9 +352,13 @@ class AosipDfGapps(H5aiCheck):
             )
         )
 
-class Aospa(CheckUpdate):
+class Aospa(CheckUpdateWithBuildDate):
     fullname = "Paranoid Android Official"
     _skip = True
+
+    @classmethod
+    def date_transform(cls, date_str):
+        return int(date_str)
 
     def do_check(self):
         req_text = self.request_url("https://api.aospa.co/updates/whyred")
@@ -367,18 +372,6 @@ class Aospa(CheckUpdate):
             self.update_info("FILE_SIZE", "%0.2f MB" % (int(latest_build["size"]) / 1000 / 1000,))
             self.update_info("DOWNLOAD_LINK", latest_build["url"])
             self.update_info("BUILD_VERSION", latest_build["version"])
-
-    def is_updated(self):
-        result = super().is_updated()
-        if not result:
-            return False
-        if self.info_dic["BUILD_DATE"] is None:
-            return False
-        try:
-            saved_info = Saved.get_saved_info(self.name)
-        except sqlalchemy_exc.NoResultFound:
-            return True
-        return int(self.info_dic["BUILD_DATE"]) > int(saved_info.BUILD_DATE)
 
 class AospaU1(SfCheck):
     fullname = "Paranoid Android (Unofficial By orges)"
@@ -651,13 +644,17 @@ class DotGapps(Dot):
     fullname = "Dot OS Official (Include Gapps)"
     build_type = "gapps"
 
-class E(CheckUpdate):
+class E(CheckUpdateWithBuildDate):
     fullname = "/e/ Rom Official"
     BASE_URL = "https://images.ecloud.global/dev/whyred/"
 
+    @classmethod
+    def date_transform(cls, date_str):
+        return time.strptime(date_str, "%Y%m%d")
+
     @staticmethod
-    def parse_build_date(file_name):
-        return time.strptime(re.search(r'\d{14}', file_name)[0][:8], "%Y%m%d")
+    def parse_date_string_from_filename(filename):
+        return re.search(r'\d{14}', filename)[0][:8]
 
     def do_check(self):
         bs_obj = self.get_bs(self.request_url(self.BASE_URL))
@@ -665,11 +662,15 @@ class E(CheckUpdate):
         if not files:
             return
         try:
-            files.sort(key=lambda a_tag: self.parse_build_date(a_tag.get_text()), reverse=True)
+            files.sort(
+                key=lambda a_tag: self.date_transform(self.parse_date_string_from_filename(a_tag.get_text())),
+                reverse=True
+            )
         except TypeError:
             pass
         latest_build = files[0]
         self.update_info("LATEST_VERSION", latest_build.get_text().strip())
+        self.update_info("BUILD_DATE", self.parse_date_string_from_filename(self.info_dic["LATEST_VERSION"]))
         self.update_info("DOWNLOAD_LINK", self.BASE_URL + latest_build["href"])
         self.update_info("BUILD_CHANGELOG", "https://gitlab.e.foundation/e/os/releases/-/releases")
 
@@ -681,20 +682,6 @@ class E(CheckUpdate):
         self.update_info(
             "FILE_SHA256",
             self.get_hash_from_file(self.info_dic["DOWNLOAD_LINK"] + ".sha256sum")
-        )
-
-    def is_updated(self):
-        result = super().is_updated()
-        if not result:
-            return False
-        try:
-            saved_info = Saved.get_saved_info(self.name)
-        except sqlalchemy_exc.NoResultFound:
-            return True
-        return (
-            self.parse_build_date(self.info_dic["LATEST_VERSION"])
-            >
-            self.parse_build_date(saved_info.LATEST_VERSION)
         )
 
 class EvolutionX(SfCheck):
