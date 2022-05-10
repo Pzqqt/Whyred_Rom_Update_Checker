@@ -270,7 +270,41 @@ class CheckUpdate:
             ])
         )
 
-class SfCheck(CheckUpdate):
+class CheckUpdateWithBuildDate(CheckUpdate):
+
+    """
+    在执行is_updated方法时, 额外检查BUILD_DATE字段
+    如果BUILD_DATE比数据库中已存储数据的BUILD_DATE要早的话则认为没有更新
+    如果从此类继承, 则必须实现date_transform方法
+    """
+
+    @classmethod
+    def date_transform(cls, date_str: str) -> time.struct_time:
+        """
+        将时间字符串解析为time.struct_time对象, 用于比较
+        :param date_str: 要解析的时间字符串
+        :return: time.struct_time对象
+        """
+        raise NotImplementedError
+
+    def is_updated(self):
+        result = super().is_updated()
+        if not result:
+            return False
+        if self.info_dic["BUILD_DATE"] is None:
+            return False
+        try:
+            saved_info = Saved.get_saved_info(self.name)
+        except sqlalchemy_exc.NoResultFound:
+            return True
+        latest_date = self.date_transform(str(self.info_dic["BUILD_DATE"]))
+        try:
+            saved_date = self.date_transform(saved_info.BUILD_DATE)
+        except:
+            return True
+        return latest_date > saved_date
+
+class SfCheck(CheckUpdateWithBuildDate):
     project_name = None
     sub_path = ""
 
@@ -287,14 +321,7 @@ class SfCheck(CheckUpdate):
 
     @classmethod
     def date_transform(cls, date_str):
-        """
-        将sf站rss中的日期字符串转为time.struct_time类型, 以便于比较
-        例： "Wed, 12 Feb 2020 12:34:56 UT"
-        返回: time.struct_time(
-            tm_year=2020, tm_mon=2, tm_mday=12, tm_hour=12, tm_min=34, tm_sec=56,
-            tm_wday=0, tm_yday=48, tm_isdst=-1
-        )
-        """
+        # 例: "Wed, 12 Feb 2020 12:34:56 UT"
         date_str_ = date_str.rsplit(" ", 1)[0].split(", ")[1]
         date_str_month = date_str_.split()[1]
         date_str_ = date_str_.replace(date_str_month, cls._MONTH_TO_NUMBER[date_str_month])
@@ -325,24 +352,6 @@ class SfCheck(CheckUpdate):
                 self.update_info("FILE_MD5", build.find("media:hash", {"algo": "md5"}).string)
                 self.update_info("FILE_SIZE", "%0.1f MB" % file_size_mb)
                 break
-
-    def is_updated(self):
-        # 对于SfCheck, 额外检查BUILD_DATE, 避免新Rom撤包后把旧Rom当作新Rom...
-        result = super().is_updated()
-        if not result:
-            return False
-        if self.info_dic["BUILD_DATE"] is None:
-            return False
-        try:
-            saved_info = Saved.get_saved_info(self.name)
-        except sqlalchemy_exc.NoResultFound:
-            return True
-        latest_date = self.date_transform(str(self.info_dic["BUILD_DATE"]))
-        try:
-            saved_date = self.date_transform(saved_info.BUILD_DATE)
-        except:
-            return True
-        return latest_date > saved_date
 
 class SfProjectCheck(SfCheck):
     developer = None
@@ -569,7 +578,7 @@ class PlingCheck(CheckUpdate):
             )
         )
 
-class GithubReleases(CheckUpdate):
+class GithubReleases(CheckUpdateWithBuildDate):
     repository_url = None
     BASE_URL = "https://github.com"
 
@@ -577,9 +586,15 @@ class GithubReleases(CheckUpdate):
         self._abort_if_missing_property("repository_url")
         super().__init__()
 
+    @classmethod
+    def date_transform(cls, date_str):
+        # 例: "2022-02-02T08:21:26Z"
+        return time.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
+
     def do_check(self):
         url = "%s/%s/releases" % (self.BASE_URL, self.repository_url)
         bs_obj = self.get_bs(self.request_url(url))
+        self.update_info("BUILD_DATE", bs_obj.select_one('local-time')["datetime"])
         release_commit = bs_obj.select_one('div[data-test-selector="release-card"]')
         release_header_a = release_commit.select_one('[data-pjax="#repo-content-pjax-container"] a')
         self.update_info("BUILD_VERSION", release_header_a.get_text().strip())
