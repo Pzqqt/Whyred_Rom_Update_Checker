@@ -594,7 +594,7 @@ class GithubReleases(CheckUpdateWithBuildDate):
     def do_check(self):
         url = "%s/%s/releases" % (self.BASE_URL, self.repository_url)
         bs_obj = self.get_bs(self.request_url(url))
-        self.update_info("BUILD_DATE", bs_obj.select_one('local-time')["datetime"])
+        self.update_info("BUILD_DATE", bs_obj.select_one('[datetime]')["datetime"])
         release_commit = bs_obj.select_one('div[data-test-selector="release-card"]')
         release_header_a = release_commit.select_one('[data-pjax="#repo-content-pjax-container"] a')
         self.update_info("BUILD_VERSION", release_header_a.get_text().strip())
