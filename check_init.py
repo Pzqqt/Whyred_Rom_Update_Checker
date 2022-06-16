@@ -580,7 +580,6 @@ class PlingCheck(CheckUpdate):
 
 class GithubReleases(CheckUpdateWithBuildDate):
     repository_url = None
-    BASE_URL = "https://github.com"
 
     def __init__(self):
         self._abort_if_missing_property("repository_url")
@@ -592,29 +591,21 @@ class GithubReleases(CheckUpdateWithBuildDate):
         return time.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
 
     def do_check(self):
-        url = "%s/%s/releases" % (self.BASE_URL, self.repository_url)
-        bs_obj = self.get_bs(self.request_url(url))
-        self.update_info("BUILD_DATE", bs_obj.select_one('[datetime]')["datetime"])
-        release_commit = bs_obj.select_one('div[data-test-selector="release-card"]')
-        release_header_a = release_commit.select_one('[data-pjax="#repo-content-pjax-container"] a')
-        self.update_info("BUILD_VERSION", release_header_a.get_text().strip())
-        self.update_info("LATEST_VERSION", self.BASE_URL + release_header_a["href"])
+        url = "https://api.github.com/repos/%s/releases/latest" % self.repository_url
+        latest_json = json.loads(self.request_url(url))
+        if not latest_json:
+            return
+        self.update_info("BUILD_VERSION", latest_json["name"])
+        self.update_info("LATEST_VERSION", latest_json["html_url"])
+        self.update_info("BUILD_DATE", latest_json["created_at"])
         self.update_info(
             "DOWNLOAD_LINK",
             "\n".join([
-                "[%s%s](%s)" % (
-                    # File name
-                    re.sub(r'\s+', " ", div.select_one("a").get_text().strip()),
-                    # File size
-                    (
-                        div.select_one('[data-test-selector="asset-size-label"]')
-                        and " (%s)" % div.select_one('[data-test-selector="asset-size-label"]').get_text()
-                        or ""
-                    ),
-                    # Download link
-                    self.BASE_URL + div.select_one("a")["href"]
+                "[%s (%s)](%s)" % (
+                    # File name, File size, Download link
+                    asset["name"], "%0.1f MB" % (int(asset["size"]) / 1024 / 1024), asset["browser_download_url"]
                 )
-                for div in release_commit.select("details ul > li")
+                for asset in latest_json["assets"]
             ])
         )
 
