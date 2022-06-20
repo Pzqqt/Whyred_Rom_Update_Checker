@@ -279,11 +279,11 @@ class CheckUpdateWithBuildDate(CheckUpdate):
     """
 
     @classmethod
-    def date_transform(cls, date_str: str) -> time.struct_time:
+    def date_transform(cls, date_str: str):
         """
-        将时间字符串解析为time.struct_time对象, 用于比较
+        解析时间字符串, 用于比较
         :param date_str: 要解析的时间字符串
-        :return: time.struct_time对象
+        :return: 能比较大小的对象
         """
         raise NotImplementedError
 
