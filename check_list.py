@@ -17,6 +17,7 @@ from check_init import (
 )
 from database import Saved
 from tgbot import send_message as _send_message
+from logger import print_and_log
 
 class Linux414Y(CheckUpdate):
     fullname = "Linux Kernel stable v4.14.y"
@@ -180,6 +181,17 @@ class RaspberryPiOS64(CheckUpdate):
 
     def do_check(self):
         url = "https://downloads.raspberrypi.org/os_list_imagingutility_v3.json"
+        next_api_version_url = "https://downloads.raspberrypi.org/os_list_imagingutility_v4.json"
+        try:
+            self.request_url(next_api_version_url)
+        except requests_exceptions.HTTPError as e:
+            if e.response.status_code != 404:
+                raise
+        else:
+            print_and_log(
+                "%s: There is a new version of the api interface. Please update the crawler." % self.name,
+                level="warning"
+            )
         json_dic = json.loads(self.request_url(url))
         try:
             for os in json_dic["os_list"]:
