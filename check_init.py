@@ -580,6 +580,7 @@ class PlingCheck(CheckUpdate):
 
 class GithubReleases(CheckUpdateWithBuildDate):
     repository_url = None
+    ignore_prerelease = True
 
     def __init__(self):
         self._abort_if_missing_property("repository_url")
@@ -594,6 +595,10 @@ class GithubReleases(CheckUpdateWithBuildDate):
         url = "https://api.github.com/repos/%s/releases/latest" % self.repository_url
         latest_json = json.loads(self.request_url(url))
         if not latest_json:
+            return
+        if latest_json["draft"]:
+            return
+        if self.ignore_prerelease and latest_json["prerelease"]:
             return
         self.update_info("BUILD_VERSION", latest_json["name"])
         self.update_info("LATEST_VERSION", latest_json["html_url"])
