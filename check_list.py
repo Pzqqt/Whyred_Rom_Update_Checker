@@ -175,6 +175,34 @@ class BeyondCompare4(CheckUpdate):
         self.update_info("DOWNLOAD_LINK", "%s/download.php" % self.BASE_URL)
         self.update_info("BUILD_CHANGELOG", "%s/download.php?zz=v4changelog" % self.BASE_URL)
 
+class RaspberryPiOS64(CheckUpdate):
+    fullname = "Raspberry Pi OS (64-bit)"
+
+    def do_check(self):
+        url = "https://downloads.raspberrypi.org/os_list_imagingutility_v3.json"
+        json_dic = json.loads(self.request_url(url))
+        try:
+            for os in json_dic["os_list"]:
+                if os["name"] == "Raspberry Pi OS (other)":
+                    for item in os["subitems"]:
+                        if item["name"] == "Raspberry Pi OS (64-bit)":
+                            self.update_info("BUILD_DATE", item["release_date"])
+                            self.update_info(
+                                "FILE_SIZE",
+                                "%0.1f MB" % (int(item["image_download_size"]) / 1024 / 1024)
+                            )
+                            self.update_info("DOWNLOAD_LINK", item["url"])
+                            self.update_info("LATEST_VERSION", item["url"].rsplit('/', 1)[1])
+                            self.update_info(
+                                "BUILD_CHANGELOG",
+                                "https://downloads.raspberrypi.org/raspios_arm64/release_notes.txt"
+                            )
+                            return
+            else:
+                raise Exception("Parsing failed!")
+        except KeyError:
+            return
+
 class WslKernel(CheckUpdate):
     fullname = "Windows Subsystem for Linux Kernel"
     URL = "https://www.catalog.update.microsoft.com/Search.aspx?q=wsl"
@@ -221,6 +249,10 @@ class ClashForWindows(GithubReleases):
 class Magisk(GithubReleases):
     fullname = "Magisk Stable"
     repository_url = "topjohnwu/Magisk"
+
+class ManjaroArmRpi4Images(GithubReleases):
+    fullname = "Manjaro ARM Image for Raspberry Pi 3/3+/4/400"
+    repository_url = "manjaro-arm/rpi4-images"
 
 class Notepad3(GithubReleases):
     fullname = "Notepad3"
@@ -1198,11 +1230,13 @@ CHECK_LIST = (
     GoogleClangPrebuilt,
     WireGuard,
     BeyondCompare4,
+    RaspberryPiOS64,
     WslKernel,
     Apktool,
     CascadiaCode,
     ClashForWindows,
     Magisk,
+    ManjaroArmRpi4Images,
     Notepad3,
     Sandboxie,
     Ventoy,
