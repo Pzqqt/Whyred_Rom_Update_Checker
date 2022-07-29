@@ -244,17 +244,20 @@ class CheckUpdate:
             time.strftime("%Y-%m-%d", time.localtime(time.time())),
         ]
         for key, value in self.info_dic.items():
-            if key != "LATEST_VERSION" and value is not None:
-                if key in "FILE_MD5 FILE_SHA1 FILE_SHA256 BUILD_DATE BUILD_TYPE BUILD_VERSION":
+            if value is None:
+                continue
+            if key == "LATEST_VERSION":
+                continue
+            if key in "FILE_MD5 FILE_SHA1 FILE_SHA256 BUILD_DATE BUILD_TYPE BUILD_VERSION":
+                value = "`%s`" % value
+            if key == "BUILD_CHANGELOG":
+                if value.startswith("http"):
+                    value = "[%s](%s)" % (value, value)
+                else:
                     value = "`%s`" % value
-                if key == "BUILD_CHANGELOG":
-                    if value.startswith("http"):
-                        value = "[%s](%s)" % (value, value)
-                    else:
-                        value = "`%s`" % value
-                if key == "DOWNLOAD_LINK" and value.startswith("http"):
-                    value = "[%s](%s)" % (self.info_dic.get("LATEST_VERSION", ""), value)
-                print_str_list.append("\n%s:\n%s" % (_KEY_TO_PRINT[key], value))
+            if key == "DOWNLOAD_LINK" and value.startswith("http"):
+                value = "[%s](%s)" % (self.info_dic.get("LATEST_VERSION", ""), value)
+            print_str_list.append("\n%s:\n%s" % (_KEY_TO_PRINT[key], value))
         return "\n".join(print_str_list)
 
     def send_message(self):

@@ -16,11 +16,13 @@ _HANDLER.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message
 LOGGER.addHandler(_HANDLER)
 
 def write_log_info(*text):
+    """ 写入info级日志 """
     if ENABLE_LOGGER:
         for string in text:
             LOGGER.info(string)
 
 def write_log_warning(*text):
+    """ 写入warning级日志 """
     if ENABLE_LOGGER:
         for string in text:
             LOGGER.warning(string)
@@ -31,6 +33,11 @@ _PREFIX_FUNC_DIC = {
 }
 
 def print_and_log(string, level="info", custom_prefix=""):
+    """ 打印到terminal的同时写入日志
+    :param string: 要打印的字符串
+    :param level: 日志级别
+    :param custom_prefix: 自定义字符串前缀
+    """
     prefix, log_func = _PREFIX_FUNC_DIC.get(level, ("-", write_log_info))
     if custom_prefix:
         prefix = custom_prefix

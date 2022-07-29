@@ -17,7 +17,7 @@ from config import (
 from check_init import PAGE_CACHE
 from check_list import CHECK_LIST
 from database import create_dbsession, Saved
-from logger import write_log_info, write_log_warning, print_and_log
+from logger import write_log_info, print_and_log
 
 # 为True时将强制将数据保存至数据库并发送消息
 FORCE_UPDATE = False
@@ -76,9 +76,8 @@ def check_one(cls, disable_pagecache=False):
     except exceptions.HTTPError as error:
         print_and_log("%s check failed! %s." % (cls_obj.fullname, error), level="warning")
     except:
-        traceback_string = traceback.format_exc()
-        print(traceback_string)
-        write_log_warning(*traceback_string.splitlines())
+        for line in traceback.format_exc().splitlines():
+            print_and_log(line, level="warning")
         print_and_log("%s check failed!" % cls_obj.fullname, level="warning")
     else:
         if cls_obj.is_updated() or FORCE_UPDATE:
@@ -89,10 +88,12 @@ def check_one(cls, disable_pagecache=False):
             try:
                 cls_obj.after_check()
             except:
-                traceback_string = traceback.format_exc()
-                print("\n%s\n! Something wrong when running after_check!" % traceback_string)
-                write_log_warning(*traceback_string.splitlines())
-                write_log_warning("%s: Something wrong when running after_check!" % cls_obj.fullname)
+                for line in traceback.format_exc().splitlines():
+                    print_and_log(line, level="warning")
+                print_and_log(
+                    "%s: Something wrong when running after_check!" % cls_obj.fullname,
+                    level="warning",
+                )
             cls_obj.write_to_database()
             if ENABLE_SENDMESSAGE:
                 cls_obj.send_message()
