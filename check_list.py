@@ -193,27 +193,24 @@ class RaspberryPiOS64(CheckUpdate):
                 level="warning"
             )
         json_dic = json.loads(self.request_url(url))
-        try:
-            for os in json_dic["os_list"]:
-                if os["name"] == "Raspberry Pi OS (other)":
-                    for item in os["subitems"]:
-                        if item["name"] == "Raspberry Pi OS (64-bit)":
-                            self.update_info("BUILD_DATE", item["release_date"])
-                            self.update_info(
-                                "FILE_SIZE",
-                                "%0.1f MB" % (int(item["image_download_size"]) / 1024 / 1024)
-                            )
-                            self.update_info("DOWNLOAD_LINK", item["url"])
-                            self.update_info("LATEST_VERSION", item["url"].rsplit('/', 1)[1])
-                            self.update_info(
-                                "BUILD_CHANGELOG",
-                                "https://downloads.raspberrypi.org/raspios_arm64/release_notes.txt"
-                            )
-                            return
-            else:
-                raise Exception("Parsing failed!")
-        except KeyError:
-            return
+        for os in json_dic["os_list"]:
+            if os["name"] == "Raspberry Pi OS (other)":
+                for item in os["subitems"]:
+                    if item["name"] == "Raspberry Pi OS (64-bit)":
+                        self.update_info("BUILD_DATE", item["release_date"])
+                        self.update_info(
+                            "FILE_SIZE",
+                            "%0.1f MB" % (int(item["image_download_size"]) / 1024 / 1024)
+                        )
+                        self.update_info("DOWNLOAD_LINK", item["url"])
+                        self.update_info("LATEST_VERSION", item["url"].rsplit('/', 1)[1])
+                        self.update_info(
+                            "BUILD_CHANGELOG",
+                            "https://downloads.raspberrypi.org/raspios_arm64/release_notes.txt"
+                        )
+                        return
+        else:
+            raise Exception("Parsing failed!")
 
 class WslKernel(CheckUpdate):
     fullname = "Windows Subsystem for Linux Kernel"
