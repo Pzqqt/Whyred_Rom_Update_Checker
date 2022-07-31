@@ -181,13 +181,7 @@ class RaspberryPiOS64(CheckUpdate):
 
     def do_check(self):
         url = "https://downloads.raspberrypi.org/os_list_imagingutility_v3.json"
-        next_api_version_url = "https://downloads.raspberrypi.org/os_list_imagingutility_v4.json"
-        try:
-            self.request_url(next_api_version_url)
-        except requests_exceptions.HTTPError as e:
-            if e.response.status_code != 404:
-                raise
-        else:
+        if "os_list_imagingutility_v4.json" in self.request_url("https://downloads.raspberrypi.org"):
             print_and_log(
                 "%s: There is a new version of the api interface. Please update the crawler." % self.name,
                 level="warning"
