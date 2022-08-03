@@ -9,6 +9,7 @@ from urllib.parse import unquote, urlencode
 
 import requests
 from bs4 import BeautifulSoup
+import lxml
 from requests.packages import urllib3
 from sqlalchemy.orm import exc as sqlalchemy_exc
 
@@ -16,6 +17,9 @@ from config import ENABLE_MULTI_THREAD, PROXIES, TIMEOUT
 from database import create_dbsession, Saved
 from page_cache import PageCache
 from tgbot import send_message as _send_message
+
+
+del lxml
 
 # 禁用安全请求警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -163,13 +167,14 @@ class CheckUpdate:
         return cls.request_url(url, **kwargs).strip().split()[0]
 
     @staticmethod
-    def get_bs(url_text):
+    def get_bs(url_text, **kwargs):
         """
         对BeautifulSoup函数进行了简单的包装
         :param url_text: url源码
         :return: BeautifulSoup对象
         """
-        return BeautifulSoup(url_text, "lxml")
+        features = kwargs.pop("features", "lxml")
+        return BeautifulSoup(url_text, features=features, **kwargs)
 
     @staticmethod
     def getprop(text, key, delimiter=":", default=None, ignore_case=False):
@@ -339,22 +344,25 @@ class SfCheck(CheckUpdateWithBuildDate):
 
     def do_check(self):
         url = "https://sourceforge.net/projects/%s/rss" % self.project_name
-        bs_obj = self.get_bs(self.request_url(url, params={"path": "/"+self.sub_path}))
+        bs_obj = self.get_bs(
+            self.request_url(url, params={"path": "/"+self.sub_path}),
+            features="xml",
+        )
         builds = list(bs_obj.select("item"))
         if not builds:
             return
-        builds.sort(key=lambda x: self.date_transform(x.pubdate.string), reverse=True)
+        builds.sort(key=lambda x: self.date_transform(x.pubDate.get_text()), reverse=True)
         for build in builds:
             file_size_mb = int(build.find("media:content")["filesize"]) / 1000 / 1000
             # 过滤小于500MB的文件
             if file_size_mb < 500:
                 continue
-            file_version = build.guid.string.split("/")[-2]
+            file_version = build.guid.get_text().split("/")[-2]
             if self.filter_rule(file_version):
                 self.update_info("LATEST_VERSION", file_version)
-                self.update_info("DOWNLOAD_LINK", build.guid.string)
-                self.update_info("BUILD_DATE", build.pubdate.string)
-                self.update_info("FILE_MD5", build.find("media:hash", {"algo": "md5"}).string)
+                self.update_info("DOWNLOAD_LINK", build.guid.get_text())
+                self.update_info("BUILD_DATE", build.pubDate.get_text())
+                self.update_info("FILE_MD5", build.find("media:hash", {"algo": "md5"}).get_text())
                 self.update_info("FILE_SIZE", "%0.1f MB" % file_size_mb)
                 break
 
