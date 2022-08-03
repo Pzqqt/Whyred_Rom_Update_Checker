@@ -176,6 +176,32 @@ class BeyondCompare4(CheckUpdate):
         self.update_info("DOWNLOAD_LINK", "%s/download.php" % self.BASE_URL)
         self.update_info("BUILD_CHANGELOG", "%s/download.php?zz=v4changelog" % self.BASE_URL)
 
+class RaspberryPiEepromStable(CheckUpdate):
+    fullname = "Raspberry Pi4 bootloader EEPROM Stable"
+    file_path = "firmware/stable"
+
+    def do_check(self):
+        files = json.loads(
+            self.request_url(
+                "https://api.github.com/repos/raspberrypi/rpi-eeprom/contents/%s" % self.file_path,
+                params={"ref": "master"},
+            )
+        )
+        files = [f for f in files if re.match(r'^pieeprom-[\d-]+.bin$', f["name"])]
+        files.sort(key=lambda f: int(re.sub(r'[^\d]', '', f["name"])))
+        latest_file = files[-1]
+        self.update_info("LATEST_VERSION", latest_file["name"])
+        self.update_info("DOWNLOAD_LINK", latest_file["download_url"])
+        self.update_info("FILE_SIZE", "%0.1f KB" % (int(latest_file["size"]) / 1024))
+        self.update_info(
+            "BUILD_CHANGELOG",
+            "https://github.com/raspberrypi/rpi-eeprom/blob/master/firmware/release-notes.md"
+        )
+
+class RaspberryPiEepromBeta(RaspberryPiEepromStable):
+    fullname = "Raspberry Pi4 bootloader EEPROM Beta"
+    file_path = "firmware/beta"
+
 class RaspberryPiOS64(CheckUpdate):
     fullname = "Raspberry Pi OS (64-bit)"
 
@@ -240,10 +266,6 @@ class WslKernel(CheckUpdate):
 class Apktool(GithubReleases):
     fullname = "Apktool"
     repository_url = "iBotPeaches/Apktool"
-
-class CascadiaCode(GithubReleases):
-    fullname = "Cascadia Code Font"
-    repository_url = "microsoft/cascadia-code"
 
 class ClashForWindows(GithubReleases):
     fullname = "Clash for Windows"
@@ -1233,10 +1255,11 @@ CHECK_LIST = (
     GoogleClangPrebuilt,
     WireGuard,
     BeyondCompare4,
+    RaspberryPiEepromStable,
+    RaspberryPiEepromBeta,
     RaspberryPiOS64,
     WslKernel,
     Apktool,
-    CascadiaCode,
     ClashForWindows,
     Magisk,
     ManjaroArmRpi4Images,
