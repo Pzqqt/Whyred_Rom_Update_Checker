@@ -6,11 +6,11 @@ import traceback
 import telebot
 from telebot.apihelper import requests
 
-from config import TG_TOKEN, TG_SENDTO, TIMEOUT, PROXIES_DICT
+from config import TG_TOKEN, TG_SENDTO, TIMEOUT, PROXIES
 from logger import print_and_log
 
 BOT = telebot.TeleBot(TG_TOKEN)
-telebot.apihelper.proxy = PROXIES_DICT
+telebot.apihelper.proxy = PROXIES
 
 def send_message(text, user=TG_SENDTO):
     for _ in range(10):

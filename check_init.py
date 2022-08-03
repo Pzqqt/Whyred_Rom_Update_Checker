@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from requests.packages import urllib3
 from sqlalchemy.orm import exc as sqlalchemy_exc
 
-from config import ENABLE_MULTI_THREAD, PROXIES_DICT, TIMEOUT
+from config import ENABLE_MULTI_THREAD, PROXIES, TIMEOUT
 from database import create_dbsession, Saved
 from page_cache import PageCache
 from tgbot import send_message as _send_message
@@ -133,7 +133,7 @@ class CheckUpdate:
                 if saved_page_cache is not None:
                     return saved_page_cache
             timeout = kwargs_.pop("timeout", TIMEOUT)
-            proxies = kwargs_.pop("proxies", PROXIES_DICT)
+            proxies = kwargs_.pop("proxies", PROXIES)
             req = requests_func(
                 url_, timeout=timeout, proxies=proxies, **kwargs_
             )
@@ -172,8 +172,10 @@ class CheckUpdate:
         return BeautifulSoup(url_text, "lxml")
 
     @staticmethod
-    def grep(text, key, delimiter=":", default=None, ignore_case=False):
-        """ 类似Linux的grep命令, 默认分隔符为':' """
+    def getprop(text, key, delimiter=":", default=None, ignore_case=False):
+        """ 类似Linux的getprop命令, 默认分隔符为':'
+        虽然按常理来说应该返回一个字符串, 但找不到结果时返回的默认值是None, 请注意
+        """
         for line in text.strip().splitlines():
             if delimiter not in line:
                 continue
@@ -507,7 +509,7 @@ class PeCheck(CheckUpdate):
         )
         self.update_info(
             "FILE_MD5",
-            self.grep(build.select_one(".download__meta").get_text(), "MD5 hash")
+            self.getprop(build.select_one(".download__meta").get_text(), "MD5 hash")
         )
         self.update_info(
             "BUILD_CHANGELOG",

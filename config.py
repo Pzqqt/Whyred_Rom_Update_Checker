@@ -24,8 +24,11 @@ LESS_LOG = False
 # 循环检查的间隔时间(单位: 秒)(默认: 180分钟)
 LOOP_CHECK_INTERVAL = 180 * 60
 
-# 代理服务器(为空时则不使用代理)
-PROXIES = "http://127.0.0.1:1080"
+# 代理服务器, 默认从环境变量中读取http_proxy和https_proxy, 也可以根据情况自己设置
+PROXIES = {
+    "http": os.getenv("http_proxy", os.getenv("HTTP_PROXY", "")),
+    "https": os.getenv("https_proxy", os.getenv("HTTPS_PROXY", "")),
+}
 
 # 请求超时
 TIMEOUT = 20
@@ -38,9 +41,3 @@ TG_TOKEN = os.getenv("TG_TOKEN", "")
 
 # 发送消息到...
 TG_SENDTO = os.getenv("TG_SENDTO", "")
-
-if not PROXIES:
-    PROXIES_DICT = {}
-else:
-    PROXIES_DICT = {"http": PROXIES, "https": PROXIES}
-

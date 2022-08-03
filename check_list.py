@@ -210,7 +210,7 @@ class RaspberryPiOS64(CheckUpdate):
         if "os_list_imagingutility_v4.json" in self.request_url("https://downloads.raspberrypi.org"):
             print_and_log(
                 "%s: There is a new version of the api interface. Please update the crawler." % self.name,
-                level="warning"
+                level="warning",
             )
         json_dic = json.loads(self.request_url(url))
         for os in json_dic["os_list"]:
@@ -473,9 +473,9 @@ class ArrowQ(CheckUpdate):
             bs_obj.select_one("#%s-filename" % self.build_type_flag)["name"]
         )
         build_info_text = bs_obj.select_one("#%s-filename" % self.build_type_flag).parent.get_text()
-        self.update_info("FILE_SIZE", self.grep(build_info_text, "Size"))
-        self.update_info("BUILD_VERSION", self.grep(build_info_text, "Version"))
-        self.update_info("BUILD_DATE", self.grep(build_info_text, "Date"))
+        self.update_info("FILE_SIZE", self.getprop(build_info_text, "Size"))
+        self.update_info("BUILD_VERSION", self.getprop(build_info_text, "Version"))
+        self.update_info("BUILD_DATE", self.getprop(build_info_text, "Date"))
         self.update_info(
             "FILE_SHA256",
             bs_obj.select_one("#%s-file_sha256" % self.build_type_flag).get_text().strip()
@@ -707,7 +707,7 @@ class E(CheckUpdateWithBuildDate):
 
     @classmethod
     def date_transform(cls, date_str):
-        return time.strptime(date_str, "%Y%m%d")
+        return int(date_str)
 
     @staticmethod
     def parse_date_string_from_filename(filename):
@@ -1027,11 +1027,11 @@ class PixysR(CheckUpdate):
             )
             latest_build_info = latest_build.select_one(".build__info div")
             latest_build_info_text = latest_build_info.get_text().strip().replace(":\n", ":")
-            self.update_info("LATEST_VERSION", self.grep(latest_build_info_text, "File Name"))
-            self.update_info("FILE_MD5", self.grep(latest_build_info_text, "md5 (hash)"))
-            self.update_info("BUILD_DATE", self.grep(latest_build_info_text, "Date & Time"))
-            self.update_info("FILE_SIZE", self.grep(latest_build_info_text, "Size"))
-            self.update_info("BUILD_VERSION", self.grep(latest_build_info_text, "Version"))
+            self.update_info("LATEST_VERSION", self.getprop(latest_build_info_text, "File Name"))
+            self.update_info("FILE_MD5", self.getprop(latest_build_info_text, "md5 (hash)"))
+            self.update_info("BUILD_DATE", self.getprop(latest_build_info_text, "Date & Time"))
+            self.update_info("FILE_SIZE", self.getprop(latest_build_info_text, "Size"))
+            self.update_info("BUILD_VERSION", self.getprop(latest_build_info_text, "Version"))
             self.update_info("DOWNLOAD_LINK", self.BASE_URL + latest_build_info.find("a")["href"])
 
 class PixysRGapps(PixysR):
