@@ -558,6 +558,7 @@ class CandyQ(SfCheck):
 
 class Carbon(CheckUpdate):
     fullname = "Carbon Rom Official"
+    _skip = True
 
     def do_check(self):
         bs_obj = self.get_bs(self.request_url("https://get.carbonrom.org/device-whyred.html"))
@@ -780,6 +781,7 @@ class Havoc(CheckUpdate):
     enable_pagecache = True
     base_url = "https://download.havoc-os.com/"
     dir_path = "whyred"
+    _skip = True
 
     def do_check(self):
         bs_obj = self.get_bs(self.request_url("".join([self.base_url, "?dir=", self.dir_path])))
