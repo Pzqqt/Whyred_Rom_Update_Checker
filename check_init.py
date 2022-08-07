@@ -615,7 +615,7 @@ class GithubReleases(CheckUpdateWithBuildDate):
             return
         self.update_info("BUILD_VERSION", latest_json["name"])
         self.update_info("LATEST_VERSION", latest_json["html_url"])
-        self.update_info("BUILD_DATE", latest_json["created_at"])
+        self.update_info("BUILD_DATE", latest_json["published_at"])
         self.update_info(
             "DOWNLOAD_LINK",
             "\n".join([
