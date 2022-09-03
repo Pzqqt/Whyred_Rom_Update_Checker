@@ -175,9 +175,17 @@ class BeyondCompare4(CheckUpdate):
         self.update_info("DOWNLOAD_LINK", "%s/download.php" % self.BASE_URL)
         self.update_info("BUILD_CHANGELOG", "%s/download.php?zz=v4changelog" % self.BASE_URL)
 
-class RaspberryPiEepromStable(CheckUpdate):
+class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
     fullname = "Raspberry Pi4 bootloader EEPROM Stable"
     file_path = "firmware/stable"
+
+    @classmethod
+    def date_transform(cls, date_str):
+        return int(date_str)
+
+    @staticmethod
+    def _get_build_date(file_name: str):
+        return re.sub(r'[^\d]', '', file_name)
 
     def do_check(self):
         files = json.loads(
@@ -187,15 +195,26 @@ class RaspberryPiEepromStable(CheckUpdate):
             )
         )
         files = [f for f in files if re.match(r'^pieeprom-[\d-]+.bin$', f["name"])]
-        files.sort(key=lambda f: int(re.sub(r'[^\d]', '', f["name"])))
+        files.sort(key=lambda f: self.date_transform(self._get_build_date(f["name"])))
         latest_file = files[-1]
         self.update_info("LATEST_VERSION", latest_file["name"])
         self.update_info("DOWNLOAD_LINK", latest_file["download_url"])
         self.update_info("FILE_SIZE", "%0.1f KB" % (int(latest_file["size"]) / 1024))
+        self.update_info("BUILD_DATE", self._get_build_date(latest_file["name"]))
         self.update_info(
             "BUILD_CHANGELOG",
             "https://github.com/raspberrypi/rpi-eeprom/blob/master/firmware/release-notes.md"
         )
+
+    def get_print_text(self):
+        build_date = self.info_dic["BUILD_DATE"]
+        if build_date is None:
+            return super().get_print_text()
+        self.update_info("BUILD_DATE", None)
+        try:
+            return super().get_print_text()
+        finally:
+            self.update_info("BUILD_DATE", build_date)
 
 class RaspberryPiEepromBeta(RaspberryPiEepromStable):
     fullname = "Raspberry Pi4 bootloader EEPROM Beta"
