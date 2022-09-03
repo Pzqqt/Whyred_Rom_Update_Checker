@@ -17,6 +17,7 @@ from config import ENABLE_MULTI_THREAD, PROXIES, TIMEOUT
 from database import create_dbsession, Saved
 from page_cache import PageCache
 from tgbot import send_message as _send_message
+from logger import print_and_log
 
 
 del lxml
@@ -110,7 +111,16 @@ class CheckUpdate:
             raise KeyError("Invalid key: %s" % key)
         if isinstance(value, (dict, list)):
             value = json.dumps(value, ensure_ascii=False)
-        self.__info_dic[key] = str(value) if value is not None else None
+        if value is not None:
+            if not isinstance(value, str):
+                print_and_log(
+                    "%s.update_info: Attempt to convert %s to strings when updating %s key." % (
+                        self.name, type(value), key
+                    ),
+                    level="warning",
+                )
+                value = str(value)
+        self.__info_dic[key] = value
 
     @classmethod
     def request_url(cls, url, method="get", encoding="utf-8", **kwargs):
