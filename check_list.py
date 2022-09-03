@@ -7,7 +7,6 @@ from collections import OrderedDict
 from datetime import datetime
 import re
 
-from requests import exceptions as requests_exceptions
 from telebot.apihelper import ApiTelegramException
 from sqlalchemy.orm import exc as sqlalchemy_exc
 
@@ -776,50 +775,24 @@ class GengKapakProject(SfProjectCheck):
     developer = "GengKapak Project"
     sub_path = "ROM/whyred/"
 
-class Havoc(CheckUpdate):
-    fullname = "Havoc OS Official"
-    enable_pagecache = True
-    base_url = "https://download.havoc-os.com/"
-    dir_path = "whyred"
-    _skip = True
+class HavocR(CheckUpdate):
+    fullname = "Havoc OS 11 Official"
+    android_version = "eleven"
+    build_type = "vanilla"
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url("".join([self.base_url, "?dir=", self.dir_path])))
-        builds = bs_obj.select("#file-list > li > a")
-        for build in builds:
-            build_name = build.select_one(".truncate").text.strip()
-            if self.filter_rule(build_name):
-                self.update_info("LATEST_VERSION", build_name)
-                self.update_info("DOWNLOAD_LINK", self.base_url+build["href"])
-                self.update_info("FILE_SIZE", build.select("div > div")[-2].text.strip())
-                self.update_info("BUILD_DATE", build.select("div > div")[-1].text.strip())
-                break
+        latest_info = json.loads(self.request_url(
+            "https://github.com/Havoc-OS/OTA/raw/%s/%s/whyred.json" % (self.android_version, self.build_type)
+        ))
+        self.update_info("LATEST_VERSION", latest_info["filename"])
+        self.update_info("BUILD_VERSION", latest_info["version"])
+        self.update_info("FILE_SIZE", "%0.1f MB" % (latest_info["size"] / 1024 / 1024))
+        self.update_info("FILE_MD5", latest_info["filehash"])
+        self.update_info("DOWNLOAD_LINK", latest_info["url"])
 
-    def after_check(self):
-        try:
-            json_text = self.request_url(
-                "".join([self.base_url, "?info=", self.dir_path, "/", self.info_dic["LATEST_VERSION"]])
-            )
-        except requests_exceptions.HTTPError as error:
-            if "too large" in str(error):
-                return
-            raise
-        if "<script" in json_text:
-            json_text = re.sub(r"<script.*?script>", "", json_text, flags=re.S).strip()
-        file_info_hashes = json.loads(json_text).get("hashes", {})
-        self.update_info("FILE_MD5", file_info_hashes.get("md5"))
-        self.update_info("FILE_SHA1", file_info_hashes.get("sha1"))
-        self.update_info("FILE_SHA256", file_info_hashes.get("sha256"))
-
-    @staticmethod
-    def filter_rule(string):
-        return SfCheck.filter_rule(string) and "GAPPS" not in string.upper()
-
-class HavocGapps(Havoc):
-    fullname = "Havoc OS Official (Include Gapps)"
-
-    def filter_rule(self, string):
-        return SfCheck.filter_rule(string) and "GAPPS" in string.upper()
+class HavocRGapps(HavocR):
+    fullname = "Havoc OS 11 Official (Include Gapps)"
+    build_type = "gapps"
 
 class HavocU1(SfCheck):
     fullname = "Havoc OS (Unofficial By Ikaros)(Include Gapps)"
@@ -1318,8 +1291,8 @@ CHECK_LIST = (
     Extended,
     ExtendedU1,
     GengKapakProject,
-    Havoc,
-    HavocGapps,
+    HavocR,
+    HavocRGapps,
     HavocU1,
     HavocU3,
     Ion,
