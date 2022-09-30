@@ -16,7 +16,7 @@ def send_message(text, user=TG_SENDTO):
     for _ in range(10):
         try:
             BOT.send_message(user, text, parse_mode="Markdown", timeout=TIMEOUT)
-        except (requests.exceptions.SSLError, requests.exceptions.ProxyError):
+        except (requests.exceptions.SSLError, requests.exceptions.ProxyError, requests.exceptions.ReadTimeout):
             # 由于网络或代理问题没能发送成功, 就再试一次, 最多尝试10次
             continue
         except:
