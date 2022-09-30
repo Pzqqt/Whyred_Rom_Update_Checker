@@ -305,6 +305,10 @@ class Sandboxie(GithubReleases):
     fullname = "Sandboxie (By DavidXanatos)"
     repository_url = "sandboxie-plus/Sandboxie"
 
+class Rufus(GithubReleases):
+    fullname = "Rufus"
+    repository_url = "pbatard/rufus"
+
 class Ventoy(GithubReleases):
     fullname = "Ventoy"
     repository_url = "ventoy/Ventoy"
@@ -1244,6 +1248,7 @@ CHECK_LIST = (
     Magisk,
     ManjaroArmRpi4Images,
     Notepad3,
+    Rufus,
     Sandboxie,
     Ventoy,
     AdrarProject,
