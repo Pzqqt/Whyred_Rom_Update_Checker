@@ -1251,6 +1251,8 @@ CHECK_LIST = (
     Rufus,
     Sandboxie,
     Ventoy,
+)
+DROPPED_CHECK_LIST = (
     AdrarProject,
     AdrarProject2,
     AexS,
