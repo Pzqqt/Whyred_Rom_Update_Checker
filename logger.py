@@ -32,14 +32,17 @@ _PREFIX_FUNC_DIC = {
     "warning": ("!", write_log_warning),
 }
 
-def print_and_log(string, level="info", custom_prefix=""):
+def print_and_log(string, level="info", custom_prefix=None):
     """ 打印到terminal的同时写入日志
     :param string: 要打印的字符串
     :param level: 日志级别
     :param custom_prefix: 自定义字符串前缀
     """
     prefix, log_func = _PREFIX_FUNC_DIC.get(level, ("-", write_log_info))
-    if custom_prefix:
+    if custom_prefix is not None:
         prefix = custom_prefix
-    print(prefix, string)
+    if prefix:
+        print(prefix, string)
+    else:
+        print(string)
     log_func(string)

@@ -15,7 +15,11 @@ from config import (
     ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM, LESS_LOG
 )
 from check_init import PAGE_CACHE
-from check_list import CHECK_LIST, DROPPED_CHECK_LIST
+from check_list import CHECK_LIST
+try:
+    from check_list import DROPPED_CHECK_LIST
+except ImportError:
+    DROPPED_CHECK_LIST = ()
 from database import create_dbsession, Saved
 from logger import write_log_info, print_and_log
 
@@ -77,7 +81,7 @@ def check_one(cls, disable_pagecache=False):
         print_and_log("%s check failed! %s." % (cls_obj.fullname, error), level="warning")
     except:
         for line in traceback.format_exc().splitlines():
-            print_and_log(line, level="warning")
+            print_and_log(line, level="warning", custom_prefix="")
         print_and_log("%s check failed!" % cls_obj.fullname, level="warning")
     else:
         if cls_obj.is_updated() or FORCE_UPDATE:
@@ -160,10 +164,10 @@ def loop_check():
         if is_network_error:
             print_and_log("Network or proxy error! Sleep...", level="warning")
         else:
-            # 对于检查失败的项目, 强制单线程检查
-            print_and_log("Check again for failed items")
-            for cls in check_failed_list:
-                check_one(cls)
+            if check_failed_list:
+                # 对于检查失败的项目, 强制单线程检查
+                print_and_log("Check again for failed items")
+                single_thread_check(check_failed_list)
         PAGE_CACHE.clear()
         print(" - The next check will start at %s\n" % _get_time_str(offset=LOOP_CHECK_INTERVAL))
         write_log_info("End of check")
