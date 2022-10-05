@@ -98,9 +98,14 @@ def check_one(cls, disable_pagecache=False):
                     "%s: Something wrong when running after_check!" % cls_obj.fullname,
                     level="warning",
                 )
-            cls_obj.write_to_database()
-            if ENABLE_SENDMESSAGE:
-                cls_obj.send_message()
+            if cls_obj.save_after_send_message:
+                if ENABLE_SENDMESSAGE:
+                    cls_obj.send_message()
+                cls_obj.write_to_database()
+            else:
+                cls_obj.write_to_database()
+                if ENABLE_SENDMESSAGE:
+                    cls_obj.send_message()
         else:
             print("- %s no update" % cls_obj.fullname)
             if not LESS_LOG:
