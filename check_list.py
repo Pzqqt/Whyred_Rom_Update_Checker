@@ -97,6 +97,8 @@ class GoogleClangPrebuilt(CheckUpdate):
             saved_commits = json.loads(Saved.get_saved_info(self.name).LATEST_VERSION)
         except (sqlalchemy_exc.NoResultFound, json.decoder.JSONDecodeError):
             saved_commits = {}
+        if not isinstance(saved_commits, dict):
+            saved_commits = {}
         for key in fetch_commits.keys() - saved_commits.keys():
             item = fetch_commits[key]
             try:
