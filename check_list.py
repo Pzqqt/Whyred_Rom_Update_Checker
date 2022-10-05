@@ -3,7 +3,6 @@
 
 import json
 import time
-from collections import OrderedDict
 from datetime import datetime
 import re
 
@@ -52,16 +51,13 @@ class Linux414Y(CheckUpdate):
 
 class GoogleClangPrebuilt(CheckUpdate):
     fullname = "Google Clang Prebuilt"
+    save_after_send_message = True
     BASE_URL = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
-
-    def __init__(self):
-        super().__init__()
-        self._private_dic["sp_commits"] = OrderedDict()
-        self._private_dic["extra_ids"] = []
 
     def do_check(self):
         bs_obj = self.get_bs(self.request_url(self.BASE_URL + "/+log"))
         commits = bs_obj.select_one(".CommitLog").select("li")
+        sp_commits = {}
         for commit in commits:
             a_tag = commit.select("a")[1]
             commit_title = a_tag.get_text()
@@ -72,28 +68,11 @@ class GoogleClangPrebuilt(CheckUpdate):
                         release_version = release_version[:-1]
                     commit_url = "https://android.googlesource.com" + a_tag["href"]
                     commit_id = a_tag["href"].split("/")[-1]
-                    self._private_dic["sp_commits"][commit_id] = {
+                    sp_commits[commit_id] = {
                         "commit_url": commit_url,
-                        "commit_title": commit_title,
                         "release_version": release_version,
                     }
-        self.update_info("LATEST_VERSION", list(self._private_dic["sp_commits"].keys()))
-
-    def is_updated(self):
-        if not self.info_dic["LATEST_VERSION"]:
-            return False
-        try:
-            saved_info = Saved.get_saved_info(self.name)
-        except sqlalchemy_exc.NoResultFound:
-            # Forced overwrite
-            self.write_to_database()
-            return False
-        self_ids = set(self._private_dic["sp_commits"].keys())
-        saved_ids = set(json.loads(saved_info.LATEST_VERSION))
-        extra_ids = self_ids - saved_ids
-        if extra_ids:
-            self._private_dic["extra_ids"] = extra_ids
-        return bool(extra_ids)
+        self.update_info("LATEST_VERSION", sp_commits)
 
     def get_print_text(self):
         raise NotImplemented
@@ -113,22 +92,27 @@ class GoogleClangPrebuilt(CheckUpdate):
         return commit_text
 
     def send_message(self):
-        for id_ in self._private_dic["extra_ids"]:
-            commit_url = self._private_dic["sp_commits"][id_]["commit_url"]
-            release_version = self._private_dic["sp_commits"][id_]["release_version"]
+        fetch_commits = json.loads(self.info_dic["LATEST_VERSION"])
+        try:
+            saved_commits = json.loads(Saved.get_saved_info(self.name).LATEST_VERSION)
+        except (sqlalchemy_exc.NoResultFound, json.decoder.JSONDecodeError):
+            saved_commits = {}
+        for key in fetch_commits.keys() - saved_commits.keys():
+            item = fetch_commits[key]
             try:
-                detailed_version = self.get_detailed_version(commit_url)
+                detailed_version = self.get_detailed_version(item["commit_url"])
             except:
-                detailed_version = id_
+                detailed_version = key
             _send_message(self._get_print_text(
                 dic={
-                    "BUILD_CHANGELOG": commit_url,
+                    "BUILD_CHANGELOG": item["commit_url"],
                     "BUILD_VERSION": detailed_version,
                     "DOWNLOAD_LINK": "%s/+archive/%s/clang-%s.tar.gz" % (
-                        self.BASE_URL, id_, release_version,
+                        self.BASE_URL, key, item["release_version"],
                     ),
                 }
             ))
+            time.sleep(2)
 
 class WireGuard(CheckUpdate):
     fullname = "WireGuard for Linux 3.10 - 5.5"
