@@ -66,6 +66,10 @@ class CheckUpdate:
         ])
         self._private_dic = {}
         self.__is_checked = False
+        try:
+            self.__prev_saved_info = Saved.get_saved_info(self.name)
+        except sqlalchemy_exc.NoResultFound:
+            self.__prev_saved_info = None
         # 在初始化实例时装饰这些方法
         # 使得实例执行self.do_check方法之后自动将self.__is_checked赋值为True
         # 并且在self.__is_checked不为True时不允许执行某些方法
@@ -97,6 +101,10 @@ class CheckUpdate:
     @property
     def info_dic(self):
         return self.__info_dic
+
+    @property
+    def prev_saved_info(self):
+        return self.__prev_saved_info
 
     def _abort_if_missing_property(self, *props):
         if None in (getattr(self, key, None) for key in props):
@@ -248,11 +256,9 @@ class CheckUpdate:
         """
         if self.__info_dic["LATEST_VERSION"] is None:
             return False
-        try:
-            saved_info = Saved.get_saved_info(self.name)
-        except sqlalchemy_exc.NoResultFound:
+        if self.__prev_saved_info is None:
             return True
-        return self.__info_dic["LATEST_VERSION"] != saved_info.LATEST_VERSION
+        return self.__info_dic["LATEST_VERSION"] != self.__prev_saved_info.LATEST_VERSION
 
     def get_print_text(self):
         """ 返回更新消息文本 """
@@ -313,13 +319,11 @@ class CheckUpdateWithBuildDate(CheckUpdate):
             return False
         if self.info_dic["BUILD_DATE"] is None:
             return False
-        try:
-            saved_info = Saved.get_saved_info(self.name)
-        except sqlalchemy_exc.NoResultFound:
+        if self.__prev_saved_info is None:
             return True
         latest_date = self.date_transform(str(self.info_dic["BUILD_DATE"]))
         try:
-            saved_date = self.date_transform(saved_info.BUILD_DATE)
+            saved_date = self.date_transform(self.__prev_saved_info.BUILD_DATE)
         except:
             return True
         return latest_date > saved_date
