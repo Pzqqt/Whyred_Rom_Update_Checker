@@ -48,7 +48,6 @@ class CheckUpdate:
 
     fullname = None
     enable_pagecache = False
-    save_after_send_message = False  # 为True时先发送消息再更新数据库, 否则先更新数据库再发送消息(默认)
     _skip = False
 
     def __init__(self):
