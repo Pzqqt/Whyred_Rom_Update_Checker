@@ -7,13 +7,11 @@ from datetime import datetime
 import re
 
 from telebot.apihelper import ApiTelegramException
-from sqlalchemy.orm import exc as sqlalchemy_exc
 
 from check_init import (
     CHROME_UA, CheckUpdate, CheckUpdateWithBuildDate,
     SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck, GithubReleases
 )
-from database import Saved
 from tgbot import send_message as _send_message
 from logger import print_and_log
 
@@ -51,7 +49,6 @@ class Linux414Y(CheckUpdate):
 
 class GoogleClangPrebuilt(CheckUpdate):
     fullname = "Google Clang Prebuilt"
-    save_after_send_message = True
     BASE_URL = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
 
     def do_check(self):
@@ -93,10 +90,13 @@ class GoogleClangPrebuilt(CheckUpdate):
 
     def send_message(self):
         fetch_commits = json.loads(self.info_dic["LATEST_VERSION"])
-        try:
-            saved_commits = json.loads(Saved.get_saved_info(self.name).LATEST_VERSION)
-        except (sqlalchemy_exc.NoResultFound, json.decoder.JSONDecodeError):
+        if self.prev_saved_info is None:
             saved_commits = {}
+        else:
+            try:
+                saved_commits = json.loads(self.prev_saved_info.LATEST_VERSION)
+            except json.decoder.JSONDecodeError:
+                saved_commits = {}
         if not isinstance(saved_commits, dict):
             saved_commits = {}
         for key in fetch_commits.keys() - saved_commits.keys():
