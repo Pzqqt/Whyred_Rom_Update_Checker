@@ -319,11 +319,11 @@ class CheckUpdateWithBuildDate(CheckUpdate):
             return False
         if self.info_dic["BUILD_DATE"] is None:
             return False
-        if self.__prev_saved_info is None:
+        if self.prev_saved_info is None:
             return True
         latest_date = self.date_transform(str(self.info_dic["BUILD_DATE"]))
         try:
-            saved_date = self.date_transform(self.__prev_saved_info.BUILD_DATE)
+            saved_date = self.date_transform(self.prev_saved_info.BUILD_DATE)
         except:
             return True
         return latest_date > saved_date
