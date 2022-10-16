@@ -100,7 +100,7 @@ class CheckUpdate:
 
     @property
     def info_dic(self):
-        return self.__info_dic
+        return self.__info_dic.copy()
 
     @property
     def prev_saved_info(self):
@@ -266,7 +266,7 @@ class CheckUpdate:
             "*%s Update*" % self.fullname,
             time.strftime("%Y-%m-%d", time.localtime(time.time())),
         ]
-        for key, value in self.info_dic.items():
+        for key, value in self.__info_dic.items():
             if value is None:
                 continue
             if key == "LATEST_VERSION":
@@ -279,7 +279,7 @@ class CheckUpdate:
                 else:
                     value = "`%s`" % value
             if key == "DOWNLOAD_LINK" and value.startswith("http"):
-                value = "[%s](%s)" % (self.info_dic.get("LATEST_VERSION", ""), value)
+                value = "[%s](%s)" % (self.__info_dic.get("LATEST_VERSION", ""), value)
             print_str_list.append("\n%s:\n%s" % (_KEY_TO_PRINT[key], value))
         return "\n".join(print_str_list)
 
