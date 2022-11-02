@@ -628,7 +628,7 @@ class GithubReleases(CheckUpdateWithBuildDate):
             return
         if self.ignore_prerelease and latest_json["prerelease"]:
             return
-        self.update_info("BUILD_VERSION", latest_json["name"])
+        self.update_info("BUILD_VERSION", latest_json["name"] or latest_json["tag_name"])
         self.update_info("LATEST_VERSION", latest_json["html_url"])
         self.update_info("BUILD_DATE", latest_json["published_at"])
         self.update_info(
