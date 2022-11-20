@@ -313,7 +313,7 @@ class CheckUpdate:
                 else:
                     value = "`%s`" % value
             if key == "DOWNLOAD_LINK" and value.startswith("http"):
-                value = "[%s](%s)" % (self.__info_dic.get("LATEST_VERSION", ""), value)
+                value = "[%s](%s)" % (self.__info_dic.get("LATEST_VERSION") or value, value)
             print_str_list.append("\n%s:\n%s" % (_KEY_TO_PRINT[key], value))
         return "\n".join(print_str_list)
 
