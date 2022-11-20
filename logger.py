@@ -3,6 +3,7 @@
 
 import logging
 import os
+from typing import NoReturn, Union
 
 from config import LOG_FILE, ENABLE_LOGGER
 
@@ -15,13 +16,13 @@ _HANDLER.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message
 
 LOGGER.addHandler(_HANDLER)
 
-def write_log_info(*text):
+def write_log_info(*text: str) -> NoReturn:
     """ 写入info级日志 """
     if ENABLE_LOGGER:
         for string in text:
             LOGGER.info(string)
 
-def write_log_warning(*text):
+def write_log_warning(*text: str) -> NoReturn:
     """ 写入warning级日志 """
     if ENABLE_LOGGER:
         for string in text:
@@ -32,7 +33,7 @@ _PREFIX_FUNC_DIC = {
     "warning": ("!", write_log_warning),
 }
 
-def print_and_log(string, level="info", custom_prefix=None):
+def print_and_log(string: str, level: str = "info", custom_prefix: Union[str, None] = None) -> NoReturn:
     """ 打印到terminal的同时写入日志
     :param string: 要打印的字符串
     :param level: 日志级别

@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 import traceback
+from typing import NoReturn
 
 import telebot
 from telebot.apihelper import requests
@@ -12,10 +13,10 @@ from logger import print_and_log
 BOT = telebot.TeleBot(TG_TOKEN)
 telebot.apihelper.proxy = PROXIES
 
-def send_message(text, user=TG_SENDTO):
+def send_message(text: str, send_to: str = TG_SENDTO) -> NoReturn:
     for _ in range(10):
         try:
-            BOT.send_message(user, text, parse_mode="Markdown", timeout=TIMEOUT)
+            BOT.send_message(send_to, text, parse_mode="Markdown", timeout=TIMEOUT)
         except (requests.exceptions.SSLError, requests.exceptions.ProxyError, requests.exceptions.ReadTimeout):
             # 由于网络或代理问题没能发送成功, 就再试一次, 最多尝试10次
             continue

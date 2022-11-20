@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 import threading
+from typing import Union, NoReturn
 
 class PageCache:
 
@@ -23,23 +24,23 @@ class PageCache:
         self.threading_lock = threading.RLock()
 
     @staticmethod
-    def __params_change(params):
+    def __params_change(params: Union[dict, None]) -> Union[frozenset, None]:
         if params is None:
             return None
         if isinstance(params, dict):
             return frozenset(params.items())
         raise TypeError("'params' must be a dict or None")
 
-    def read(self, url, params):
+    def read(self, url: str, params: Union[dict, None]) -> str:
         params = self.__params_change(params)
         with self.threading_lock:
             return self.__page_cache.get((url, params))
 
-    def save(self, url, params, page_source):
+    def save(self, url: str, params: Union[dict, None], page_source: str) -> NoReturn:
         params = self.__params_change(params)
         with self.threading_lock:
             self.__page_cache[(url, params)] = page_source
 
-    def clear(self):
+    def clear(self) -> NoReturn:
         with self.threading_lock:
             self.__page_cache.clear()

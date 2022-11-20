@@ -5,6 +5,7 @@ import json
 import re
 import time
 import typing
+from typing import Union, NoReturn
 from collections import OrderedDict
 from urllib.parse import unquote, urlencode
 
@@ -47,10 +48,10 @@ PAGE_CACHE = PageCache()
 
 class CheckUpdate:
 
-    fullname = None
-    enable_pagecache = False
+    fullname: str = None
+    enable_pagecache: bool = False
     tags: typing.Sequence[str] = ()
-    _skip = False
+    _skip: bool = False
 
     def __init__(self):
         self._abort_if_missing_property("fullname")
@@ -82,7 +83,7 @@ class CheckUpdate:
         self.get_print_text = self.__hook_is_checked(self.get_print_text)
         self.send_message = self.__hook_is_checked(self.send_message)
 
-    def __hook_do_check(self, method):
+    def __hook_do_check(self, method: typing.Callable) -> typing.Callable:
         def hook(*args, **kwargs):
             method(*args, **kwargs)
             # 如果上一行语句抛出了异常, 将不会执行下面这行语句
@@ -90,32 +91,32 @@ class CheckUpdate:
             # 必须返回 None
         return hook
 
-    def __hook_is_checked(self, method):
+    def __hook_is_checked(self, method: typing.Callable) -> typing.Callable:
         def hook(*args, **kwargs):
             assert self.__is_checked, "Please execute the 'do_check' method first."
             return method(*args, **kwargs)
         return hook
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.__class__.__name__
 
     @property
-    def info_dic(self):
+    def info_dic(self) -> OrderedDict:
         return self.__info_dic.copy()
 
     @property
-    def prev_saved_info(self):
+    def prev_saved_info(self) -> Union[Saved, None]:
         return self.__prev_saved_info
 
-    def _abort_if_missing_property(self, *props):
+    def _abort_if_missing_property(self, *props: str) -> NoReturn:
         if None in (getattr(self, key, None) for key in props):
             raise Exception(
                 "Subclasses inherited from the %s class must specify the '%s' property when defining!"
                 % (self.name, "' & '".join(props))
             )
 
-    def update_info(self, key, value):
+    def update_info(self, key: str, value: Union[str, dict, list, None]) -> NoReturn:
         """ 更新info_dic字典, 在更新之前会对key和value进行检查和转换 """
         if key not in self.__info_dic.keys():
             raise KeyError("Invalid key: %s" % key)
@@ -133,7 +134,7 @@ class CheckUpdate:
         self.__info_dic[key] = value
 
     @classmethod
-    def request_url(cls, url, method="get", encoding="utf-8", **kwargs):
+    def request_url(cls, url: str, method: str = "get", encoding: str = "utf-8", **kwargs) -> str:
 
         """ 对requests进行了简单的包装
         timeout, proxies这两个参数有默认值, 也可以根据需要自定义这些参数
@@ -141,7 +142,7 @@ class CheckUpdate:
         :param method: 请求方法, 可选: "get"(默认)或"post"
         :param encoding: 文本编码, 默认为utf-8
         :param kwargs: 其他需要传递给requests的参数
-        :return: url页面的源码
+        :return: 请求结果的text(解码后)
         """
 
         def _request_url(url_, method_, encoding_, **kwargs_):
@@ -177,7 +178,7 @@ class CheckUpdate:
         return _request_url(url, method, encoding, **kwargs)
 
     @classmethod
-    def get_hash_from_file(cls, url, **kwargs):
+    def get_hash_from_file(cls, url: str, **kwargs) -> str:
         """
         请求哈希校验文件的url, 返回文件中的哈希值
         :param url: 哈希校验文件的url
@@ -187,19 +188,31 @@ class CheckUpdate:
         return cls.request_url(url, **kwargs).strip().split()[0]
 
     @staticmethod
-    def get_bs(url_text, **kwargs):
+    def get_bs(url_text: str, **kwargs) -> BeautifulSoup:
         """
-        对BeautifulSoup函数进行了简单的包装
+        对BeautifulSoup函数进行了简单的包装, 默认解析器为lxml
         :param url_text: url源码
+        :param kwargs: 其他需要传递给BeautifulSoup的参数
         :return: BeautifulSoup对象
         """
         features = kwargs.pop("features", "lxml")
         return BeautifulSoup(url_text, features=features, **kwargs)
 
     @staticmethod
-    def getprop(text, key, delimiter=":", default=None, ignore_case=False):
-        """ 类似Linux的getprop命令, 默认分隔符为':'
-        虽然按常理来说应该返回一个字符串, 但找不到结果时返回的默认值是None, 请注意
+    def getprop(
+            text: str,
+            key: str,
+            delimiter: str = ":",
+            default: Union[str, None] = None,
+            ignore_case: bool = False
+    ) -> str:
+        """ 类似Shell的getprop和cut命令
+        :param text: 要解析的字符串
+        :param key: 要搜索的键值
+        :param delimiter: 分隔符, 默认为':'
+        :param default: 找不到结果时返回的值, 默认是None而不是空字符串, 请注意
+        :param ignore_case: 对key是否忽略大小写
+        :return:
         """
         for line in text.strip().splitlines():
             if delimiter not in line:
@@ -213,7 +226,7 @@ class CheckUpdate:
                     return v
         return default
 
-    def do_check(self):
+    def do_check(self) -> NoReturn:
         """
         开始进行更新检查, 包括页面请求 数据清洗 info_dic更新, 都应该在此方法中完成
         :return: None
@@ -223,7 +236,7 @@ class CheckUpdate:
         # 如确实需要引用参数, 可以在继承时添加新的类属性
         raise NotImplementedError
 
-    def after_check(self):
+    def after_check(self) -> NoReturn:
         """
         此方法将在确定检查对象有更新之后才会执行
         比如: 将下载哈希文件并获取哈希值的代码放在这里, 可以节省一些时间(没有更新时做这些是没有意义的)
@@ -233,7 +246,7 @@ class CheckUpdate:
         # 如确实需要使用self.do_check方法中的部分变量, 可以借助self._private_dic进行传递
         pass
 
-    def write_to_database(self):
+    def write_to_database(self) -> NoReturn:
         """ 将CheckUpdate实例的info_dic数据写入数据库 """
         with create_dbsession() as session:
             try:
@@ -251,7 +264,7 @@ class CheckUpdate:
                     setattr(saved_data, key, value)
             session.commit()
 
-    def is_updated(self):
+    def is_updated(self) -> bool:
         """
         与数据库中已存储的数据进行比对, 如果有更新, 则返回True, 否则返回False
         一般情况下只需比对LATEST_VERSION字段, 子类在继承时可以根据需要拓展此方法
@@ -274,7 +287,7 @@ class CheckUpdate:
             _tags = (self.name,)
         return '#' + " #".join(_tags)
 
-    def get_print_text(self):
+    def get_print_text(self) -> str:
         """ 返回更新消息文本 """
         print_str_list = [
             "*%s Update*" % self.fullname,
@@ -298,10 +311,10 @@ class CheckUpdate:
             print_str_list.append("\n%s:\n%s" % (_KEY_TO_PRINT[key], value))
         return "\n".join(print_str_list)
 
-    def send_message(self):
+    def send_message(self) -> NoReturn:
         _send_message(self.get_print_text())
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "%s(fullname='%s', info_dic={%s})" % (
             self.name,
             self.fullname,
@@ -320,7 +333,7 @@ class CheckUpdateWithBuildDate(CheckUpdate):
     """
 
     @classmethod
-    def date_transform(cls, date_str: str):
+    def date_transform(cls, date_str: str) -> typing.Any:
         """
         解析时间字符串, 用于比较
         :param date_str: 要解析的时间字符串
@@ -328,7 +341,7 @@ class CheckUpdateWithBuildDate(CheckUpdate):
         """
         raise NotImplementedError
 
-    def is_updated(self):
+    def is_updated(self) -> bool:
         result = super().is_updated()
         if not result:
             return False
@@ -344,8 +357,8 @@ class CheckUpdateWithBuildDate(CheckUpdate):
         return latest_date > saved_date
 
 class SfCheck(CheckUpdateWithBuildDate):
-    project_name = None
-    sub_path = ""
+    project_name: str = None
+    sub_path: str = ""
 
     _MONTH_TO_NUMBER = {
         "Jan": "01", "Feb": "02", "Mar": "03",
@@ -359,7 +372,7 @@ class SfCheck(CheckUpdateWithBuildDate):
         super().__init__()
 
     @classmethod
-    def date_transform(cls, date_str):
+    def date_transform(cls, date_str: str) -> time.struct_time:
         # 例: "Wed, 12 Feb 2020 12:34:56 UT"
         date_str_ = date_str.rsplit(" ", 1)[0].split(", ")[1]
         date_str_month = date_str_.split()[1]
@@ -367,7 +380,7 @@ class SfCheck(CheckUpdateWithBuildDate):
         return time.strptime(date_str_, "%d %m %Y %H:%M:%S")
 
     @classmethod
-    def filter_rule(cls, string):
+    def filter_rule(cls, string: str) -> bool:
         """ 文件名过滤规则 """
         return string.endswith(".zip") and "whyred" in string.lower()
 
@@ -396,7 +409,7 @@ class SfCheck(CheckUpdateWithBuildDate):
                 break
 
 class SfProjectCheck(SfCheck):
-    developer = None
+    developer: str = None
 
     # file name keyword: full name
     _KNOWN_ROM = OrderedDict(
@@ -460,8 +473,8 @@ class SfProjectCheck(SfCheck):
             self.fullname = fullname_bak
 
 class H5aiCheck(CheckUpdate):
-    base_url = None
-    sub_url = None
+    base_url: str = None
+    sub_url: str = None
 
     def __init__(self):
         self._abort_if_missing_property("base_url", "sub_url")
@@ -482,7 +495,7 @@ class H5aiCheck(CheckUpdate):
             self.update_info("FILE_SIZE", build.select("td")[3].get_text())
 
 class AexCheck(CheckUpdate):
-    sub_path = None
+    sub_path: str = None
     _skip = True
 
     def __init__(self):
@@ -509,9 +522,9 @@ class AexCheck(CheckUpdate):
         self.update_info("BUILD_CHANGELOG", json_dic.get("changelog"))
 
 class PeCheck(CheckUpdate):
-    model = None
-    index = None
-    tag_name = None
+    model: str = None
+    index: int = None
+    tag_name: str = None
 
     _url = "https://download.pixelexperience.org"
 
@@ -519,7 +532,7 @@ class PeCheck(CheckUpdate):
         self._abort_if_missing_property("model", "index", "tag_name")
         super().__init__()
 
-    def get_real_url(self, fake_url):
+    def get_real_url(self, fake_url: str) -> str:
         return json.loads(self.request_url(
             fake_url,
             headers={
@@ -564,14 +577,14 @@ class PeCheck(CheckUpdate):
             self.update_info("DOWNLOAD_LINK", real_url)
 
 class PlingCheck(CheckUpdate):
-    p_id = None
+    p_id: int = None
 
     def __init__(self):
         self._abort_if_missing_property("p_id")
         super().__init__()
 
     @staticmethod
-    def filter_rule(build_dic):
+    def filter_rule(build_dic: dict) -> typing.Any:
         """ 文件过滤规则 """
         return int(build_dic["active"])
 
@@ -622,15 +635,15 @@ class PlingCheck(CheckUpdate):
         )
 
 class GithubReleases(CheckUpdateWithBuildDate):
-    repository_url = None
-    ignore_prerelease = True
+    repository_url: str = None
+    ignore_prerelease: bool = True
 
     def __init__(self):
         self._abort_if_missing_property("repository_url")
         super().__init__()
 
     @classmethod
-    def date_transform(cls, date_str):
+    def date_transform(cls, date_str: str) -> time.struct_time:
         # 例: "2022-02-02T08:21:26Z"
         return time.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
 

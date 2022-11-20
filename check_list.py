@@ -83,7 +83,7 @@ class GoogleClangPrebuilt(CheckUpdate):
         )
 
     @classmethod
-    def get_detailed_version(cls, url):
+    def get_detailed_version(cls, url: str) -> str:
         bs_obj_2 = cls.get_bs(cls.request_url(url))
         commit_text = bs_obj_2.find("pre").get_text().splitlines()[2]
         if commit_text[-1] == ".":
@@ -170,11 +170,11 @@ class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
     file_path = "firmware/stable"
 
     @classmethod
-    def date_transform(cls, date_str):
+    def date_transform(cls, date_str: str) -> int:
         return int(date_str)
 
     @staticmethod
-    def _get_build_date(file_name: str):
+    def _get_build_date(file_name: str) -> str:
         return re.sub(r'[^\d]', '', file_name)
 
     def do_check(self):

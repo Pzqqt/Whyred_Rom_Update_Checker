@@ -7,6 +7,8 @@ import time
 import traceback
 import sys
 import threading
+import typing
+from typing import NoReturn, Optional
 from concurrent.futures import ThreadPoolExecutor
 
 from requests import exceptions
@@ -28,7 +30,7 @@ FORCE_UPDATE = False
 
 _THREADING_LOCK = threading.Lock()
 
-def database_cleanup():
+def database_cleanup() -> NoReturn:
     """
     将数据库中存在于数据库但不存在于CHECK_LIST的项目删除掉
     :return: 被删除的项目名字的集合
@@ -42,25 +44,25 @@ def database_cleanup():
         session.commit()
         return drop_ids
 
-def _abort(text):
+def _abort(text: str) -> NoReturn:
     print_and_log(str(text), level="warning", custom_prefix="-")
     sys.exit(1)
 
-def _abort_by_user():
-    return _abort("Abort by user")
+def _abort_by_user() -> NoReturn:
+    _abort("Abort by user")
 
-def _sleep(sleep_time):
+def _sleep(sleep_time: int) -> NoReturn:
     try:
         time.sleep(sleep_time)
     except KeyboardInterrupt:
         _abort_by_user()
 
-def _get_time_str(time_num=None, offset=0):
+def _get_time_str(time_num: Optional[float] = None, offset: int = 0) -> str:
     if time_num is None:
         time_num = time.time()
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_num+offset))
 
-def check_one(cls, disable_pagecache=False):
+def check_one(cls, disable_pagecache: bool = False) -> bool:
     if isinstance(cls, str):
         cls_str = cls
         cls = {cls_.__name__: cls_ for cls_ in CHECK_LIST}.get(cls_str)
@@ -107,7 +109,7 @@ def check_one(cls, disable_pagecache=False):
                 write_log_info("%s no update" % cls_obj.fullname)
         return True
 
-def single_thread_check(check_list):
+def single_thread_check(check_list: typing.Sequence) -> (list, bool):
     # 单线程模式下连续检查失败5项则判定为网络异常, 并提前终止
     req_failed_flag = 0
     check_failed_list = []
@@ -124,7 +126,7 @@ def single_thread_check(check_list):
         _sleep(2)
     return check_failed_list, is_network_error
 
-def multi_thread_check(check_list):
+def multi_thread_check(check_list: typing.Sequence) -> (list, bool):
     # 多线程模式下累计检查失败10项则判定为网络异常, 并在之后往线程池提交的任务中不再进行检查操作而是直接返回
     check_failed_list = []
     is_network_error = False
@@ -146,7 +148,7 @@ def multi_thread_check(check_list):
         executor.map(_check_one, check_list)
     return check_failed_list, is_network_error
 
-def loop_check():
+def loop_check() -> NoReturn:
     write_log_info("Run database cleanup before start")
     drop_ids = database_cleanup()
     write_log_info("Abandoned items: {%s}" % ", ".join(drop_ids))
@@ -173,7 +175,7 @@ def loop_check():
         write_log_info("End of check")
         _sleep(LOOP_CHECK_INTERVAL)
 
-def get_saved_json():
+def get_saved_json() -> str:
     # 以json格式返回已保存的数据
     with create_dbsession() as session:
         return json.dumps(
@@ -185,7 +187,7 @@ def get_saved_json():
             # ensure_ascii=False,
         )
 
-def show_saved_data():
+def show_saved_data() -> NoReturn:
     # 以MySQL命令行风格打印已保存的数据
     with create_dbsession() as session:
         results = session.query(Saved).with_entities(Saved.ID, Saved.FULL_NAME, Saved.LATEST_VERSION)

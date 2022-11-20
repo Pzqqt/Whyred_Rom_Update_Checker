@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+from __future__ import annotations
 import os
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -44,7 +45,7 @@ class Saved(_Base):
     DOWNLOAD_LINK = Column(String)
     FILE_SIZE = Column(String)
 
-    def get_kv(self):
+    def get_kv(self) -> OrderedDict:
         """ 返回Saved对象存储的键值字典 """
         return OrderedDict([
             (k, getattr(self, k))
@@ -56,7 +57,7 @@ class Saved(_Base):
         ])
 
     @classmethod
-    def get_saved_info(cls, name):
+    def get_saved_info(cls, name: str) -> Saved:
         """
         根据name查询并返回数据库中已存储的数据
         如果数据不存在, 则返回None
