@@ -3,11 +3,11 @@
 
 import logging
 import os
-from typing import NoReturn, Union
+from typing import NoReturn, Union, Final
 
 from config import LOG_FILE, ENABLE_LOGGER
 
-LOGGER = logging.getLogger(__name__)
+LOGGER: Final = logging.getLogger(__name__)
 LOGGER.setLevel(level=logging.INFO)
 
 _HANDLER = logging.FileHandler(os.path.join(os.path.dirname(os.path.abspath(__file__)), LOG_FILE))
@@ -28,7 +28,7 @@ def write_log_warning(*text: str) -> NoReturn:
         for string in text:
             LOGGER.warning(string)
 
-_PREFIX_FUNC_DIC = {
+_PREFIX_FUNC_DIC: Final = {
     "info": ("-", write_log_info),
     "warning": ("!", write_log_warning),
 }

@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 import traceback
-from typing import NoReturn
+from typing import NoReturn, Final
 
 import telebot
 from telebot.apihelper import requests
@@ -10,7 +10,7 @@ from telebot.apihelper import requests
 from config import TG_TOKEN, TG_SENDTO, TIMEOUT, PROXIES
 from logger import print_and_log
 
-BOT = telebot.TeleBot(TG_TOKEN)
+BOT: Final = telebot.TeleBot(TG_TOKEN)
 telebot.apihelper.proxy = PROXIES
 
 def send_message(text: str, send_to: str = TG_SENDTO) -> NoReturn:

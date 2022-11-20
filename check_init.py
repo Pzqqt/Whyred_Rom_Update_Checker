@@ -5,7 +5,7 @@ import json
 import re
 import time
 import typing
-from typing import Union, NoReturn
+from typing import Union, NoReturn, Final
 from collections import OrderedDict
 from urllib.parse import unquote, urlencode
 
@@ -27,12 +27,12 @@ del lxml
 # 禁用安全请求警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-CHROME_UA = (
+CHROME_UA: Final = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/99.0.4844.82 Safari/537.36"
 )
 
-_KEY_TO_PRINT = {
+_KEY_TO_PRINT: Final = {
     "BUILD_TYPE": "Build type",
     "BUILD_VERSION": "Build version",
     "BUILD_DATE": "Build date",
@@ -44,7 +44,7 @@ _KEY_TO_PRINT = {
     "FILE_SIZE": "Size",
 }
 
-PAGE_CACHE = PageCache()
+PAGE_CACHE: Final = PageCache()
 
 class CheckUpdate:
 
@@ -134,7 +134,13 @@ class CheckUpdate:
         self.__info_dic[key] = value
 
     @classmethod
-    def request_url(cls, url: str, method: str = "get", encoding: str = "utf-8", **kwargs) -> str:
+    def request_url(
+            cls,
+            url: str,
+            method: typing.Literal["get", "post"] = "get",
+            encoding: str = "utf-8",
+            **kwargs
+    ) -> str:
 
         """ 对requests进行了简单的包装
         timeout, proxies这两个参数有默认值, 也可以根据需要自定义这些参数
@@ -412,7 +418,7 @@ class SfProjectCheck(SfCheck):
     developer: str = None
 
     # file name keyword: full name
-    _KNOWN_ROM = OrderedDict(
+    _KNOWN_ROM: Final = OrderedDict(
         sorted(
             [
                 ("aicp", "AICP"),
@@ -526,7 +532,7 @@ class PeCheck(CheckUpdate):
     index: int = None
     tag_name: str = None
 
-    _url = "https://download.pixelexperience.org"
+    _url: Final = "https://download.pixelexperience.org"
 
     def __init__(self):
         self._abort_if_missing_property("model", "index", "tag_name")

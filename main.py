@@ -8,7 +8,7 @@ import traceback
 import sys
 import threading
 import typing
-from typing import NoReturn, Optional
+from typing import NoReturn, Optional, Final
 from concurrent.futures import ThreadPoolExecutor
 
 from requests import exceptions
@@ -28,7 +28,7 @@ from logger import write_log_info, print_and_log
 # 为True时将强制将数据保存至数据库并发送消息
 FORCE_UPDATE = False
 
-_THREADING_LOCK = threading.Lock()
+_THREADING_LOCK: Final = threading.Lock()
 
 def database_cleanup() -> NoReturn:
     """
