@@ -18,6 +18,7 @@ from logger import print_and_log
 class Linux414Y(CheckUpdate):
     fullname = "Linux Kernel stable v4.14.y"
     re_pattern = r'4\.14\.\d+'
+    tags = ("Linux", "Kernel")
     # enable_pagecache = True
 
     def do_check(self):
@@ -41,15 +42,17 @@ class Linux414Y(CheckUpdate):
             raise Exception("Parsing failed!")
 
     def get_print_text(self):
-        return "*Linux Kernel stable* [v%s](%s) *update*\n\n[Commits](%s)" % (
+        return "*Linux Kernel stable* [v%s](%s) *update*\n%s\n\n[Commits](%s)" % (
             self.info_dic["LATEST_VERSION"],
             self.info_dic["DOWNLOAD_LINK"],
+            self.get_tags_text(),
             self.info_dic["BUILD_CHANGELOG"],
         )
 
 class GoogleClangPrebuilt(CheckUpdate):
     fullname = "Google Clang Prebuilt"
     BASE_URL = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
+    tags = ("clang",)
 
     def do_check(self):
         bs_obj = self.get_bs(self.request_url(self.BASE_URL + "/+log"))
@@ -74,10 +77,9 @@ class GoogleClangPrebuilt(CheckUpdate):
     def get_print_text(self):
         raise NotImplemented
 
-    @classmethod
-    def _get_print_text(cls, dic):
-        return "*%s Update*\n\n[Commit](%s)\n\nDownload tar.gz:\n[%s](%s)" % (
-            cls.fullname, dic["BUILD_CHANGELOG"], dic["BUILD_VERSION"], dic["DOWNLOAD_LINK"],
+    def _get_print_text(self, dic: dict) -> str:
+        return "*%s Update*\n%s\n\n[Commit](%s)\n\nDownload tar.gz:\n[%s](%s)" % (
+            self.fullname, self.get_tags_text(), dic["BUILD_CHANGELOG"], dic["BUILD_VERSION"], dic["DOWNLOAD_LINK"],
         )
 
     @classmethod
@@ -140,8 +142,9 @@ class WireGuard(CheckUpdate):
             raise Exception("Parsing failed!")
 
     def get_print_text(self):
-        return "*%s update*\n\n[Commits](%s)\n\nDownload tar.gz:\n[%s](%s)" % (
+        return "*%s update*\n%s\n\n[Commits](%s)\n\nDownload tar.gz:\n[%s](%s)" % (
             self.fullname,
+            self.get_tags_text(),
             self.info_dic["BUILD_CHANGELOG"],
             self.info_dic["DOWNLOAD_LINK"].split("/")[-1],
             self.info_dic["DOWNLOAD_LINK"],
@@ -163,6 +166,7 @@ class BeyondCompare4(CheckUpdate):
 
 class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
     fullname = "Raspberry Pi4 bootloader EEPROM Stable"
+    tags = ("RaspberryPi", "eeprom")
     file_path = "firmware/stable"
 
     @classmethod
@@ -208,6 +212,7 @@ class RaspberryPiEepromBeta(RaspberryPiEepromStable):
 
 class RaspberryPiOS64(CheckUpdate):
     fullname = "Raspberry Pi OS (64-bit)"
+    tags = ("RaspberryPi", "RaspberryPiOS")
 
     def do_check(self):
         url = "https://downloads.raspberrypi.org/os_list_imagingutility_v3.json"
@@ -238,6 +243,7 @@ class RaspberryPiOS64(CheckUpdate):
 
 class WslKernel(CheckUpdate):
     fullname = "Windows Subsystem for Linux Kernel"
+    tags = ("Linux", "Kernel", "wsl")
     URL = "https://www.catalog.update.microsoft.com/Search.aspx?q=wsl"
 
     def do_check(self):
@@ -260,6 +266,7 @@ class WslKernel(CheckUpdate):
         return "\n".join([
             "*%s Update*" % self.fullname,
             time.strftime("%Y-%m-%d", time.localtime(time.time())),
+            self.get_tags_text(),
             "",
             "File list:",
             "\n".join([
@@ -274,6 +281,7 @@ class Apktool(GithubReleases):
 class ClashForWindows(GithubReleases):
     fullname = "Clash for Windows"
     repository_url = "Fndroid/clash_for_windows_pkg"
+    tags = ("Clash",)
 
 class Magisk(GithubReleases):
     fullname = "Magisk Stable"
@@ -281,6 +289,7 @@ class Magisk(GithubReleases):
 
 class ManjaroArmRpi4Images(GithubReleases):
     fullname = "Manjaro ARM Image for Raspberry Pi 3/3+/4/400"
+    tags = ("RaspberryPi", "Manjaro")
     repository_url = "manjaro-arm/rpi4-images"
 
 class Notepad3(GithubReleases):

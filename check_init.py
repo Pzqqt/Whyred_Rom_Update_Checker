@@ -4,6 +4,7 @@
 import json
 import re
 import time
+import typing
 from collections import OrderedDict
 from urllib.parse import unquote, urlencode
 
@@ -48,6 +49,7 @@ class CheckUpdate:
 
     fullname = None
     enable_pagecache = False
+    tags: typing.Sequence[str] = ()
     _skip = False
 
     def __init__(self):
@@ -260,11 +262,24 @@ class CheckUpdate:
             return True
         return self.__info_dic["LATEST_VERSION"] != self.__prev_saved_info.LATEST_VERSION
 
+    def get_tags_text(self, allow_empty: bool = False) -> str:
+        """ 根据self.tags返回tags文本, 生成类似`#foo #bar`的格式, 以空格作为分隔符
+        allow_empty为真时, 如果self.tags为空, 则返回一个空字符串
+        allow_empty为假时, 如果self.tags为空, 则tags取类的名字
+        """
+        _tags = self.tags
+        if not _tags:
+            if allow_empty:
+                return ""
+            _tags = (self.name,)
+        return '#' + " #".join(_tags)
+
     def get_print_text(self):
         """ 返回更新消息文本 """
         print_str_list = [
             "*%s Update*" % self.fullname,
             time.strftime("%Y-%m-%d", time.localtime(time.time())),
+            self.get_tags_text(),
         ]
         for key, value in self.__info_dic.items():
             if value is None:
@@ -646,6 +661,7 @@ class GithubReleases(CheckUpdateWithBuildDate):
         return "\n".join([
             "*%s Update*" % self.fullname,
             time.strftime("%Y-%m-%d", time.localtime(time.time())),
+            self.get_tags_text(),
             "",
             "Release tag:",
             "[%s](%s)" % (self.info_dic["BUILD_VERSION"], self.info_dic["LATEST_VERSION"]),
