@@ -18,10 +18,6 @@ from config import (
 )
 from check_init import PAGE_CACHE
 from check_list import CHECK_LIST
-try:
-    from check_list import DROPPED_CHECK_LIST
-except ImportError:
-    DROPPED_CHECK_LIST = ()
 from database import create_dbsession, Saved
 from logger import write_log_info, print_and_log
 
@@ -38,7 +34,7 @@ def database_cleanup() -> NoReturn:
     with create_dbsession() as session:
         saved_ids = {x.ID for x in session.query(Saved).all()}
         checklist_ids = {x.__name__ for x in CHECK_LIST}
-        drop_ids = saved_ids - checklist_ids - {x.__name__ for x in DROPPED_CHECK_LIST}
+        drop_ids = saved_ids - checklist_ids
         for id_ in drop_ids:
             session.delete(session.query(Saved).filter(Saved.ID == id_).one())
         session.commit()
