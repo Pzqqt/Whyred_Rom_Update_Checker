@@ -178,7 +178,6 @@ def get_saved_json() -> str:
             [
                 result.get_kv()
                 for result in sorted(session.query(Saved), key=lambda x: x.FULL_NAME)
-                if result.ID != "GoogleClangPrebuilt"
             ],
             # ensure_ascii=False,
         )
