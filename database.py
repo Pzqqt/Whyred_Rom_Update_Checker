@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from collections import OrderedDict
 from contextlib import contextmanager
+from typing import ContextManager
 
 from sqlalchemy import create_engine, Column, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -19,7 +20,7 @@ _Engine = create_engine(
 _DBSession = sessionmaker(bind=_Engine)
 
 @contextmanager
-def create_dbsession(**kw):
+def create_dbsession(**kw) -> ContextManager:
     session = _DBSession(**kw)
     try:
         yield session

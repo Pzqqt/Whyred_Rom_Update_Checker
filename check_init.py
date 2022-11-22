@@ -46,6 +46,11 @@ _KEY_TO_PRINT: Final = {
 
 PAGE_CACHE: Final = PageCache()
 
+InfoDicKeys = typing.Literal[
+    "LATEST_VERSION", "BUILD_TYPE", "BUILD_VERSION", "BUILD_DATE", "BUILD_CHANGELOG",
+    "FILE_MD5", "FILE_SHA1", "FILE_SHA256", "DOWNLOAD_LINK", "FILE_SIZE",
+]
+
 class CheckUpdate:
 
     fullname: str = None
@@ -116,8 +121,9 @@ class CheckUpdate:
                 % (self.name, "' & '".join(props))
             )
 
-    def update_info(self, key: str, value: Union[str, dict, list, None]) -> NoReturn:
+    def update_info(self, key: InfoDicKeys, value: Union[str, dict, list, None]) -> NoReturn:
         """ 更新info_dic字典, 在更新之前会对key和value进行检查和转换 """
+        # 尽管key已经做了变量注解, 但还是要在运行时检查, 这很重要
         if key not in self.__info_dic.keys():
             raise KeyError("Invalid key: %s" % key)
         if isinstance(value, (dict, list)):
