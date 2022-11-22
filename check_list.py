@@ -196,16 +196,6 @@ class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
             "https://github.com/raspberrypi/rpi-eeprom/blob/master/firmware/release-notes.md"
         )
 
-    def get_print_text(self):
-        build_date = self.info_dic["BUILD_DATE"]
-        if build_date is None:
-            return super().get_print_text()
-        self.update_info("BUILD_DATE", None)
-        try:
-            return super().get_print_text()
-        finally:
-            self.update_info("BUILD_DATE", build_date)
-
 class RaspberryPiEepromBeta(RaspberryPiEepromStable):
     fullname = "Raspberry Pi4 bootloader EEPROM Beta"
     file_path = "firmware/beta"
