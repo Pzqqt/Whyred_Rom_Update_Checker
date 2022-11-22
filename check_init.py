@@ -127,7 +127,7 @@ class CheckUpdate:
         if key not in self.__info_dic.keys():
             raise KeyError("Invalid key: %s" % key)
         if isinstance(value, (dict, list)):
-            value = json.dumps(value, ensure_ascii=False)
+            value = json.dumps(value)
         if value is not None:
             if not isinstance(value, str):
                 print_and_log(
