@@ -16,34 +16,34 @@ _HANDLER.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message
 
 LOGGER.addHandler(_HANDLER)
 
-def write_log_info(*text: str) -> NoReturn:
-    """ 写入info级日志 """
+
+def _write_log(level: int, *text: str) -> NoReturn:
     if ENABLE_LOGGER:
         for string in text:
-            LOGGER.info(string)
+            LOGGER.log(level, string)
+
+def write_log_info(*text: str) -> NoReturn:
+    """ 写入info级日志 """
+    _write_log(logging.INFO, *text)
 
 def write_log_warning(*text: str) -> NoReturn:
     """ 写入warning级日志 """
-    if ENABLE_LOGGER:
-        for string in text:
-            LOGGER.warning(string)
+    _write_log(logging.WARNING, *text)
 
-_PREFIX_FUNC_DIC: Final = {
-    "info": ("-", write_log_info),
-    "warning": ("!", write_log_warning),
+_PREFIX_DIC: Final = {
+    logging.INFO: "-",
+    logging.WARNING: "!",
 }
 
-def print_and_log(string: str, level: str = "info", custom_prefix: Union[str, None] = None) -> NoReturn:
+def print_and_log(string: str, level: int = logging.INFO, custom_prefix: Union[str, None] = None) -> NoReturn:
     """ 打印到terminal的同时写入日志
     :param string: 要打印的字符串
     :param level: 日志级别
-    :param custom_prefix: 自定义字符串前缀
+    :param custom_prefix: 自定义字符串前缀, 前缀只在terminal显示, 不写入日志
     """
-    prefix, log_func = _PREFIX_FUNC_DIC.get(level, ("-", write_log_info))
-    if custom_prefix is not None:
-        prefix = custom_prefix
+    prefix = _PREFIX_DIC.get(level) if custom_prefix is not None else custom_prefix
     if prefix:
         print(prefix, string)
     else:
         print(string)
-    log_func(string)
+    _write_log(level, string)

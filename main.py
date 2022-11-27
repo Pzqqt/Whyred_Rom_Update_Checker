@@ -7,6 +7,7 @@ import time
 import traceback
 import sys
 import threading
+import logging
 import typing
 from typing import NoReturn, Optional, Final
 from concurrent.futures import ThreadPoolExecutor
@@ -14,12 +15,12 @@ from concurrent.futures import ThreadPoolExecutor
 from requests import exceptions
 
 from config import (
-    ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM, LESS_LOG
+    ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM, LESS_LOG, ENABLE_LOGGER
 )
 from check_init import PAGE_CACHE
 from check_list import CHECK_LIST
 from database import create_dbsession, Saved
-from logger import write_log_info, print_and_log
+from logger import write_log_info, write_log_warning, print_and_log, LOGGER
 
 # 为True时将强制将数据保存至数据库并发送消息
 FORCE_UPDATE = False
@@ -41,7 +42,7 @@ def database_cleanup() -> NoReturn:
         return drop_ids
 
 def _abort(text: str) -> NoReturn:
-    print_and_log(str(text), level="warning", custom_prefix="-")
+    print_and_log(str(text), level=logging.WARNING, custom_prefix="-")
     sys.exit(1)
 
 def _abort_by_user() -> NoReturn:
@@ -70,17 +71,21 @@ def check_one(cls, disable_pagecache: bool = False) -> bool:
     try:
         cls_obj.do_check()
     except exceptions.ReadTimeout:
-        print_and_log("%s check failed! Timeout." % cls_obj.fullname, level="warning")
+        print_and_log("%s check failed! Timeout." % cls_obj.fullname, level=logging.WARNING)
     except (exceptions.SSLError, exceptions.ProxyError):
-        print_and_log("%s check failed! Proxy error." % cls_obj.fullname, level="warning")
+        print_and_log("%s check failed! Proxy error." % cls_obj.fullname, level=logging.WARNING)
     except exceptions.ConnectionError:
-        print_and_log("%s check failed! Connection error." % cls_obj.fullname, level="warning")
+        print_and_log("%s check failed! Connection error." % cls_obj.fullname, level=logging.WARNING)
     except exceptions.HTTPError as error:
-        print_and_log("%s check failed! %s." % (cls_obj.fullname, error), level="warning")
+        print_and_log("%s check failed! %s." % (cls_obj.fullname, error), level=logging.WARNING)
     except:
-        for line in traceback.format_exc().splitlines():
-            print_and_log(line, level="warning", custom_prefix="")
-        print_and_log("%s check failed!" % cls_obj.fullname, level="warning")
+        if ENABLE_LOGGER:
+            LOGGER.exception("Error while checking %s:" % cls_obj.fullname)
+            write_log_warning("%s check failed!" % cls_obj.fullname)
+            print("! %s check failed! See exception details through log file." % cls_obj.fullname)
+        else:
+            print(traceback.format_exc())
+            print("! %s check failed!" % cls_obj.fullname)
     else:
         if cls_obj.is_updated() or FORCE_UPDATE:
             print_and_log(
@@ -90,12 +95,13 @@ def check_one(cls, disable_pagecache: bool = False) -> bool:
             try:
                 cls_obj.after_check()
             except:
-                for line in traceback.format_exc().splitlines():
-                    print_and_log(line, level="warning")
-                print_and_log(
-                    "%s: Something wrong when running after_check!" % cls_obj.fullname,
-                    level="warning",
-                )
+                warning_string = "Something wrong when running after_check!"
+                if ENABLE_LOGGER:
+                    LOGGER.exception("%s: %s" % (cls_obj.fullname, warning_string))
+                    print("!", cls_obj.fullname, warning_string, "See exception details through log file.")
+                else:
+                    print(traceback.format_exc())
+                    print("!", cls_obj.fullname, warning_string)
             cls_obj.write_to_database()
             if ENABLE_SENDMESSAGE:
                 cls_obj.send_message()
@@ -160,7 +166,7 @@ def loop_check() -> NoReturn:
         # 检查失败的项目的列表, 以及是否为网络错误或代理错误的Bool值
         check_failed_list, is_network_error = loop_check_func(check_list)
         if is_network_error:
-            print_and_log("Network or proxy error! Sleep...", level="warning")
+            print_and_log("Network or proxy error! Sleep...", level=logging.WARNING)
         else:
             if check_failed_list:
                 # 对于检查失败的项目, 强制单线程检查

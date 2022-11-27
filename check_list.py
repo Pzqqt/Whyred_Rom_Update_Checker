@@ -4,6 +4,7 @@
 import json
 import time
 import re
+import logging
 
 from check_init import CheckUpdate, CheckUpdateWithBuildDate, GithubReleases
 from tgbot import send_message as _send_message
@@ -203,7 +204,7 @@ class RaspberryPiOS64(CheckUpdate):
         if "os_list_imagingutility_v4.json" in self.request_url("https://downloads.raspberrypi.org"):
             print_and_log(
                 "%s: There is a new version of the api interface. Please update the crawler." % self.name,
-                level="warning",
+                level=logging.WARNING,
             )
         json_dic = json.loads(self.request_url(url))
         for os in json_dic["os_list"]:

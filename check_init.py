@@ -4,6 +4,7 @@
 import json
 import re
 import time
+import logging
 import typing
 from typing import Union, NoReturn, Final
 from collections import OrderedDict
@@ -134,7 +135,7 @@ class CheckUpdate:
                     "%s.update_info: Attempt to convert %s to strings when updating %s key." % (
                         self.name, type(value), key
                     ),
-                    level="warning",
+                    level=logging.WARNING,
                 )
                 value = str(value)
         self.__info_dic[key] = value
