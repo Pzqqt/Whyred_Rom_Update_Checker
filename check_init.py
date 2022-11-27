@@ -219,7 +219,7 @@ class CheckUpdate:
             default: Union[str, None] = None,
             ignore_case: bool = False
     ) -> str:
-        """ 类似Shell的getprop和cut命令
+        """ 类似Shell的grep和cut命令
         :param text: 要解析的字符串
         :param key: 要搜索的键值
         :param delimiter: 分隔符, 默认为':'
@@ -373,7 +373,7 @@ class SfCheck(CheckUpdateWithBuildDate):
     project_name: str = None
     sub_path: str = ""
 
-    _MONTH_TO_NUMBER = {
+    _MONTH_TO_NUMBER: Final = {
         "Jan": "01", "Feb": "02", "Mar": "03",
         "Apr": "04", "May": "05", "Jun": "06",
         "Jul": "07", "Aug": "08", "Sep": "09",
@@ -483,7 +483,7 @@ class PeCheck(CheckUpdate):
     index: int = None
     tag_name: str = None
 
-    _url: Final = "https://download.pixelexperience.org"
+    BASE_URL: Final = "https://download.pixelexperience.org"
 
     def __init__(self):
         self._abort_if_missing_property("model", "index", "tag_name")
@@ -493,13 +493,13 @@ class PeCheck(CheckUpdate):
         return json.loads(self.request_url(
             fake_url,
             headers={
-                "referer": "%s/%s" % (self._url, self.model),
+                "referer": "%s/%s" % (self.BASE_URL, self.model),
                 "user-agent": CHROME_UA,
             }
         )).get("download_url")
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url("%s/%s" % (self._url, self.model), headers={}))
+        bs_obj = self.get_bs(self.request_url("%s/%s" % (self.BASE_URL, self.model), headers={}))
         builds = bs_obj.select(".version__item")[self.index]
         assert builds.find("button").get_text().strip() == self.tag_name
         build = builds.select_one(".build__item")
@@ -509,7 +509,7 @@ class PeCheck(CheckUpdate):
         self.update_info("BUILD_DATE", build.select_one(".date").get_text().strip())
         self.update_info(
             "DOWNLOAD_LINK",
-            self._url + build.select_one(".download__btn")["href"]
+            self.BASE_URL + build.select_one(".download__btn")["href"]
         )
         self.update_info(
             "FILE_SIZE",
@@ -525,7 +525,7 @@ class PeCheck(CheckUpdate):
         )
         build_id = build.select_one(".download__btn")["data-file-uid"]
         self._private_dic = {
-            "fake_download_link": "".join([self._url, "/download/", build_id]),
+            "fake_download_link": "".join([self.BASE_URL, "/download/", build_id]),
         }
 
     def after_check(self):
