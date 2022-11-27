@@ -3,15 +3,9 @@
 
 import json
 import time
-from datetime import datetime
 import re
 
-from telebot.apihelper import ApiTelegramException
-
-from check_init import (
-    CHROME_UA, CheckUpdate, CheckUpdateWithBuildDate,
-    SfCheck, SfProjectCheck, H5aiCheck, AexCheck, PeCheck, PlingCheck, GithubReleases
-)
+from check_init import CheckUpdate, CheckUpdateWithBuildDate, GithubReleases
 from tgbot import send_message as _send_message
 from logger import print_and_log
 
