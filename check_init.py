@@ -423,66 +423,10 @@ class SfCheck(CheckUpdateWithBuildDate):
 class SfProjectCheck(SfCheck):
     developer: str = None
 
-    # file name keyword: full name
-    _KNOWN_ROM: Final = OrderedDict(
-        sorted(
-            [
-                ("aicp", "AICP"),
-                ("ancient", "Ancient OS"),
-                ("AOSiP", "AOSiP"),
-                ("aosp", "AOSP"),
-                ("aosp-forking", "AOSP Forking"),
-                ("aospa", "Paranoid Android"),
-                ("AospExtended", "AospExtended"),
-                ("Arrow", "Arrow OS"),
-                ("atom", "Atom OS"),
-                ("awaken", "Awaken OS"),
-                ("Bliss", "Bliss Rom"),
-                ("Bootleggers", "Bootleggers Rom"),
-                ("Blaze", "Blaze-AOSP Rom"),
-                ("CleanDroid", "CleanDroid OS"),
-                ("crDroid", "CrDroid"),
-                ("DerpFest", "AOSiP DerpFest"),
-                ("dotOS", "Dot OS"),
-                ("ExtendedUI", "ExtendedUI"),
-                ("EvolutionX", "EvolutionX"),
-                ("Havoc", "Havoc OS"),
-                ("ion", "ION"),
-                ("Komodo", "Komodo OS"),
-                ("Legion", "Legion OS"),
-                ("lineage", "Lineage OS"),
-                ("lineageX", "Lineage X"),
-                ("MK", "Mokee Rom"),
-                ("pa", "Aospa Rom"),
-                ("PixelExperience", "Pixel Experience"),
-                ("PixelExperience_Plus", "Pixel Experience (Plus edition)"),
-                ("PixelExtended", "Pixel Extended"),
-                ("potato", "POSP"),
-                ("Rebellion", "Rebellion OS"),
-                ("Titanium", "Titanium OS"),
-                ("Stag", "Stag OS"),
-                ("Superior", "Superior OS"),
-                ("YAAP", "Yet Another AOSP Project"),
-            ],
-            key=lambda item: -len(item[0])
-        )
-    )
-
     def __init__(self):
         self._abort_if_missing_property("developer")
         self.fullname = "New rom release by %s" % self.developer
         super().__init__()
-
-    def get_print_text(self):
-        fullname_bak = self.fullname
-        try:
-            for key, value in self._KNOWN_ROM.items():
-                if key.upper() in str(self.info_dic["LATEST_VERSION"]).upper():
-                    self.fullname = "%s (By %s)" % (value, self.developer)
-                    break
-            return super().get_print_text()
-        finally:
-            self.fullname = fullname_bak
 
 class H5aiCheck(CheckUpdate):
     base_url: str = None
