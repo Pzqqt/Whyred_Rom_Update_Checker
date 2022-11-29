@@ -54,7 +54,7 @@ InfoDicKeys = typing.Literal[
 
 class CheckUpdate:
 
-    fullname: str = None
+    fullname: str
     enable_pagecache: bool = False
     tags: typing.Sequence[str] = ()
     _skip: bool = False
@@ -370,7 +370,7 @@ class CheckUpdateWithBuildDate(CheckUpdate):
         return latest_date > saved_date
 
 class SfCheck(CheckUpdateWithBuildDate):
-    project_name: str = None
+    project_name: str
     sub_path: str = ""
 
     _MONTH_TO_NUMBER: Final = {
@@ -422,7 +422,7 @@ class SfCheck(CheckUpdateWithBuildDate):
                 break
 
 class SfProjectCheck(SfCheck):
-    developer: str = None
+    developer: str
 
     def __init__(self):
         self._abort_if_missing_property("developer")
@@ -430,8 +430,8 @@ class SfProjectCheck(SfCheck):
         super().__init__()
 
 class H5aiCheck(CheckUpdate):
-    base_url: str = None
-    sub_url: str = None
+    base_url: str
+    sub_url: str
 
     def __init__(self):
         self._abort_if_missing_property("base_url", "sub_url")
@@ -452,7 +452,7 @@ class H5aiCheck(CheckUpdate):
             self.update_info("FILE_SIZE", build.select("td")[3].get_text())
 
 class AexCheck(CheckUpdate):
-    sub_path: str = None
+    sub_path: str
     _skip = True
 
     def __init__(self):
@@ -479,9 +479,9 @@ class AexCheck(CheckUpdate):
         self.update_info("BUILD_CHANGELOG", json_dic.get("changelog"))
 
 class PeCheck(CheckUpdate):
-    model: str = None
-    index: int = None
-    tag_name: str = None
+    model: str
+    index: int
+    tag_name: str
 
     BASE_URL: Final = "https://download.pixelexperience.org"
 
@@ -534,7 +534,7 @@ class PeCheck(CheckUpdate):
             self.update_info("DOWNLOAD_LINK", real_url)
 
 class PlingCheck(CheckUpdate):
-    p_id: int = None
+    p_id: int
 
     def __init__(self):
         self._abort_if_missing_property("p_id")
@@ -592,7 +592,7 @@ class PlingCheck(CheckUpdate):
         )
 
 class GithubReleases(CheckUpdateWithBuildDate):
-    repository_url: str = None
+    repository_url: str
     ignore_prerelease: bool = True
 
     def __init__(self):
