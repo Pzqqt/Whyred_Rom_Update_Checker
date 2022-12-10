@@ -4,8 +4,6 @@
 from __future__ import annotations
 import os
 from collections import OrderedDict
-from contextlib import contextmanager
-from typing import ContextManager
 
 from sqlalchemy import create_engine, Column, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -17,15 +15,7 @@ _Base = declarative_base()
 _Engine = create_engine(
     "sqlite:///%s" % os.path.join(os.path.dirname(os.path.abspath(__file__)), SQLITE_FILE)
 )
-_DBSession = sessionmaker(bind=_Engine)
-
-@contextmanager
-def create_dbsession(**kw) -> ContextManager:
-    session = _DBSession(**kw)
-    try:
-        yield session
-    finally:
-        session.close()
+DatabaseSession = sessionmaker(bind=_Engine)
 
 # 多线程模式下各个线程会同时对数据库进行读写
 # 但是一个线程只对数据库中的一条数据进行读写, 与其他线程并不相互冲突
@@ -65,7 +55,7 @@ class Saved(_Base):
         :param name: CheckUpdate子类的类名
         :return: Saved对象或None
         """
-        with create_dbsession() as session:
+        with DatabaseSession() as session:
             return session.query(cls).filter(cls.ID == name).one()
 
 _Base.metadata.create_all(_Engine)

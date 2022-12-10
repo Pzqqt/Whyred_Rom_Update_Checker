@@ -17,7 +17,7 @@ from requests.packages import urllib3
 from sqlalchemy.orm import exc as sqlalchemy_exc
 
 from config import ENABLE_MULTI_THREAD, PROXIES, TIMEOUT
-from database import create_dbsession, Saved
+from database import DatabaseSession, Saved
 from page_cache import PageCache
 from tgbot import send_message as _send_message
 from logger import print_and_log
@@ -261,7 +261,7 @@ class CheckUpdate:
 
     def write_to_database(self) -> NoReturn:
         """ 将CheckUpdate实例的info_dic数据写入数据库 """
-        with create_dbsession() as session:
+        with DatabaseSession() as session:
             try:
                 saved_data = session.query(Saved).filter(Saved.ID == self.name).one()
             except sqlalchemy_exc.NoResultFound:

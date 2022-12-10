@@ -19,7 +19,7 @@ from config import (
 )
 from check_init import PAGE_CACHE
 from check_list import CHECK_LIST
-from database import create_dbsession, Saved
+from database import DatabaseSession, Saved
 from logger import write_log_info, write_log_warning, print_and_log, LOGGER
 
 # 为True时将强制将数据保存至数据库并发送消息
@@ -32,7 +32,7 @@ def database_cleanup() -> NoReturn:
     将数据库中存在于数据库但不存在于CHECK_LIST的项目删除掉
     :return: 被删除的项目名字的集合
     """
-    with create_dbsession() as session:
+    with DatabaseSession() as session:
         saved_ids = {x.ID for x in session.query(Saved).all()}
         checklist_ids = {x.__name__ for x in CHECK_LIST}
         drop_ids = saved_ids - checklist_ids
@@ -179,7 +179,7 @@ def loop_check() -> NoReturn:
 
 def get_saved_json() -> str:
     # 以json格式返回已保存的数据
-    with create_dbsession() as session:
+    with DatabaseSession() as session:
         return json.dumps(
             [
                 result.get_kv()
@@ -190,7 +190,7 @@ def get_saved_json() -> str:
 
 def show_saved_data() -> NoReturn:
     # 以MySQL命令行风格打印已保存的数据
-    with create_dbsession() as session:
+    with DatabaseSession() as session:
         results = session.query(Saved).with_entities(Saved.ID, Saved.FULL_NAME, Saved.LATEST_VERSION)
         kv_dic = {k: (v1, v2) for k, v1, v2 in results if k not in "GoogleClangPrebuilt WslKernel"}
     try:
