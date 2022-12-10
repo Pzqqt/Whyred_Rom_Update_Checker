@@ -6,6 +6,7 @@ import re
 import time
 import logging
 import typing
+import urllib3
 from typing import Union, NoReturn, Final
 from collections import OrderedDict
 from urllib.parse import unquote, urlencode
@@ -13,7 +14,6 @@ from urllib.parse import unquote, urlencode
 import requests
 from bs4 import BeautifulSoup
 import lxml
-from requests.packages import urllib3
 from sqlalchemy.orm import exc as sqlalchemy_exc
 
 from config import ENABLE_MULTI_THREAD, PROXIES, TIMEOUT
@@ -56,7 +56,7 @@ class CheckUpdate:
 
     fullname: str
     enable_pagecache: bool = False
-    tags: typing.Sequence[str] = ()
+    tags: typing.Sequence[str] = tuple()
     _skip: bool = False
 
     def __init__(self):

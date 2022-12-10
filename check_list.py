@@ -12,9 +12,9 @@ from logger import print_and_log
 
 class Linux414Y(CheckUpdate):
     fullname = "Linux Kernel stable v4.14.y"
-    re_pattern = r'4\.14\.\d+'
     tags = ("Linux", "Kernel")
     # enable_pagecache = True
+    re_pattern = r'4\.14\.\d+'
 
     def do_check(self):
         url = "https://www.kernel.org"
@@ -46,8 +46,8 @@ class Linux414Y(CheckUpdate):
 
 class GoogleClangPrebuilt(CheckUpdate):
     fullname = "Google Clang Prebuilt"
-    BASE_URL = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
     tags = ("clang",)
+    BASE_URL = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
 
     def do_check(self):
         bs_obj = self.get_bs(self.request_url(self.BASE_URL + "/+log"))
@@ -94,8 +94,8 @@ class GoogleClangPrebuilt(CheckUpdate):
                 saved_commits = json.loads(self.prev_saved_info.LATEST_VERSION)
             except json.decoder.JSONDecodeError:
                 saved_commits = {}
-        if not isinstance(saved_commits, dict):
-            saved_commits = {}
+            if not isinstance(saved_commits, dict):
+                saved_commits = {}
         for key in fetch_commits.keys() - saved_commits.keys():
             item = fetch_commits[key]
             try:

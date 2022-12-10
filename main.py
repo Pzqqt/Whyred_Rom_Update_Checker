@@ -17,7 +17,7 @@ from requests import exceptions
 from config import (
     ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM, LESS_LOG, ENABLE_LOGGER
 )
-from check_init import PAGE_CACHE
+from check_init import PAGE_CACHE, CheckUpdate
 from check_list import CHECK_LIST
 from database import DatabaseSession, Saved
 from logger import write_log_info, write_log_warning, print_and_log, LOGGER
@@ -59,7 +59,7 @@ def _get_time_str(time_num: Optional[float] = None, offset: int = 0) -> str:
         time_num = time.time()
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_num+offset))
 
-def check_one(cls, disable_pagecache: bool = False) -> bool:
+def check_one(cls: typing.Union[CheckUpdate, str], disable_pagecache: bool = False) -> bool:
     if isinstance(cls, str):
         cls_str = cls
         cls = {cls_.__name__: cls_ for cls_ in CHECK_LIST}.get(cls_str)
@@ -111,7 +111,7 @@ def check_one(cls, disable_pagecache: bool = False) -> bool:
                 write_log_info("%s no update" % cls_obj.fullname)
         return True
 
-def single_thread_check(check_list: typing.Sequence) -> (list, bool):
+def single_thread_check(check_list: typing.Sequence[CheckUpdate]) -> (list, bool):
     # 单线程模式下连续检查失败5项则判定为网络异常, 并提前终止
     req_failed_flag = 0
     check_failed_list = []
@@ -128,7 +128,7 @@ def single_thread_check(check_list: typing.Sequence) -> (list, bool):
         _sleep(2)
     return check_failed_list, is_network_error
 
-def multi_thread_check(check_list: typing.Sequence) -> (list, bool):
+def multi_thread_check(check_list: typing.Sequence[CheckUpdate]) -> (list, bool):
     # 多线程模式下累计检查失败10项则判定为网络异常, 并在之后往线程池提交的任务中不再进行检查操作而是直接返回
     check_failed_list = []
     is_network_error = False
@@ -229,7 +229,7 @@ def show_saved_data() -> NoReturn:
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--force", help="Force save to database & send message to Telegram", action="store_true")
+    parser.add_argument("--force", help="Force to think it/they have updates", action="store_true")
     parser.add_argument("--dontpost", help="Do not send message to Telegram", action="store_true")
     parser.add_argument("-a", "--auto", help="Automatically loop check all items", action="store_true")
     parser.add_argument("-c", "--check", help="Check one item")
