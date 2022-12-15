@@ -277,6 +277,32 @@ class ManjaroArmRpi4Images(GithubReleases):
     tags = ("RaspberryPi", "Manjaro")
     repository_url = "manjaro-arm/rpi4-images"
 
+    def is_updated(self):
+        r = super().is_updated()
+        if not r:
+            return r
+        actions_runs = json.loads(
+            self.request_url('https://api.github.com/repos/%s/actions/runs' % self.repository_url)
+        )
+        for wf in actions_runs["workflow_runs"]:
+            if wf["name"] == "image_build_all":
+                jobs = json.loads(self.request_url(wf["jobs_url"]))
+                for job in jobs["jobs"]:
+                    if job["status"] != "completed":
+                        # 等待所有的编译任务完成后再推送
+                        print_and_log(
+                            (
+                                "%s: There is a new release tag, but the action job "
+                                "has not been completed yet." % self.name
+                            ),
+                            level=logging.WARNING,
+                        )
+                        return False
+                else:
+                    return True
+        else:
+            return False
+
 class Notepad3(GithubReleases):
     fullname = "Notepad3"
     repository_url = "rizonesoft/Notepad3"
