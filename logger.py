@@ -41,7 +41,7 @@ def print_and_log(string: str, level: int = logging.INFO, custom_prefix: Union[s
     :param level: 日志级别
     :param custom_prefix: 自定义字符串前缀, 前缀只在terminal显示, 不写入日志
     """
-    prefix = _PREFIX_DIC.get(level) if custom_prefix is not None else custom_prefix
+    prefix = _PREFIX_DIC.get(level) if custom_prefix is None else custom_prefix
     if prefix:
         print(prefix, string)
     else:
