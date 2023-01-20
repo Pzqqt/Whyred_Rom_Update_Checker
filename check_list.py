@@ -228,39 +228,6 @@ class RaspberryPiOS64(CheckUpdate):
         else:
             raise Exception("Parsing failed!")
 
-class WslKernel(CheckUpdate):
-    fullname = "Windows Subsystem for Linux Kernel"
-    tags = ("Linux", "Kernel", "wsl")
-    URL = "https://www.catalog.update.microsoft.com/Search.aspx?q=wsl"
-
-    def do_check(self):
-        bs_obj = self.get_bs(self.request_url(self.URL))
-        trs = bs_obj.select('#ctl00_catalogBody_updateMatches tr')[1:]
-        if not trs:
-            return
-        trs.sort(key=lambda tr: time.strptime(tr.select("td")[4].get_text().strip(), "%m/%d/%Y"), reverse=True)
-        self._private_dic["file_list"] = [
-            (
-                tr["id"].rsplit('_', 1)[0],  # id
-                tr.select_one("a").get_text().strip(),  # Title
-                tr.select("td")[6].select_one("span").get_text().strip(),  # Size
-            )
-            for tr in trs
-        ]
-        self.update_info("LATEST_VERSION", self._private_dic["file_list"])
-
-    def get_print_text(self):
-        return "\n".join([
-            "*%s Update*" % self.fullname,
-            time.strftime("%Y-%m-%d", time.localtime(time.time())),
-            self.get_tags_text(),
-            "",
-            "File list:",
-            "\n".join([
-                "[%s (%s)](%s)" % (item[1], item[2], self.URL) for item in self._private_dic["file_list"]
-            ]),
-        ])
-
 class Apktool(GithubReleases):
     fullname = "Apktool"
     repository_url = "iBotPeaches/Apktool"
@@ -332,7 +299,6 @@ CHECK_LIST = (
     RaspberryPiEepromStable,
     RaspberryPiEepromBeta,
     RaspberryPiOS64,
-    WslKernel,
     Apktool,
     ClashForWindows,
     Magisk,
