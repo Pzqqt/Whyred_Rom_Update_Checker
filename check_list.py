@@ -289,7 +289,7 @@ class ManjaroArmRpi4Images(GithubReleases):
                 jobs = json.loads(self.request_url(wf["jobs_url"]))
                 for job in jobs["jobs"]:
                     if job["status"] != "completed":
-                        # µÈ´ıËùÓĞµÄ±àÒëÈÎÎñÍê³ÉºóÔÙÍÆËÍ
+                        # ç­‰å¾…æ‰€æœ‰çš„ç¼–è¯‘ä»»åŠ¡å®Œæˆåå†æ¨é€
                         print_and_log(
                             (
                                 "%s: There is a new release tag, but the action job "
