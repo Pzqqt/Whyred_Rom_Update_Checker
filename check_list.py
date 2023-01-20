@@ -6,6 +6,8 @@ import time
 import re
 import logging
 
+from requests import exceptions as req_exceptions
+
 from check_init import CheckUpdate, CheckUpdateWithBuildDate, GithubReleases
 from tgbot import send_message as _send_message
 from logger import print_and_log
@@ -281,26 +283,29 @@ class ManjaroArmRpi4Images(GithubReleases):
         r = super().is_updated()
         if not r:
             return r
-        actions_runs = json.loads(
-            self.request_url('https://api.github.com/repos/%s/actions/runs' % self.repository_url)
-        )
-        for wf in actions_runs["workflow_runs"]:
-            if wf["name"] == "image_build_all":
-                jobs = json.loads(self.request_url(wf["jobs_url"]))
-                for job in jobs["jobs"]:
-                    if job["status"] != "completed":
-                        # 等待所有的编译任务完成后再推送
-                        print_and_log(
-                            (
-                                "%s: There is a new release tag, but the action job "
-                                "has not been completed yet." % self.name
-                            ),
-                            level=logging.WARNING,
-                        )
-                        return False
-                else:
-                    return True
-        else:
+        try:
+            actions_runs = json.loads(
+                self.request_url('https://api.github.com/repos/%s/actions/runs' % self.repository_url)
+            )
+            for wf in actions_runs["workflow_runs"]:
+                if wf["name"] == "image_build_all":
+                    jobs = json.loads(self.request_url(wf["jobs_url"]))
+                    for job in jobs["jobs"]:
+                        if job["status"] != "completed":
+                            # 等待所有的编译任务完成后再推送
+                            print_and_log(
+                                (
+                                    "%s: There is a new release tag, but the action job "
+                                    "has not been completed yet." % self.name
+                                ),
+                                level=logging.WARNING,
+                            )
+                            return False
+                    else:
+                        return True
+            else:
+                return False
+        except req_exceptions.RequestException:
             return False
 
 class Notepad3(GithubReleases):
