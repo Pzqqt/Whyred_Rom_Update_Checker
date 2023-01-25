@@ -12,7 +12,7 @@ import typing
 from typing import NoReturn, Optional, Final
 from concurrent.futures import ThreadPoolExecutor
 
-from requests import exceptions
+from requests import exceptions as req_exceptions
 
 from config import (
     ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM, LESS_LOG, ENABLE_LOGGER
@@ -70,13 +70,13 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
         cls_obj.enable_pagecache = False
     try:
         cls_obj.do_check()
-    except exceptions.ReadTimeout:
+    except req_exceptions.ReadTimeout:
         print_and_log("%s check failed! Timeout." % cls_obj.fullname, level=logging.WARNING)
-    except (exceptions.SSLError, exceptions.ProxyError):
+    except (req_exceptions.SSLError, req_exceptions.ProxyError):
         print_and_log("%s check failed! Proxy error." % cls_obj.fullname, level=logging.WARNING)
-    except exceptions.ConnectionError:
+    except req_exceptions.ConnectionError:
         print_and_log("%s check failed! Connection error." % cls_obj.fullname, level=logging.WARNING)
-    except exceptions.HTTPError as error:
+    except req_exceptions.HTTPError as error:
         print_and_log("%s check failed! %s." % (cls_obj.fullname, error), level=logging.WARNING)
     except:
         if ENABLE_LOGGER:
@@ -87,7 +87,7 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
             print(traceback.format_exc())
             print("! %s check failed!" % cls_obj.fullname)
     else:
-        if cls_obj.is_updated() or FORCE_UPDATE:
+        if FORCE_UPDATE or cls_obj.is_updated():
             print_and_log(
                 "%s has update: %s" % (cls_obj.fullname, cls_obj.info_dic["LATEST_VERSION"]),
                 custom_prefix=">",
@@ -192,7 +192,7 @@ def show_saved_data() -> NoReturn:
     # 以MySQL命令行风格打印已保存的数据
     with DatabaseSession() as session:
         results = session.query(Saved).with_entities(Saved.ID, Saved.FULL_NAME, Saved.LATEST_VERSION)
-        kv_dic = {k: (v1, v2) for k, v1, v2 in results if k not in "GoogleClangPrebuilt WslKernel"}
+        kv_dic = {k: (v1, v2) for k, v1, v2 in results if k not in ["GoogleClangPrebuilt", ]}
     try:
         # 可以的话, 使用rich库
         import rich
