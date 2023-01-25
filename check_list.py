@@ -257,21 +257,15 @@ class ManjaroArmRpi4Images(GithubReleases):
             for wf in actions_runs["workflow_runs"]:
                 if wf["name"] == "image_build_all":
                     jobs = json.loads(self.request_url(wf["jobs_url"]))
-                    for job in jobs["jobs"]:
-                        if job["status"] != "completed":
-                            # 等待所有的编译任务完成后再推送
-                            print_and_log(
-                                (
-                                    "%s: There is a new release tag, but the action job "
-                                    "has not been completed yet." % self.name
-                                ),
-                                level=logging.WARNING,
-                            )
-                            return False
-                    else:
+                    # 等待所有的编译任务完成后再推送
+                    if not [job for job in jobs["jobs"] if job["status"] != "completed"]:
                         return True
-            else:
-                return False
+                    print_and_log(
+                        "%s: There is a new release tag, but the action job has not been completed yet." % self.name,
+                        level=logging.WARNING,
+                    )
+                    break
+            return False
         except req_exceptions.RequestException:
             return False
 
