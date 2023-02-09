@@ -5,11 +5,12 @@ import json
 import time
 import re
 import logging
+import os
 
 from requests import exceptions as req_exceptions
 
 from check_init import CheckUpdate, CheckUpdateWithBuildDate, GithubReleases
-from tgbot import send_message as _send_message
+from tgbot import send_message as _send_message, send_photo as _send_photo
 from logger import print_and_log
 
 class Linux414Y(CheckUpdate):
@@ -228,6 +229,56 @@ class RaspberryPiOS64(CheckUpdate):
         else:
             raise Exception("Parsing failed!")
 
+class Switch520(CheckUpdate):
+    fullname = "Switch520"
+    BASE_URL = "https://xxxxx520.com/"
+    TG_SENDTO_SP = os.getenv("TG_SENDTO_SP")
+
+    def do_check(self):
+        bs_obj = self.get_bs(self.request_url(self.BASE_URL))
+        articles = bs_obj.select("article")
+        if not articles:
+            return
+        articles_info = {}
+        for article in articles:
+            a_bookmark = article.select_one('a[rel="bookmark"]')
+            articles_info[article["id"]] = {
+                "name": a_bookmark["title"],
+                "url": a_bookmark["href"],
+                "image_url": article.select_one("img")["data-src"],
+                "tags": [a.get_text().strip() for a in article.select('a[rel="category"]')],
+                "update_time": article.select_one("time")["datetime"],
+            }
+        self.update_info("LATEST_VERSION", articles_info)
+
+    def get_print_text(self):
+        raise NotImplemented
+
+    def _get_print_text(self, dic: dict) -> str:
+        return "\n".join([
+            "[%s](%s)" % (dic["name"], dic["url"]),
+            "",
+            self.get_tags_text(allow_empty=True),
+        ])
+
+    def send_message(self):
+        fetch_articles_info = json.loads(self.info_dic["LATEST_VERSION"])
+        if self.prev_saved_info is None:
+            saved_articles_info = {}
+        else:
+            try:
+                saved_articles_info = json.loads(self.prev_saved_info.LATEST_VERSION)
+            except json.decoder.JSONDecodeError:
+                saved_articles_info = {}
+        try:
+            for key in fetch_articles_info.keys() - saved_articles_info.keys():
+                item = fetch_articles_info[key]
+                self.tags = item["tags"]
+                _send_photo(item["image_url"], self._get_print_text(item), self.TG_SENDTO_SP)
+                time.sleep(2)
+        finally:
+            self.tags = tuple()
+
 class Apktool(GithubReleases):
     fullname = "Apktool"
     repository_url = "iBotPeaches/Apktool"
@@ -293,6 +344,7 @@ CHECK_LIST = (
     RaspberryPiEepromStable,
     RaspberryPiEepromBeta,
     RaspberryPiOS64,
+    Switch520,
     Apktool,
     ClashForWindows,
     Magisk,
