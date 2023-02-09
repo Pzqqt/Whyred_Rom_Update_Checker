@@ -235,7 +235,7 @@ class Switch520(CheckUpdate):
     TG_SENDTO_SP = os.getenv("TG_SENDTO_SP")
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url(self.BASE_URL))
+        bs_obj = self.get_bs(self.request_url(self.BASE_URL + "switchyouxi"))
         articles = bs_obj.select("article")
         if not articles:
             return
