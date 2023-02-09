@@ -42,3 +42,7 @@ def _send_wrap(func):
 @_send_wrap
 def send_message(text: str, send_to: str = TG_SENDTO):
     BOT.send_message(send_to, text, parse_mode="Markdown", timeout=TIMEOUT)
+
+@_send_wrap
+def send_photo(photo, caption: str = "", send_to: str = TG_SENDTO):
+    BOT.send_photo(send_to, photo, caption=caption, parse_mode="Markdown", timeout=TIMEOUT)
