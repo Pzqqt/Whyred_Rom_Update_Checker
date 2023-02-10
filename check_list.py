@@ -9,7 +9,7 @@ import os
 
 from requests import exceptions as req_exceptions
 
-from check_init import CheckUpdate, CheckUpdateWithBuildDate, GithubReleases
+from check_init import CheckUpdate, CheckUpdateWithBuildDate, GithubReleases, CHROME_UA
 from tgbot import send_message as _send_message, send_photo as _send_photo
 from logger import print_and_log
 
@@ -235,7 +235,12 @@ class Switch520(CheckUpdate):
     TG_SENDTO_SP = os.getenv("TG_SENDTO_SP")
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url(self.BASE_URL + "switchyouxi"))
+        bs_obj = self.get_bs(
+            self.request_url(
+                self.BASE_URL + "switchyouxi",
+                headers={"user-agent": CHROME_UA}
+            )
+        )
         articles = bs_obj.select("article")
         if not articles:
             return
