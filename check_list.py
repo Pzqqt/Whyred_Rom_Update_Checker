@@ -207,9 +207,9 @@ class RaspberryPiOS64(CheckUpdate):
     def do_check(self):
         url = "https://downloads.raspberrypi.org/os_list_imagingutility_v3.json"
         json_dic = json.loads(self.request_url(url))
-        for os in json_dic["os_list"]:
-            if os["name"] == "Raspberry Pi OS (other)":
-                for item in os["subitems"]:
+        for os_ in json_dic["os_list"]:
+            if os_["name"] == "Raspberry Pi OS (other)":
+                for item in os_["subitems"]:
                     if item["name"] == "Raspberry Pi OS (64-bit)":
                         self.update_info("BUILD_DATE", item["release_date"])
                         self.update_info(
