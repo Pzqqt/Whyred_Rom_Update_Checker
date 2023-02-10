@@ -270,9 +270,11 @@ class Switch520(CheckUpdate):
                 saved_articles_info = json.loads(self.prev_saved_info.LATEST_VERSION)
             except json.decoder.JSONDecodeError:
                 saved_articles_info = {}
+        new_ids = fetch_articles_info.keys() - saved_articles_info.keys()
+        sorted_new_ids = sorted(new_ids, key=lambda x: fetch_articles_info[x]["update_time"])
         try:
-            for key in fetch_articles_info.keys() - saved_articles_info.keys():
-                item = fetch_articles_info[key]
+            for id_ in sorted_new_ids:
+                item = fetch_articles_info[id_]
                 self.tags = item["tags"]
                 _send_photo(item["image_url"], self._get_print_text(item), self.TG_SENDTO_SP)
                 time.sleep(2)
