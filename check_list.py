@@ -6,6 +6,7 @@ import time
 import re
 import logging
 import os
+import datetime
 
 from requests import exceptions as req_exceptions
 
@@ -235,6 +236,8 @@ class Switch520(CheckUpdate):
     TG_SENDTO_SP = os.getenv("TG_SENDTO_SP")
 
     def do_check(self):
+        if 0 <= datetime.datetime.now().hour <= 7:
+            return
         bs_obj = self.get_bs(
             self.request_url(
                 self.BASE_URL + "switchyouxi",
