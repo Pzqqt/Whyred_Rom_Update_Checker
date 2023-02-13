@@ -209,34 +209,6 @@ class CheckUpdate:
         features = kwargs.pop("features", "lxml")
         return BeautifulSoup(url_text, features=features, **kwargs)
 
-    @staticmethod
-    def getprop(
-            text: str,
-            key: str,
-            delimiter: str = ":",
-            default: Union[str, None] = None,
-            ignore_case: bool = False
-    ) -> str:
-        """ 类似Shell的grep和cut命令
-        :param text: 要解析的字符串
-        :param key: 要搜索的键值
-        :param delimiter: 分隔符, 默认为':'
-        :param default: 找不到结果时返回的值, 默认是None而不是空字符串, 请注意
-        :param ignore_case: 对key是否忽略大小写
-        :return: 提取得到的字符串
-        """
-        for line in text.strip().splitlines():
-            if delimiter not in line:
-                continue
-            k, v = (x.strip() for x in line.split(delimiter, 1))
-            if ignore_case:
-                if k.upper() == key.upper():
-                    return v
-            else:
-                if k == key:
-                    return v
-        return default
-
     def do_check(self) -> NoReturn:
         """
         开始进行更新检查, 包括页面请求 数据清洗 info_dic更新, 都应该在此方法中完成
