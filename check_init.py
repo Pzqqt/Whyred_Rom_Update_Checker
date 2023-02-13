@@ -2,7 +2,6 @@
 # encoding: utf-8
 
 import json
-import re
 import time
 import logging
 import typing
@@ -428,110 +427,6 @@ class SfProjectCheck(SfCheck):
         self._abort_if_missing_property("developer")
         self.fullname = "New rom release by %s" % self.developer
         super().__init__()
-
-class H5aiCheck(CheckUpdate):
-    base_url: str
-    sub_url: str
-
-    def __init__(self):
-        self._abort_if_missing_property("base_url", "sub_url")
-        super().__init__()
-
-    def do_check(self):
-        url = self.base_url + self.sub_url
-        bs_obj = self.get_bs(self.request_url(url, verify=False))
-        trs = bs_obj.select_one("#fallback").find("table").select("tr")[1:]
-        trs = [tr for tr in trs if tr.select("td")[2].get_text().strip()]
-        trs.sort(key=lambda x: x.select("td")[2].get_text(), reverse=True)
-        builds = list(filter(lambda x: x.find("a").get_text().endswith(".zip"), trs))
-        if builds:
-            build = builds[0]
-            self.update_info("LATEST_VERSION", build.find("a").get_text())
-            self.update_info("BUILD_DATE", build.select("td")[2].get_text())
-            self.update_info("DOWNLOAD_LINK", self.base_url+build.select("td")[1].find("a")["href"])
-            self.update_info("FILE_SIZE", build.select("td")[3].get_text())
-
-class AexCheck(CheckUpdate):
-    sub_path: str
-    _skip = True
-
-    def __init__(self):
-        self._abort_if_missing_property("sub_path")
-        super().__init__()
-
-    def do_check(self):
-        url = "https://api.aospextended.com/builds/" + self.sub_path
-        json_text = self.request_url(
-            url,
-            headers={
-                "origin": "https://downloads.aospextended.com",
-                "referer": "https://downloads.aospextended.com/" + self.sub_path.split("/")[0],
-                "user-agent": CHROME_UA
-            },
-            timeout=30,
-        )
-        json_dic = json.loads(json_text)[0]
-        self.update_info("LATEST_VERSION", json_dic["file_name"])
-        self.update_info("FILE_SIZE", "%0.2f MB" % (int(json_dic["file_size"]) / 1048576,))
-        self.update_info("DOWNLOAD_LINK", json_dic["download_link"])
-        self.update_info("FILE_MD5", json_dic["md5"])
-        self.update_info("BUILD_DATE", json_dic["timestamp"])
-        self.update_info("BUILD_CHANGELOG", json_dic.get("changelog"))
-
-class PeCheck(CheckUpdate):
-    model: str
-    index: int
-    tag_name: str
-
-    BASE_URL: Final = "https://download.pixelexperience.org"
-
-    def __init__(self):
-        self._abort_if_missing_property("model", "index", "tag_name")
-        super().__init__()
-
-    def get_real_url(self, fake_url: str) -> str:
-        return json.loads(self.request_url(
-            fake_url,
-            headers={
-                "referer": "%s/%s" % (self.BASE_URL, self.model),
-                "user-agent": CHROME_UA,
-            }
-        )).get("download_url")
-
-    def do_check(self):
-        bs_obj = self.get_bs(self.request_url("%s/%s" % (self.BASE_URL, self.model), headers={}))
-        builds = bs_obj.select(".version__item")[self.index]
-        assert builds.find("button").get_text().strip() == self.tag_name
-        build = builds.select_one(".build__item")
-        if build is None:
-            return
-        self.update_info("LATEST_VERSION", build["data-build-version"])
-        self.update_info("BUILD_DATE", build.select_one(".date").get_text().strip())
-        self.update_info(
-            "DOWNLOAD_LINK",
-            self.BASE_URL + build.select_one(".download__btn")["href"]
-        )
-        self.update_info(
-            "FILE_SIZE",
-            re.search(r"\((.*?)\)", build.select_one(".download__btn").get_text()).group(1)
-        )
-        self.update_info(
-            "FILE_MD5",
-            self.getprop(build.select_one(".download__meta").get_text(), "MD5 hash")
-        )
-        self.update_info(
-            "BUILD_CHANGELOG",
-            build.select_one(".changelogs__list").get_text().strip()
-        )
-        build_id = build.select_one(".download__btn")["data-file-uid"]
-        self._private_dic = {
-            "fake_download_link": "".join([self.BASE_URL, "/download/", build_id]),
-        }
-
-    def after_check(self):
-        real_url = self.get_real_url(self._private_dic["fake_download_link"])
-        if real_url:
-            self.update_info("DOWNLOAD_LINK", real_url)
 
 class PlingCheck(CheckUpdate):
     p_id: int
