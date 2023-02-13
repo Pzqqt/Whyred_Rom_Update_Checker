@@ -178,7 +178,7 @@ def loop_check() -> NoReturn:
         _sleep(LOOP_CHECK_INTERVAL)
 
 def get_saved_json() -> str:
-    # 以json格式返回已保存的数据
+    """ 以json格式返回已保存的数据 """
     with DatabaseSession() as session:
         return json.dumps(
             [
@@ -189,7 +189,7 @@ def get_saved_json() -> str:
         )
 
 def show_saved_data() -> NoReturn:
-    # 以MySQL命令行风格打印已保存的数据
+    """ 打印已保存的数据 """
     with DatabaseSession() as session:
         results = session.query(Saved).with_entities(Saved.ID, Saved.FULL_NAME, Saved.LATEST_VERSION)
         kv_dic = {k: (v1, v2) for k, v1, v2 in results if k not in ["GoogleClangPrebuilt", ]}
@@ -197,6 +197,7 @@ def show_saved_data() -> NoReturn:
         # 可以的话, 使用rich库
         import rich
     except ImportError:
+        # 以MySQL命令行风格打印
         id_maxlen = len(max(kv_dic.keys(), key=len))
         fn_maxlen = max([len(x[0]) for x in kv_dic.values()])
         lv_maxlen = max([len(x[1]) for x in kv_dic.values()])

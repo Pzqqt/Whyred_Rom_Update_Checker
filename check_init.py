@@ -53,7 +53,6 @@ InfoDicKeys = typing.Literal[
 ]
 
 class CheckUpdate:
-
     fullname: str
     enable_pagecache: bool = False
     tags: typing.Sequence[str] = tuple()
@@ -225,7 +224,7 @@ class CheckUpdate:
         :param delimiter: 分隔符, 默认为':'
         :param default: 找不到结果时返回的值, 默认是None而不是空字符串, 请注意
         :param ignore_case: 对key是否忽略大小写
-        :return:
+        :return: 提取得到的字符串
         """
         for line in text.strip().splitlines():
             if delimiter not in line:
@@ -325,6 +324,7 @@ class CheckUpdate:
         return "\n".join(print_str_list)
 
     def send_message(self) -> NoReturn:
+        """ 发送更新消息 """
         _send_message(self.get_print_text())
 
     def __repr__(self) -> str:
