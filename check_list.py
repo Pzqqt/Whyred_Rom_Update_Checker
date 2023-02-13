@@ -237,6 +237,11 @@ class ClashForWindows(GithubReleases):
     repository_url = "Fndroid/clash_for_windows_pkg"
     tags = ("Clash",)
 
+class EhviewerOverhauled(GithubReleases):
+    fullname = "Ehviewer"
+    repository_url = "Ehviewer-Overhauled/Ehviewer"
+    tags = ("Ehviewer",)
+
 class Magisk(GithubReleases):
     fullname = "Magisk Stable"
     repository_url = "topjohnwu/Magisk"
@@ -295,6 +300,7 @@ CHECK_LIST = (
     RaspberryPiOS64,
     Apktool,
     ClashForWindows,
+    EhviewerOverhauled,
     Magisk,
     ManjaroArmRpi4Images,
     Notepad3,
