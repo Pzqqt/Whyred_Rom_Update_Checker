@@ -40,5 +40,5 @@ def _send_wrap(func):
     return _func
 
 @_send_wrap
-def send_message(text: str, send_to: str = TG_SENDTO):
-    BOT.send_message(send_to, text, parse_mode="Markdown", timeout=TIMEOUT)
+def send_message(text: str, send_to: str = TG_SENDTO, parse_mode="Markdown", **kwargs):
+    BOT.send_message(send_to, text, parse_mode=parse_mode, timeout=TIMEOUT, **kwargs)
