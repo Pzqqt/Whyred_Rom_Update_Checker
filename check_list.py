@@ -262,13 +262,6 @@ class Switch520(CheckUpdate):
     def get_print_text(self):
         raise NotImplemented
 
-    def _get_print_text(self, dic: dict) -> str:
-        return "\n".join([
-            "[%s](%s)" % (dic["name"], dic["url"]),
-            "",
-            self.get_tags_text(allow_empty=True),
-        ])
-
     def send_message(self):
         fetch_articles_info = json.loads(self.info_dic["LATEST_VERSION"])
         if self.prev_saved_info is None:
@@ -284,7 +277,16 @@ class Switch520(CheckUpdate):
             for id_ in sorted_new_ids:
                 item = fetch_articles_info[id_]
                 self.tags = item["tags"]
-                _send_photo(item["image_url"], self._get_print_text(item), self.TG_SENDTO_SP)
+                _send_photo(
+                    item["image_url"],
+                    "\n".join([
+                        '<a href="%s">%s</a>' % (item["url"], item["name"]),
+                        "",
+                        self.get_tags_text(allow_empty=True),
+                    ]),
+                    send_to=self.TG_SENDTO_SP,
+                    parse_mode="html",
+                )
                 time.sleep(2)
         finally:
             self.tags = tuple()
