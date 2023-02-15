@@ -17,7 +17,7 @@ from requests import exceptions as req_exceptions
 from config import (
     ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM, LESS_LOG, ENABLE_LOGGER
 )
-from check_init import PAGE_CACHE
+from check_init import PAGE_CACHE, CheckUpdate
 from check_list import CHECK_LIST
 from database import DatabaseSession, Saved
 from logger import write_log_info, write_log_warning, print_and_log, LOGGER
@@ -59,7 +59,13 @@ def _get_time_str(time_num: Optional[float] = None, offset: int = 0) -> str:
         time_num = time.time()
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_num+offset))
 
-def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> bool:
+def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> (bool, CheckUpdate):
+    """ 对CHECK_LIST中的一个项目进程更新检查
+
+    :param cls: 要检查的CheckUpdate类或类名
+    :param disable_pagecache: 为True时强制禁用页面缓存
+    :return: (<bool值, 顺利完成检查为True, 否则为False>, <CheckUpdate对象>)
+    """
     if isinstance(cls, str):
         cls_str = cls
         cls = {cls_.__name__: cls_ for cls_ in CHECK_LIST}.get(cls_str)
@@ -109,7 +115,8 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
             print("- %s no update" % cls_obj.fullname)
             if not LESS_LOG:
                 write_log_info("%s no update" % cls_obj.fullname)
-        return True
+        return True, cls_obj
+    return False, cls_obj
 
 def single_thread_check(check_list: typing.Sequence[type]) -> (list, bool):
     # 单线程模式下连续检查失败5项则判定为网络异常, 并提前终止
@@ -117,7 +124,8 @@ def single_thread_check(check_list: typing.Sequence[type]) -> (list, bool):
     check_failed_list = []
     is_network_error = False
     for cls in check_list:
-        if not check_one(cls):
+        rc, _ = check_one(cls)
+        if not rc:
             req_failed_flag += 1
             check_failed_list.append(cls)
             if req_failed_flag == 5:
@@ -137,9 +145,9 @@ def multi_thread_check(check_list: typing.Sequence[type]) -> (list, bool):
         nonlocal check_failed_list, is_network_error
         if is_network_error:
             return
-        result = check_one(cls_)
+        rc, _ = check_one(cls_)
         time.sleep(2)
-        if not result:
+        if not rc:
             with _THREADING_LOCK:
                 check_failed_list.append(cls_)
             if len(check_failed_list) >= 10:
@@ -246,7 +254,8 @@ if __name__ == "__main__":
     if args.auto:
         loop_check()
     elif args.check:
-        check_one(args.check, disable_pagecache=True)
+        if not check_one(args.check, disable_pagecache=True)[0]:
+            sys.exit(1)
     elif args.show:
         show_saved_data()
     elif args.json:
