@@ -2,22 +2,21 @@
 # encoding: utf-8
 
 import re
-import os
 from typing import Final
 
 from telebot.types import Message
 from sqlalchemy.orm import exc as sqlalchemy_exc
 
 from tgbot import BOT
-from config import ENABLE_LOGGER, LOG_FILE
+from config import ENABLE_LOGGER
 from database import Saved
 from check_list import CHECK_LIST
 from main import check_one
+from logger import LOG_FILE_PATH
 
 
 BOT_MASTER_USERNAME: Final = "Pzqqt"
 CHECK_LIST_STR: Final = tuple(sorted([cls.__name__ for cls in CHECK_LIST]))
-LOG_FILE_PATH: Final = os.path.join(os.path.dirname(os.path.abspath(__file__)), LOG_FILE)
 
 def _is_master(message: Message):
     return message.from_user.username == BOT_MASTER_USERNAME

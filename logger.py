@@ -8,9 +8,11 @@ from typing import NoReturn, Union, Final
 from config import LOG_FILE, ENABLE_LOGGER
 
 LOGGER: Final = logging.getLogger(__name__)
-LOGGER.setLevel(level=logging.INFO)
+LOGGER.setLevel(logging.INFO)
 
-_HANDLER = logging.FileHandler(os.path.join(os.path.dirname(os.path.abspath(__file__)), LOG_FILE))
+LOG_FILE_PATH: Final = os.path.join(os.path.dirname(os.path.abspath(__file__)), LOG_FILE)
+
+_HANDLER = logging.FileHandler(LOG_FILE_PATH)
 _HANDLER.setLevel(logging.INFO)
 _HANDLER.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 
