@@ -2,13 +2,14 @@
 # encoding: utf-8
 
 import re
+import os
 from typing import Final
 
 from telebot.types import Message
 from sqlalchemy.orm import exc as sqlalchemy_exc
 
 from tgbot import BOT
-from config import ENABLE_LOGGER
+from config import ENABLE_LOGGER, LOG_FILE
 from database import Saved
 from check_list import CHECK_LIST
 from main import check_one
@@ -16,6 +17,7 @@ from main import check_one
 
 BOT_MASTER_USERNAME: Final = "Pzqqt"
 CHECK_LIST_STR: Final = tuple(sorted([cls.__name__ for cls in CHECK_LIST]))
+LOG_FILE_PATH: Final = os.path.join(os.path.dirname(os.path.abspath(__file__)), LOG_FILE)
 
 def _is_master(message: Message):
     return message.from_user.username == BOT_MASTER_USERNAME
@@ -30,7 +32,8 @@ def _(message):
 /get_latest - Get the latest version info for an item."""
     if _is_master(message):
         message_text += """
-/check - Check for updates to an item immediately."""
+/check - Check for updates to an item immediately.
+/log - Get the log file."""
     BOT.reply_to(message, message_text, parse_mode="html")
 
 @BOT.message_handler(commands=["check_list", ], chat_types=["private", ])
@@ -122,6 +125,11 @@ def _(message):
             download_link = "[%s](%s)" % (download_link, download_link)
         reply_message_text += "\n\n*Download:*\n%s" % download_link
     BOT.reply_to(message, reply_message_text, parse_mode="Markdown")
+
+@BOT.message_handler(commands=["log", ], chat_types=["private", ], func=_is_master)
+def _(message):
+    with open(LOG_FILE_PATH, 'rb') as f:
+        BOT.send_document(message.chat.id, f, reply_to_message_id=message.message_id)
 
 if __name__ == "__main__":
     BOT.infinity_polling()
