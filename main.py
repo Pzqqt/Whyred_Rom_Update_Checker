@@ -204,7 +204,7 @@ def show_saved_data() -> NoReturn:
     """ 打印已保存的数据 """
     with DatabaseSession() as session:
         results = session.query(Saved).with_entities(Saved.ID, Saved.FULL_NAME, Saved.LATEST_VERSION)
-        kv_dic = {k: (v1, v2) for k, v1, v2 in results if k not in ["GoogleClangPrebuilt", ]}
+        kv_dic = {k: (v1, v2) for k, v1, v2 in results if k not in ["GoogleClangPrebuilt", "Switch520"]}
     try:
         # 可以的话, 使用rich库
         import rich
