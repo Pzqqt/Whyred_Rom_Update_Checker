@@ -94,8 +94,12 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
             print("! %s check failed!" % cls_obj.fullname)
     else:
         if FORCE_UPDATE or cls_obj.is_updated():
+            if cls_obj.name in ["GoogleClangPrebuilt", "Switch520"]:
+                latest_version_string = "..."
+            else:
+                latest_version_string = cls_obj.info_dic["LATEST_VERSION"]
             print_and_log(
-                "%s has update: %s" % (cls_obj.fullname, cls_obj.info_dic["LATEST_VERSION"]),
+                "%s has update: %s" % (cls_obj.fullname, latest_version_string),
                 custom_prefix=">",
             )
             try:
