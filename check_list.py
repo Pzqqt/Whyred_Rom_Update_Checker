@@ -254,8 +254,8 @@ class Magisk(GithubReleases):
 
 class ManjaroArmRpi4Images(GithubReleases):
     fullname = "Manjaro ARM Image for Raspberry Pi 3/3+/4/400"
-    tags = ("RaspberryPi", "Manjaro")
     repository_url = "manjaro-arm/rpi4-images"
+    tags = ("RaspberryPi", "Manjaro")
 
     def is_updated(self):
         r = super().is_updated()

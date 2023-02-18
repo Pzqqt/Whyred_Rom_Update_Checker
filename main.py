@@ -9,7 +9,7 @@ import sys
 import threading
 import logging
 import typing
-from typing import NoReturn, Optional, Final
+from typing import NoReturn, Optional, Final, Union
 from concurrent.futures import ThreadPoolExecutor
 
 from requests import exceptions as req_exceptions
@@ -41,6 +41,17 @@ def database_cleanup() -> set[str]:
         session.commit()
         return drop_ids
 
+def get_time_str(time_num: Optional[Union[int, float]] = None, offset: int = 0) -> str:
+    """
+    返回给定时间的字符串形式
+    :param time_num: Unix时间, 整型或浮点型, 默认取当前时间
+    :param offset: time_num的偏移量
+    :return: 格式化后的时间字符串
+    """
+    if time_num is None:
+        time_num = time.time()
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_num+offset))
+
 def _abort(text: str) -> NoReturn:
     print_and_log(str(text), level=logging.WARNING, custom_prefix="-")
     sys.exit(1)
@@ -53,11 +64,6 @@ def _sleep(sleep_time: int) -> NoReturn:
         time.sleep(sleep_time)
     except KeyboardInterrupt:
         _abort_by_user()
-
-def _get_time_str(time_num: Optional[float] = None, offset: int = 0) -> str:
-    if time_num is None:
-        time_num = time.time()
-    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_num+offset))
 
 def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> (bool, CheckUpdate):
     """ 对CHECK_LIST中的一个项目进程更新检查
@@ -169,7 +175,7 @@ def loop_check() -> NoReturn:
     loop_check_func = multi_thread_check if ENABLE_MULTI_THREAD else single_thread_check
     check_list = [cls for cls in CHECK_LIST if not cls._skip]
     while True:
-        start_time = _get_time_str()
+        start_time = get_time_str()
         print(" - " + start_time)
         print(" - Start...")
         write_log_info("=" * 64)
@@ -185,7 +191,7 @@ def loop_check() -> NoReturn:
                 print_and_log("Check again for failed items")
                 single_thread_check(check_failed_list)
         PAGE_CACHE.clear()
-        print(" - The next check will start at %s\n" % _get_time_str(offset=LOOP_CHECK_INTERVAL))
+        print(" - The next check will start at %s\n" % get_time_str(offset=LOOP_CHECK_INTERVAL))
         write_log_info("End of check")
         _sleep(LOOP_CHECK_INTERVAL)
 
