@@ -11,7 +11,7 @@ from tgbot import BOT
 from config import ENABLE_LOGGER
 from database import Saved
 from check_list import CHECK_LIST
-from main import check_one
+from main import check_one, _get_time_str
 from logger import LOG_FILE_PATH
 
 
@@ -130,5 +130,10 @@ def _(message):
     with open(LOG_FILE_PATH, 'rb') as f:
         BOT.send_document(message.chat.id, f, reply_to_message_id=message.message_id)
 
+def update_listener(messages):
+    for message in messages:
+        print(_get_time_str(message.date), '-', message.from_user.username + ':', message.text)
+
 if __name__ == "__main__":
+    BOT.set_update_listener(update_listener)
     BOT.infinity_polling()
