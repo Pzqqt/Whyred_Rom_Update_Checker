@@ -105,9 +105,7 @@ class CheckUpdate:
     def __hook_is_updated(self, method: typing.Callable) -> typing.Callable:
         def hook(*args, **kwargs):
             if self.__is_updated is None:
-                r = method(*args, **kwargs)
-                self.__is_updated = r
-                return r
+                self.__is_updated = method(*args, **kwargs)
             return self.__is_updated
         return hook
 
