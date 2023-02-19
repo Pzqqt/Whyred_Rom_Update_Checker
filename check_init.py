@@ -9,6 +9,7 @@ import urllib3
 from typing import Union, NoReturn, Final
 from collections import OrderedDict
 from urllib.parse import unquote, urlencode
+from functools import wraps
 
 import requests
 from bs4 import BeautifulSoup
@@ -89,6 +90,7 @@ class CheckUpdate:
         self.send_message = self.__hook_is_checked(self.send_message)
 
     def __hook_do_check(self, method: typing.Callable) -> typing.Callable:
+        @wraps(method)
         def hook(*args, **kwargs):
             method(*args, **kwargs)
             # 如果上一行语句抛出了异常, 将不会执行下面这行语句
@@ -97,12 +99,14 @@ class CheckUpdate:
         return hook
 
     def __hook_is_checked(self, method: typing.Callable) -> typing.Callable:
+        @wraps(method)
         def hook(*args, **kwargs):
             assert self.__is_checked, "Please execute the 'do_check' method first."
             return method(*args, **kwargs)
         return hook
 
     def __hook_is_updated(self, method: typing.Callable) -> typing.Callable:
+        @wraps(method)
         def hook(*args, **kwargs):
             if self.__is_updated is None:
                 self.__is_updated = method(*args, **kwargs)
