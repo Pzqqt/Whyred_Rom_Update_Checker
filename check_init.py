@@ -73,7 +73,6 @@ class CheckUpdate:
         ])
         self._private_dic = {}
         self.__is_checked = False
-        self.__is_updated = None
         try:
             self.__prev_saved_info = Saved.get_saved_info(self.name)
         except sqlalchemy_exc.NoResultFound:
@@ -84,7 +83,7 @@ class CheckUpdate:
         self.do_check = self.__hook_do_check(self.do_check)
         self.after_check = self.__hook_is_checked(self.after_check)
         self.write_to_database = self.__hook_is_checked(self.write_to_database)
-        self.is_updated = self.__hook_is_updated(self.__hook_is_checked(self.is_updated))
+        self.is_updated = self.__hook_is_checked(self.is_updated)
         self.get_print_text = self.__hook_is_checked(self.get_print_text)
         self.send_message = self.__hook_is_checked(self.send_message)
 
@@ -100,15 +99,6 @@ class CheckUpdate:
         def hook(*args, **kwargs):
             assert self.__is_checked, "Please execute the 'do_check' method first."
             return method(*args, **kwargs)
-        return hook
-
-    def __hook_is_updated(self, method: typing.Callable) -> typing.Callable:
-        def hook(*args, **kwargs):
-            if self.__is_updated is None:
-                r = method(*args, **kwargs)
-                self.__is_updated = r
-                return r
-            return self.__is_updated
         return hook
 
     @property
