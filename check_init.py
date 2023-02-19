@@ -84,7 +84,7 @@ class CheckUpdate:
         self.do_check = self.__hook_do_check(self.do_check)
         self.after_check = self.__hook_is_checked(self.after_check)
         self.write_to_database = self.__hook_is_checked(self.write_to_database)
-        self.is_updated = lru_cache(self.__hook_is_checked(self.is_updated))
+        self.is_updated = lru_cache(1)(self.__hook_is_checked(self.is_updated))
         self.get_print_text = self.__hook_is_checked(self.get_print_text)
         self.send_message = self.__hook_is_checked(self.send_message)
 
