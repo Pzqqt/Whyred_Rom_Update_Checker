@@ -51,9 +51,9 @@ class Saved(_Base):
     def get_saved_info(cls, name: str) -> Saved:
         """
         根据name查询并返回数据库中已存储的数据
-        如果数据不存在, 则返回None
+        如果数据不存在, 则抛出`sqlalchemy.orm.exc.NoResultFound`异常
         :param name: CheckUpdate子类的类名
-        :return: Saved对象或None
+        :return: Saved对象
         """
         with DatabaseSession() as session:
             return session.query(cls).filter(cls.ID == name).one()
