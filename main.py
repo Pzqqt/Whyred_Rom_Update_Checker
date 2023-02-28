@@ -9,7 +9,7 @@ import sys
 import threading
 import logging
 import typing
-from typing import NoReturn, Optional, Final, Union
+from typing import NoReturn, Optional, Final, Union, Tuple
 from concurrent.futures import ThreadPoolExecutor
 
 from requests import exceptions as req_exceptions
@@ -65,7 +65,7 @@ def _sleep(sleep_time: int) -> NoReturn:
     except KeyboardInterrupt:
         _abort_by_user()
 
-def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> (bool, CheckUpdate):
+def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> Tuple[bool, CheckUpdate]:
     """ 对CHECK_LIST中的一个项目进程更新检查
 
     :param cls: 要检查的CheckUpdate类或类名
@@ -129,7 +129,7 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
         return True, cls_obj
     return False, cls_obj
 
-def single_thread_check(check_list: typing.Sequence[type]) -> (list, bool):
+def single_thread_check(check_list: typing.Sequence[type]) -> Tuple[list, bool]:
     # 单线程模式下连续检查失败5项则判定为网络异常, 并提前终止
     req_failed_flag = 0
     check_failed_list = []
@@ -147,7 +147,7 @@ def single_thread_check(check_list: typing.Sequence[type]) -> (list, bool):
         _sleep(2)
     return check_failed_list, is_network_error
 
-def multi_thread_check(check_list: typing.Sequence[type]) -> (list, bool):
+def multi_thread_check(check_list: typing.Sequence[type]) -> Tuple[list, bool]:
     # 多线程模式下累计检查失败10项则判定为网络异常, 并在之后往线程池提交的任务中不再进行检查操作而是直接返回
     check_failed_list = []
     is_network_error = False
