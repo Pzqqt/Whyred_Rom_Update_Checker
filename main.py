@@ -77,9 +77,10 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
         cls = {cls_.__name__: cls_ for cls_ in CHECK_LIST}.get(cls_str)
         if not cls:
             raise Exception("Can not found '%s' from CHECK_LIST!" % cls_str)
-    cls_obj = cls()
     if disable_pagecache:
-        cls_obj.enable_pagecache = False
+        if cls.enable_pagecache:
+            cls = type(cls.__name__, (cls, ), {"enable_pagecache": False})
+    cls_obj = cls()
     try:
         cls_obj.do_check()
     except req_exceptions.ReadTimeout:
