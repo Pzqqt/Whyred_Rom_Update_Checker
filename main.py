@@ -153,15 +153,15 @@ def multi_thread_check(check_list: typing.Sequence[type]) -> (list, bool):
 
     def _check_one(cls_):
         nonlocal check_failed_list, is_network_error
-        if is_network_error:
-            return
+        with _THREADING_LOCK:
+            if is_network_error:
+                return
         rc, _ = check_one(cls_)
         time.sleep(2)
         if not rc:
             with _THREADING_LOCK:
                 check_failed_list.append(cls_)
-            if len(check_failed_list) >= 10:
-                with _THREADING_LOCK:
+                if len(check_failed_list) >= 10:
                     is_network_error = True
 
     with ThreadPoolExecutor(MAX_THREADS_NUM) as executor:
