@@ -5,6 +5,8 @@ import json
 import time
 import logging
 import typing
+import abc
+
 import urllib3
 from typing import Union, NoReturn, Final
 from collections import OrderedDict
@@ -52,7 +54,7 @@ InfoDicKeys = typing.Literal[
     "FILE_MD5", "FILE_SHA1", "FILE_SHA256", "DOWNLOAD_LINK", "FILE_SIZE",
 ]
 
-class CheckUpdate:
+class CheckUpdate(metaclass=abc.ABCMeta):
     fullname: str
     enable_pagecache: bool = False
     tags: typing.Sequence[str] = tuple()
@@ -221,6 +223,7 @@ class CheckUpdate:
         features = kwargs.pop("features", "lxml")
         return BeautifulSoup(url_text, features=features, **kwargs)
 
+    @abc.abstractmethod
     def do_check(self) -> NoReturn:
         """
         开始进行更新检查, 包括页面请求 数据清洗 info_dic更新, 都应该在此方法中完成
@@ -329,6 +332,7 @@ class CheckUpdateWithBuildDate(CheckUpdate):
     """
 
     @classmethod
+    @abc.abstractmethod
     def date_transform(cls, date_str: str) -> typing.Any:
         """
         解析时间字符串, 用于比较
