@@ -3,11 +3,14 @@
 
 import traceback
 import logging
+import os
+from tempfile import mkstemp
 from typing import Final
 from functools import wraps
 
 import telebot
 from telebot.apihelper import requests
+from telebot.types import InputFile
 
 from config import TG_TOKEN, TG_SENDTO, TIMEOUT, PROXIES, ENABLE_LOGGER
 from logger import print_and_log, LOGGER
@@ -48,4 +51,19 @@ def send_message(text: str, send_to: str = TG_SENDTO, parse_mode="Markdown", **k
 
 @_send_wrap
 def send_photo(photo, caption: str = "", send_to: str = TG_SENDTO, parse_mode="Markdown", **kwargs):
-    BOT.send_photo(send_to, photo, caption=caption, parse_mode=parse_mode, timeout=TIMEOUT, **kwargs)
+    try:
+        BOT.send_photo(send_to, photo, caption=caption, parse_mode=parse_mode, timeout=TIMEOUT, **kwargs)
+    except telebot.apihelper.ApiTelegramException as exc:
+        if isinstance(photo, str) and exc.description == 'Bad Request: wrong file identifier/HTTP URL specified':
+            temp_fd, temp_path = mkstemp()
+            try:
+                with os.fdopen(temp_fd, 'wb') as f:
+                    f.write(requests.get(photo, proxies=PROXIES, timeout=TIMEOUT).content)
+                BOT.send_photo(
+                    send_to, InputFile(temp_path), caption=caption, parse_mode=parse_mode, timeout=TIMEOUT, **kwargs
+                )
+            finally:
+                os.remove(temp_path)
+        else:
+            raise
+
