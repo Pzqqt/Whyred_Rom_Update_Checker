@@ -17,7 +17,7 @@ from requests import exceptions as req_exceptions
 from config import (
     ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM, LESS_LOG, ENABLE_LOGGER
 )
-from check_init import PAGE_CACHE, CheckUpdate
+from check_init import PAGE_CACHE, CheckUpdate, GithubReleases
 from check_list import CHECK_LIST
 from database import DatabaseSession, Saved
 from logger import write_log_info, write_log_warning, print_and_log, LOGGER
@@ -175,6 +175,16 @@ def loop_check() -> NoReturn:
     write_log_info("Abandoned items: {%s}" % ", ".join(drop_ids))
     loop_check_func = multi_thread_check if ENABLE_MULTI_THREAD else single_thread_check
     check_list = [cls for cls in CHECK_LIST if not cls._skip]
+    if len([x for x in check_list if GithubReleases in x.__mro__]) / (LOOP_CHECK_INTERVAL / (60 * 60)) >= 60:
+        for warm_str in (
+            "#" * 72,
+            "Your check list contains too many items that need to request GitHub api,",
+            "which may exceed the rate limit of GitHub api (60 per hour).",
+            "Please try to remove some items from the check list,",
+            "or increase the time interval of loop check (LOOP_CHECK_INTERVAL).",
+            "#" * 72,
+        ):
+            print_and_log(warm_str, level=logging.WARNING)
     while True:
         start_time = get_time_str()
         print(" - " + start_time)
