@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+import os
 from typing import Final
 
 from telebot.types import Message
@@ -14,11 +15,11 @@ from main import check_one, get_time_str
 from logger import LOG_FILE_PATH
 
 
-BOT_MASTER_USERNAME: Final = "Pzqqt"
+BOT_MASTER_USERID: Final = int(os.getenv("TG_BOT_MASTER_USERID", "0"))
 CHECK_LIST_STR: Final = tuple(sorted([cls.__name__ for cls in CHECK_LIST]))
 
 def _is_master(message: Message) -> bool:
-    return message.from_user.username == BOT_MASTER_USERNAME
+    return message.from_user.id == BOT_MASTER_USERID
 
 def _edit_message(message: Message, text: str, parse_mode="Markdown", **kwargs):
     BOT.edit_message_text(text, message.chat.id, message.message_id, parse_mode=parse_mode, **kwargs)
