@@ -238,12 +238,12 @@ class Switch520(CheckUpdate):
     def do_check(self):
         if 0 <= datetime.datetime.now().hour <= 7:
             return
-        bs_obj = self.get_bs(
-            self.request_url(
-                self.BASE_URL + "switchyouxi",
-                headers={"user-agent": CHROME_UA}
-            )
-        )
+        req_url = self.BASE_URL + "switchyouxi"
+        try:
+            bs_obj = self.get_bs(self.request_url(req_url, headers={"user-agent": CHROME_UA}))
+        except req_exceptions.RequestException:
+            time.sleep(2)
+            bs_obj = self.get_bs(self.request_url(req_url, headers={"user-agent": CHROME_UA}, proxies=None))
         articles = bs_obj.select("article")
         if not articles:
             return
