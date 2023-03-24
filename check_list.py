@@ -306,14 +306,20 @@ class EhviewerOverhauled(GithubReleases):
     repository_url = "Ehviewer-Overhauled/Ehviewer"
     tags = ("Ehviewer",)
 
+    def is_updated(self):
+        r = super().is_updated()
+        if not r:
+            return r
+        return not bool(re.search(r'alpha|beta|rc', self.info_dic["BUILD_VERSION"]))
+
 class Magisk(GithubReleases):
     fullname = "Magisk Stable"
     repository_url = "topjohnwu/Magisk"
 
 class ManjaroArmRpi4Images(GithubReleases):
     fullname = "Manjaro ARM Image for Raspberry Pi 3/3+/4/400"
-    tags = ("RaspberryPi", "Manjaro")
     repository_url = "manjaro-arm/rpi4-images"
+    tags = ("RaspberryPi", "Manjaro")
 
     def is_updated(self):
         r = super().is_updated()

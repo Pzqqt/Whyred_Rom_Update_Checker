@@ -5,10 +5,13 @@ import json
 import time
 import logging
 import typing
+import abc
+
 import urllib3
 from typing import Union, NoReturn, Final
 from collections import OrderedDict
 from urllib.parse import unquote, urlencode
+from functools import wraps
 
 import requests
 from bs4 import BeautifulSoup
@@ -26,6 +29,8 @@ del lxml
 
 # 禁用安全请求警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+requests.adapters.DEFAULT_RETRIES = 5
 
 CHROME_UA: Final = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -51,7 +56,7 @@ InfoDicKeys = typing.Literal[
     "FILE_MD5", "FILE_SHA1", "FILE_SHA256", "DOWNLOAD_LINK", "FILE_SIZE",
 ]
 
-class CheckUpdate:
+class CheckUpdate(metaclass=abc.ABCMeta):
     fullname: str
     enable_pagecache: bool = False
     tags: typing.Sequence[str] = tuple()
@@ -73,6 +78,7 @@ class CheckUpdate:
         ])
         self._private_dic = {}
         self.__is_checked = False
+        self.__is_updated = None
         try:
             self.__prev_saved_info = Saved.get_saved_info(self.name)
         except sqlalchemy_exc.NoResultFound:
@@ -83,11 +89,12 @@ class CheckUpdate:
         self.do_check = self.__hook_do_check(self.do_check)
         self.after_check = self.__hook_is_checked(self.after_check)
         self.write_to_database = self.__hook_is_checked(self.write_to_database)
-        self.is_updated = self.__hook_is_checked(self.is_updated)
+        self.is_updated = self.__hook_is_updated(self.__hook_is_checked(self.is_updated))
         self.get_print_text = self.__hook_is_checked(self.get_print_text)
         self.send_message = self.__hook_is_checked(self.send_message)
 
     def __hook_do_check(self, method: typing.Callable) -> typing.Callable:
+        @wraps(method)
         def hook(*args, **kwargs):
             method(*args, **kwargs)
             # 如果上一行语句抛出了异常, 将不会执行下面这行语句
@@ -96,9 +103,18 @@ class CheckUpdate:
         return hook
 
     def __hook_is_checked(self, method: typing.Callable) -> typing.Callable:
+        @wraps(method)
         def hook(*args, **kwargs):
             assert self.__is_checked, "Please execute the 'do_check' method first."
             return method(*args, **kwargs)
+        return hook
+
+    def __hook_is_updated(self, method: typing.Callable) -> typing.Callable:
+        @wraps(method)
+        def hook(*args, **kwargs):
+            if self.__is_updated is None:
+                self.__is_updated = method(*args, **kwargs)
+            return self.__is_updated
         return hook
 
     @property
@@ -157,28 +173,35 @@ class CheckUpdate:
         """
 
         def _request_url(url_, method_, encoding_, **kwargs_):
-            if method_ == "get":
-                requests_func = requests.get
-            elif method_ == "post":
-                requests_func = requests.post
-            else:
-                raise Exception("Unknown request method: %s" % method_)
             params = kwargs_.get("params")
             if cls.enable_pagecache and method_ == "get":
                 saved_page_cache = PAGE_CACHE.read(url_, params)
                 if saved_page_cache is not None:
                     return saved_page_cache
-            timeout = kwargs_.pop("timeout", TIMEOUT)
+            session = requests.Session()
             proxies = kwargs_.pop("proxies", PROXIES)
-            req = requests_func(
-                url_, timeout=timeout, proxies=proxies, **kwargs_
-            )
-            req.raise_for_status()
-            req.encoding = encoding_
-            req_text = req.text
-            if cls.enable_pagecache:
-                PAGE_CACHE.save(url_, params, req_text)
-            return req_text
+            if not proxies:
+                # 阻止requests从环境变量中读取代理设置
+                session.trust_env = False
+            if method_ == "get":
+                requests_func = session.get
+            elif method_ == "post":
+                requests_func = session.post
+            else:
+                raise Exception("Unknown request method: %s" % method_)
+            timeout = kwargs_.pop("timeout", TIMEOUT)
+            try:
+                req = requests_func(
+                    url_, timeout=timeout, proxies=proxies, **kwargs_
+                )
+                req.raise_for_status()
+                req.encoding = encoding_
+                req_text = req.text
+                if cls.enable_pagecache:
+                    PAGE_CACHE.save(url_, params, req_text)
+                return req_text
+            finally:
+                session.close()
 
         # 在多线程模式下, 同时只允许一个enable_pagecache属性为True的CheckUpdate对象进行请求
         # 在其他线程上的enable_pagecache属性为True的CheckUpdate对象必须等待
@@ -209,6 +232,7 @@ class CheckUpdate:
         features = kwargs.pop("features", "lxml")
         return BeautifulSoup(url_text, features=features, **kwargs)
 
+    @abc.abstractmethod
     def do_check(self) -> NoReturn:
         """
         开始进行更新检查, 包括页面请求 数据清洗 info_dic更新, 都应该在此方法中完成
@@ -317,6 +341,7 @@ class CheckUpdateWithBuildDate(CheckUpdate):
     """
 
     @classmethod
+    @abc.abstractmethod
     def date_transform(cls, date_str: str) -> typing.Any:
         """
         解析时间字符串, 用于比较

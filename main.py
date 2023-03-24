@@ -9,7 +9,7 @@ import sys
 import threading
 import logging
 import typing
-from typing import NoReturn, Optional, Final
+from typing import NoReturn, Optional, Final, Union, Tuple
 from concurrent.futures import ThreadPoolExecutor
 
 from requests import exceptions as req_exceptions
@@ -17,7 +17,7 @@ from requests import exceptions as req_exceptions
 from config import (
     ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM, LESS_LOG, ENABLE_LOGGER
 )
-from check_init import PAGE_CACHE
+from check_init import PAGE_CACHE, CheckUpdate, GithubReleases
 from check_list import CHECK_LIST
 from database import DatabaseSession, Saved
 from logger import write_log_info, write_log_warning, print_and_log, LOGGER
@@ -41,6 +41,17 @@ def database_cleanup() -> set[str]:
         session.commit()
         return drop_ids
 
+def get_time_str(time_num: Optional[Union[int, float]] = None, offset: int = 0) -> str:
+    """
+    返回给定时间的字符串形式
+    :param time_num: Unix时间, 整型或浮点型, 默认取当前时间
+    :param offset: time_num的偏移量
+    :return: 格式化后的时间字符串
+    """
+    if time_num is None:
+        time_num = time.time()
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_num+offset))
+
 def _abort(text: str) -> NoReturn:
     print_and_log(str(text), level=logging.WARNING, custom_prefix="-")
     sys.exit(1)
@@ -54,20 +65,22 @@ def _sleep(sleep_time: int) -> NoReturn:
     except KeyboardInterrupt:
         _abort_by_user()
 
-def _get_time_str(time_num: Optional[float] = None, offset: int = 0) -> str:
-    if time_num is None:
-        time_num = time.time()
-    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_num+offset))
+def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> Tuple[bool, CheckUpdate]:
+    """ 对CHECK_LIST中的一个项目进程更新检查
 
-def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> bool:
+    :param cls: 要检查的CheckUpdate类或类名
+    :param disable_pagecache: 为True时强制禁用页面缓存
+    :return: (<bool值, 顺利完成检查为True, 否则为False>, <CheckUpdate对象>)
+    """
     if isinstance(cls, str):
         cls_str = cls
         cls = {cls_.__name__: cls_ for cls_ in CHECK_LIST}.get(cls_str)
         if not cls:
             raise Exception("Can not found '%s' from CHECK_LIST!" % cls_str)
-    cls_obj = cls()
     if disable_pagecache:
-        cls_obj.enable_pagecache = False
+        if cls.enable_pagecache:
+            cls = type(cls.__name__, (cls, ), {"enable_pagecache": False})
+    cls_obj = cls()
     try:
         cls_obj.do_check()
     except req_exceptions.ReadTimeout:
@@ -88,8 +101,12 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
             print("! %s check failed!" % cls_obj.fullname)
     else:
         if FORCE_UPDATE or cls_obj.is_updated():
+            if cls_obj.name in ["GoogleClangPrebuilt", "Switch520"]:
+                latest_version_string = "..."
+            else:
+                latest_version_string = cls_obj.info_dic["LATEST_VERSION"]
             print_and_log(
-                "%s has update: %s" % (cls_obj.fullname, cls_obj.info_dic["LATEST_VERSION"]),
+                "%s has update: %s" % (cls_obj.fullname, latest_version_string),
                 custom_prefix=">",
             )
             try:
@@ -109,15 +126,17 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
             print("- %s no update" % cls_obj.fullname)
             if not LESS_LOG:
                 write_log_info("%s no update" % cls_obj.fullname)
-        return True
+        return True, cls_obj
+    return False, cls_obj
 
-def single_thread_check(check_list: typing.Sequence[type]) -> (list, bool):
+def single_thread_check(check_list: typing.Sequence[type]) -> Tuple[list, bool]:
     # 单线程模式下连续检查失败5项则判定为网络异常, 并提前终止
     req_failed_flag = 0
     check_failed_list = []
     is_network_error = False
     for cls in check_list:
-        if not check_one(cls):
+        rc, _ = check_one(cls)
+        if not rc:
             req_failed_flag += 1
             check_failed_list.append(cls)
             if req_failed_flag == 5:
@@ -128,22 +147,22 @@ def single_thread_check(check_list: typing.Sequence[type]) -> (list, bool):
         _sleep(2)
     return check_failed_list, is_network_error
 
-def multi_thread_check(check_list: typing.Sequence[type]) -> (list, bool):
+def multi_thread_check(check_list: typing.Sequence[type]) -> Tuple[list, bool]:
     # 多线程模式下累计检查失败10项则判定为网络异常, 并在之后往线程池提交的任务中不再进行检查操作而是直接返回
     check_failed_list = []
     is_network_error = False
 
     def _check_one(cls_):
         nonlocal check_failed_list, is_network_error
-        if is_network_error:
-            return
-        result = check_one(cls_)
+        with _THREADING_LOCK:
+            if is_network_error:
+                return
+        rc, _ = check_one(cls_)
         time.sleep(2)
-        if not result:
+        if not rc:
             with _THREADING_LOCK:
                 check_failed_list.append(cls_)
-            if len(check_failed_list) >= 10:
-                with _THREADING_LOCK:
+                if len(check_failed_list) >= 10:
                     is_network_error = True
 
     with ThreadPoolExecutor(MAX_THREADS_NUM) as executor:
@@ -156,8 +175,18 @@ def loop_check() -> NoReturn:
     write_log_info("Abandoned items: {%s}" % ", ".join(drop_ids))
     loop_check_func = multi_thread_check if ENABLE_MULTI_THREAD else single_thread_check
     check_list = [cls for cls in CHECK_LIST if not cls._skip]
+    if len([x for x in check_list if GithubReleases in x.__mro__]) / (LOOP_CHECK_INTERVAL / (60 * 60)) >= 60:
+        for warm_str in (
+            "#" * 72,
+            "Your check list contains too many items that need to request GitHub api,",
+            "which may exceed the rate limit of GitHub api (60 per hour).",
+            "Please try to remove some items from the check list,",
+            "or increase the time interval of loop check (LOOP_CHECK_INTERVAL).",
+            "#" * 72,
+        ):
+            print_and_log(warm_str, level=logging.WARNING)
     while True:
-        start_time = _get_time_str()
+        start_time = get_time_str()
         print(" - " + start_time)
         print(" - Start...")
         write_log_info("=" * 64)
@@ -173,7 +202,7 @@ def loop_check() -> NoReturn:
                 print_and_log("Check again for failed items")
                 single_thread_check(check_failed_list)
         PAGE_CACHE.clear()
-        print(" - The next check will start at %s\n" % _get_time_str(offset=LOOP_CHECK_INTERVAL))
+        print(" - The next check will start at %s\n" % get_time_str(offset=LOOP_CHECK_INTERVAL))
         write_log_info("End of check")
         _sleep(LOOP_CHECK_INTERVAL)
 
@@ -246,7 +275,8 @@ if __name__ == "__main__":
     if args.auto:
         loop_check()
     elif args.check:
-        check_one(args.check, disable_pagecache=True)
+        if not check_one(args.check, disable_pagecache=True)[0]:
+            sys.exit(1)
     elif args.show:
         show_saved_data()
     elif args.json:
