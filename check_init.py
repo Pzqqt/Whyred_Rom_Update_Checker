@@ -173,28 +173,35 @@ class CheckUpdate(metaclass=abc.ABCMeta):
         """
 
         def _request_url(url_, method_, encoding_, **kwargs_):
-            if method_ == "get":
-                requests_func = requests.get
-            elif method_ == "post":
-                requests_func = requests.post
-            else:
-                raise Exception("Unknown request method: %s" % method_)
             params = kwargs_.get("params")
             if cls.enable_pagecache and method_ == "get":
                 saved_page_cache = PAGE_CACHE.read(url_, params)
                 if saved_page_cache is not None:
                     return saved_page_cache
-            timeout = kwargs_.pop("timeout", TIMEOUT)
+            session = requests.Session()
             proxies = kwargs_.pop("proxies", PROXIES)
-            req = requests_func(
-                url_, timeout=timeout, proxies=proxies, **kwargs_
-            )
-            req.raise_for_status()
-            req.encoding = encoding_
-            req_text = req.text
-            if cls.enable_pagecache:
-                PAGE_CACHE.save(url_, params, req_text)
-            return req_text
+            if not proxies:
+                # 阻止requests从环境变量中读取代理设置
+                session.trust_env = False
+            if method_ == "get":
+                requests_func = session.get
+            elif method_ == "post":
+                requests_func = session.post
+            else:
+                raise Exception("Unknown request method: %s" % method_)
+            timeout = kwargs_.pop("timeout", TIMEOUT)
+            try:
+                req = requests_func(
+                    url_, timeout=timeout, proxies=proxies, **kwargs_
+                )
+                req.raise_for_status()
+                req.encoding = encoding_
+                req_text = req.text
+                if cls.enable_pagecache:
+                    PAGE_CACHE.save(url_, params, req_text)
+                return req_text
+            finally:
+                session.close()
 
         # 在多线程模式下, 同时只允许一个enable_pagecache属性为True的CheckUpdate对象进行请求
         # 在其他线程上的enable_pagecache属性为True的CheckUpdate对象必须等待
