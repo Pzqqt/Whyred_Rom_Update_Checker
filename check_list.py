@@ -232,7 +232,7 @@ class RaspberryPiOS64(CheckUpdate):
 
 class Switch520(CheckUpdate):
     fullname = "Switch520"
-    BASE_URL = "https://xxxxx520.com/"
+    BASE_URL = "https://xxxxx520.cam/"
     TG_SENDTO_SP = os.getenv("TG_SENDTO_SP")
 
     def do_check(self):
