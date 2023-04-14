@@ -252,6 +252,10 @@ class Magisk(GithubReleases):
     fullname = "Magisk Stable"
     repository_url = "topjohnwu/Magisk"
 
+class Jadx(GithubReleases):
+    fullname = "jadx (Dex to Java decompiler)"
+    repository_url = "skylot/jadx"
+
 class ManjaroArmRpi4Images(GithubReleases):
     fullname = "Manjaro ARM Image for Raspberry Pi 3/3+/4/400"
     repository_url = "manjaro-arm/rpi4-images"
@@ -288,6 +292,10 @@ class Sandboxie(GithubReleases):
     fullname = "Sandboxie (By DavidXanatos)"
     repository_url = "sandboxie-plus/Sandboxie"
 
+class Shamiko(GithubReleases):
+    fullname = "Shamiko"
+    repository_url = "LSPosed/LSPosed.github.io"
+
 class Rufus(GithubReleases):
     fullname = "Rufus"
     repository_url = "pbatard/rufus"
@@ -307,10 +315,12 @@ CHECK_LIST = (
     Apktool,
     ClashForWindows,
     EhviewerOverhauled,
+    Jadx,
     Magisk,
     ManjaroArmRpi4Images,
     Notepad3,
     Rufus,
     Sandboxie,
+    Shamiko,
     Ventoy,
 )
