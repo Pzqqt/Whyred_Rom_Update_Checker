@@ -186,6 +186,7 @@ class CheckUpdate(metaclass=abc.ABCMeta):
             elif method_ == "post":
                 requests_func = session.post
             else:
+                session.close()
                 raise Exception("Unknown request method: %s" % method_)
             timeout = kwargs_.pop("timeout", TIMEOUT)
             try:
