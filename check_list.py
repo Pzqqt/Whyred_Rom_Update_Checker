@@ -278,7 +278,7 @@ class Switch520(CheckUpdate):
             for id_ in sorted_new_ids:
                 item = fetch_articles_info[id_]
                 self.tags = item["tags"]
-                _send_photo(
+                send_ret = _send_photo(
                     item["image_url"],
                     "\n".join([
                         '<a href="%s">%s</a>' % (item["url"], item["name"]),
@@ -288,6 +288,11 @@ class Switch520(CheckUpdate):
                     send_to=self.TG_SENDTO_SP,
                     parse_mode="html",
                 )
+                if not send_ret:
+                    print_and_log(
+                        "%s: id: '%s' , image_url: '%s'" % (self.name, id_, item["image_url"]),
+                        level=logging.WARNING
+                    )
                 time.sleep(2)
         finally:
             self.tags = tuple()
