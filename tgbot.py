@@ -4,6 +4,7 @@
 import traceback
 import logging
 from typing import Final
+from functools import wraps
 
 import telebot
 from telebot.apihelper import requests
@@ -17,6 +18,7 @@ telebot.apihelper.proxy = PROXIES
 
 def _send_wrap(func):
     # 注意: 被`_send_wrap`装饰的函数将忽略函数原本的返回值
+    @wraps(func)
     def _func(*args, **kwargs) -> bool:
         for _ in range(10):
             try:
