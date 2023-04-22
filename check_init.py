@@ -30,8 +30,6 @@ del lxml
 # 禁用安全请求警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-requests.adapters.DEFAULT_RETRIES = 5
-
 CHROME_UA: Final = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
@@ -188,6 +186,7 @@ class CheckUpdate(metaclass=abc.ABCMeta):
             elif method_ == "post":
                 requests_func = session.post
             else:
+                session.close()
                 raise Exception("Unknown request method: %s" % method_)
             timeout = kwargs_.pop("timeout", TIMEOUT)
             try:
