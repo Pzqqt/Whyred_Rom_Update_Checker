@@ -16,10 +16,13 @@ BOT: Final = telebot.TeleBot(TG_TOKEN)
 telebot.apihelper.proxy = PROXIES
 
 def _send_wrap(func):
-    def _func(*args, **kwargs):
+    # 注意: 被`_send_wrap`装饰的函数将忽略函数原本的返回值
+    def _func(*args, **kwargs) -> bool:
         for _ in range(10):
             try:
                 func(*args, **kwargs)
+                # 成功发送
+                return True
             except (requests.exceptions.SSLError, requests.exceptions.ProxyError, requests.exceptions.ReadTimeout):
                 # 由于网络或代理问题没能发送成功, 就再试一次, 最多尝试10次
                 continue
@@ -32,11 +35,9 @@ def _send_wrap(func):
                 else:
                     print(traceback.format_exc())
                     print("!", warning_string)
-                return
-            else:
-                # 成功发送
-                return
+                return False
         print_and_log("Fuck GFW!", level=logging.WARNING)
+        return False
     return _func
 
 @_send_wrap
