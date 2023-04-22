@@ -54,7 +54,7 @@ def send_photo(photo, caption: str = "", send_to: str = TG_SENDTO, parse_mode="M
     try:
         BOT.send_photo(send_to, photo, caption=caption, parse_mode=parse_mode, timeout=TIMEOUT, **kwargs)
     except telebot.apihelper.ApiTelegramException as exc:
-        if isinstance(photo, str) and exc.description == 'Bad Request: wrong file identifier/HTTP URL specified':
+        if isinstance(photo, str) and exc.error_code == 400:
             temp_fd, temp_path = mkstemp()
             try:
                 with os.fdopen(temp_fd, 'wb') as f:
@@ -66,4 +66,3 @@ def send_photo(photo, caption: str = "", send_to: str = TG_SENDTO, parse_mode="M
                 os.remove(temp_path)
         else:
             raise
-
