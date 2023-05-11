@@ -152,14 +152,14 @@ class BeyondCompare4(CheckUpdate):
     BASE_URL = "https://www.scootersoftware.com"
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url("%s/download.php?zz=dl4" % self.BASE_URL))
-        p_obj = bs_obj.select_one('form[name="prog-form"] > p')
+        fetch_url = "%s/download" % self.BASE_URL
+        bs_obj = self.get_bs(self.request_url(fetch_url))
+        p_obj = bs_obj.select_one('.panel-container .hasicon')
         self.update_info(
-            "LATEST_VERSION",
-            re.search(r'(\d+\.\d+\.\d+, build \d+),', p_obj.get_text().replace('\xa0', '')).group(1)
+            "LATEST_VERSION", re.search(r'(\d+\.\d+\.\d+)', p_obj.get_text()).group(1)
         )
-        self.update_info("DOWNLOAD_LINK", "%s/download.php" % self.BASE_URL)
-        self.update_info("BUILD_CHANGELOG", "%s/download.php?zz=v4changelog" % self.BASE_URL)
+        self.update_info("DOWNLOAD_LINK", fetch_url)
+        self.update_info("BUILD_CHANGELOG", "%s/download/v4changelog" % self.BASE_URL)
 
 class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
     fullname = "Raspberry Pi4 bootloader EEPROM Stable"
