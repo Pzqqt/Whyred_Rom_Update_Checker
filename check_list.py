@@ -8,7 +8,7 @@ import logging
 
 from requests import exceptions as req_exceptions
 
-from check_init import CheckUpdate, CheckUpdateWithBuildDate, GithubReleases
+from check_init import CheckUpdate, CheckUpdateWithBuildDate, PlingCheck, GithubReleases
 from tgbot import send_message as _send_message
 from logger import print_and_log
 
@@ -228,6 +228,10 @@ class RaspberryPiOS64(CheckUpdate):
         else:
             raise Exception("Parsing failed!")
 
+class MotoWidget(PlingCheck):
+    fullname = "Moto Widget"
+    p_id = 1996274
+
 class Apktool(GithubReleases):
     fullname = "Apktool"
     repository_url = "iBotPeaches/Apktool"
@@ -292,6 +296,10 @@ class Sandboxie(GithubReleases):
     fullname = "Sandboxie (By DavidXanatos)"
     repository_url = "sandboxie-plus/Sandboxie"
 
+class Scrcpy(GithubReleases):
+    fullname = "Scrcpy (screen copy)"
+    repository_url = "Genymobile/scrcpy"
+
 class Shamiko(GithubReleases):
     fullname = "Shamiko"
     repository_url = "LSPosed/LSPosed.github.io"
@@ -312,6 +320,7 @@ CHECK_LIST = (
     RaspberryPiEepromStable,
     RaspberryPiEepromBeta,
     RaspberryPiOS64,
+    MotoWidget,
     Apktool,
     ClashForWindows,
     EhviewerOverhauled,
@@ -321,6 +330,7 @@ CHECK_LIST = (
     Notepad3,
     Rufus,
     Sandboxie,
+    Scrcpy,
     Shamiko,
     Ventoy,
 )
