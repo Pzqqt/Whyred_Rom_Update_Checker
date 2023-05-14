@@ -424,12 +424,17 @@ class SfProjectCheck(SfCheck):
         self.fullname = "New rom release by %s" % self.developer
         super().__init__()
 
-class PlingCheck(CheckUpdate):
+class PlingCheck(CheckUpdateWithBuildDate):
     p_id: int
 
     def __init__(self):
         self._abort_if_missing_property("p_id")
         super().__init__()
+
+    @classmethod
+    def date_transform(cls, date_str: str) -> str:
+        # 例: "2023-01-02 12:34:56"
+        return date_str
 
     @staticmethod
     def filter_rule(build_dic: dict) -> typing.Any:
