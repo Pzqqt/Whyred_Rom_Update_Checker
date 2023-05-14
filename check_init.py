@@ -448,6 +448,7 @@ class PlingCheck(CheckUpdate):
         self._private_dic["latest_build"] = latest_build
         self.update_info("LATEST_VERSION", latest_build["name"])
         self.update_info("BUILD_DATE", latest_build["updated_timestamp"])
+        self.update_info("BUILD_VERSION", latest_build["version"] or None)
         self.update_info("FILE_MD5", latest_build["md5sum"])
         self.update_info(
             "DOWNLOAD_LINK", "https://www.pling.com/p/%s/#files-panel" % self.p_id
