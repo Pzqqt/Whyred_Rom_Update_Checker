@@ -154,9 +154,10 @@ class BeyondCompare4(CheckUpdate):
     def do_check(self):
         fetch_url = "%s/download" % self.BASE_URL
         bs_obj = self.get_bs(self.request_url(fetch_url))
-        p_obj = bs_obj.select_one('.panel-container .hasicon')
+        p_obj = bs_obj.select_one('#content > h2')
         self.update_info(
-            "LATEST_VERSION", re.search(r'(\d+\.\d+\.\d+)', p_obj.get_text()).group(1)
+            "LATEST_VERSION",
+            re.search(r'(\d+\.\d+\.\d+,\s*build\s*\d+),', re.sub(r'\s+', ' ', p_obj.get_text())).group(1)
         )
         self.update_info("DOWNLOAD_LINK", fetch_url)
         self.update_info("BUILD_CHANGELOG", "%s/download/v4changelog" % self.BASE_URL)
