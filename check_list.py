@@ -229,6 +229,28 @@ class RaspberryPiOS64(CheckUpdate):
         else:
             raise Exception("Parsing failed!")
 
+class He3(CheckUpdate):
+    fullname = "He3"
+
+    def do_check(self):
+        json_dic = json.loads(self.request_url("https://github.com/he3-app/he3-scoop/raw/main/bucket/he3.json"))
+        version = json_dic.get("version")
+        if not version:
+            return
+        self.update_info("LATEST_VERSION", version)
+        files = json_dic.get("architecture")
+        if not files:
+            return
+        download_link = ""
+        for arch, file_info in files.items():
+            url = file_info["url"].rsplit("#", 1)[0]
+            file_name = url.rsplit('/', 1)[-1]
+            download_link += "`%s:` [%s](%s)\n" % (arch, file_name, url)
+        self.update_info("DOWNLOAD_LINK", download_link)
+        description = json_dic.get("description")
+        if description:
+            self.fullname += " (%s)" % description
+
 class MotoWidget(PlingCheck):
     fullname = "Moto Widget"
     p_id = 1996274
@@ -321,6 +343,7 @@ CHECK_LIST = (
     RaspberryPiEepromStable,
     RaspberryPiEepromBeta,
     RaspberryPiOS64,
+    He3,
     MotoWidget,
     Apktool,
     ClashForWindows,
