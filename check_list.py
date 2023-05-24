@@ -279,6 +279,19 @@ class Magisk(GithubReleases):
     fullname = "Magisk Stable"
     repository_url = "topjohnwu/Magisk"
 
+class MagiskCanary(CheckUpdate):
+    fullname = "Magisk Canary"
+
+    def do_check(self):
+        json_dic = json.loads(self.request_url("https://github.com/topjohnwu/magisk-files/raw/master/canary.json"))
+        magisk_info = json_dic.get("magisk")
+        if not magisk_info:
+            return
+        self.update_info("LATEST_VERSION", magisk_info["version"])
+        self.update_info("DOWNLOAD_LINK", "[%s](%s)" % (magisk_info["link"].rsplit('/', 1)[-1], magisk_info["link"]))
+        self.update_info("BUILD_VERSION", magisk_info["versionCode"])
+        self.update_info("BUILD_CHANGELOG", magisk_info["note"])
+
 class Jadx(GithubReleases):
     fullname = "jadx (Dex to Java decompiler)"
     repository_url = "skylot/jadx"
@@ -350,6 +363,7 @@ CHECK_LIST = (
     EhviewerOverhauled,
     Jadx,
     Magisk,
+    MagiskCanary,
     ManjaroArmRpi4Images,
     Notepad3,
     Rufus,
