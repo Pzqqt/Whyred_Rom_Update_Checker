@@ -287,7 +287,7 @@ class MagiskCanary(CheckUpdate):
         magisk_info = json_dic.get("magisk")
         if not magisk_info:
             return
-        self.update_info("LATEST_VERSION", magisk_info["version"])
+        self.update_info("LATEST_VERSION", magisk_info["versionCode"])
         self.update_info("DOWNLOAD_LINK", "[%s](%s)" % (magisk_info["link"].rsplit('/', 1)[-1], magisk_info["link"]))
         self.update_info("BUILD_VERSION", magisk_info["versionCode"])
         self.update_info("BUILD_CHANGELOG", magisk_info["note"])
