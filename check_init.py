@@ -177,10 +177,8 @@ class CheckUpdate(metaclass=abc.ABCMeta):
                 if saved_page_cache is not None:
                     return saved_page_cache
             session = requests.Session()
-            proxies = kwargs_.pop("proxies", PROXIES)
-            if not proxies:
-                # 阻止requests从环境变量中读取代理设置
-                session.trust_env = False
+            # 阻止requests从环境变量中读取代理设置
+            session.trust_env = False
             if method_ == "get":
                 requests_func = session.get
             elif method_ == "post":
@@ -189,6 +187,7 @@ class CheckUpdate(metaclass=abc.ABCMeta):
                 session.close()
                 raise Exception("Unknown request method: %s" % method_)
             timeout = kwargs_.pop("timeout", TIMEOUT)
+            proxies = kwargs_.pop("proxies", PROXIES)
             try:
                 req = requests_func(
                     url_, timeout=timeout, proxies=proxies, **kwargs_
