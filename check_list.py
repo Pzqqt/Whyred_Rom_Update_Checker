@@ -204,11 +204,6 @@ class RaspberryPiOS64(CheckUpdate):
 
     def do_check(self):
         url = "https://downloads.raspberrypi.org/os_list_imagingutility_v3.json"
-        if "os_list_imagingutility_v4.json" in self.request_url("https://downloads.raspberrypi.org"):
-            print_and_log(
-                "%s: There is a new version of the api interface. Please update the crawler." % self.name,
-                level=logging.WARNING,
-            )
         json_dic = json.loads(self.request_url(url))
         for os in json_dic["os_list"]:
             if os["name"] == "Raspberry Pi OS (other)":
