@@ -87,9 +87,9 @@ class CheckUpdate(metaclass=abc.ABCMeta):
         self.do_check = self.__hook_do_check(self.do_check)
         self.after_check = self.__hook_is_checked(self.after_check)
         self.write_to_database = self.__hook_is_checked(self.write_to_database)
-        self.is_updated = self.__hook_is_updated(self.__hook_is_checked(self.is_updated))
         self.get_print_text = self.__hook_is_checked(self.get_print_text)
         self.send_message = self.__hook_is_checked(self.send_message)
+        self.is_updated = self.__hook_is_updated(self.__hook_is_checked(self.is_updated))
 
     def __hook_do_check(self, method: typing.Callable) -> typing.Callable:
         @wraps(method)
@@ -189,9 +189,7 @@ class CheckUpdate(metaclass=abc.ABCMeta):
             timeout = kwargs_.pop("timeout", TIMEOUT)
             proxies = kwargs_.pop("proxies", PROXIES)
             try:
-                req = requests_func(
-                    url_, timeout=timeout, proxies=proxies, **kwargs_
-                )
+                req = requests_func(url_, timeout=timeout, proxies=proxies, **kwargs_)
                 req.raise_for_status()
                 req.encoding = encoding_
                 req_text = req.text

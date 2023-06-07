@@ -173,7 +173,7 @@ class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
 
     @staticmethod
     def _get_build_date(file_name: str) -> str:
-        return re.sub(r'[^\d]', '', file_name)
+        return re.sub(r'\D', '', file_name)
 
     def do_check(self):
         files = json.loads(
