@@ -77,6 +77,11 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
         cls = {cls_.__name__: cls_ for cls_ in CHECK_LIST}.get(cls_str)
         if not cls:
             raise Exception("Can not found '%s' from CHECK_LIST!" % cls_str)
+    elif isinstance(cls, type):
+        if CheckUpdate not in cls.__mro__:
+            raise ValueError("%s is not the subclass of CheckUpdate!" % cls)
+    else:
+        raise ValueError("Invalid parameter: %s!" % cls)
     if disable_pagecache:
         if cls.enable_pagecache:
             cls = type(cls.__name__, (cls, ), {"enable_pagecache": False})
