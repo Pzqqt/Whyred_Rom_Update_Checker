@@ -12,7 +12,7 @@ LOGGER.setLevel(logging.INFO)
 
 LOG_FILE_PATH: Final = os.path.join(os.path.dirname(os.path.abspath(__file__)), LOG_FILE)
 
-_HANDLER = logging.FileHandler(LOG_FILE_PATH)
+_HANDLER = logging.FileHandler(LOG_FILE_PATH, encoding="utf-8")
 _HANDLER.setLevel(logging.INFO)
 _HANDLER.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 
