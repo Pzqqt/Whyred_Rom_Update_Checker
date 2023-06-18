@@ -6,9 +6,8 @@ import time
 import logging
 import typing
 import abc
-
 import urllib3
-from typing import Union, NoReturn, Final
+from typing import Union, NoReturn, Final, Optional
 from collections import OrderedDict
 from urllib.parse import unquote, urlencode
 from functools import wraps
@@ -157,7 +156,7 @@ class CheckUpdate(metaclass=abc.ABCMeta):
             cls,
             url: str,
             method: typing.Literal["get", "post"] = "get",
-            encoding: str = "utf-8",
+            encoding: Optional[str] = None,
             **kwargs
     ) -> str:
 
@@ -165,7 +164,7 @@ class CheckUpdate(metaclass=abc.ABCMeta):
         timeout, proxies这两个参数有默认值, 也可以根据需要自定义这些参数
         :param url: 要请求的url
         :param method: 请求方法, 可选: "get"(默认)或"post"
-        :param encoding: 文本编码, 默认为utf-8
+        :param encoding: 文本编码, 默认由requests自动识别
         :param kwargs: 其他需要传递给requests的参数
         :return: 请求结果的text(解码后)
         """
@@ -191,7 +190,8 @@ class CheckUpdate(metaclass=abc.ABCMeta):
             try:
                 req = requests_func(url_, timeout=timeout, proxies=proxies, **kwargs_)
                 req.raise_for_status()
-                req.encoding = encoding_
+                if encoding_ is not None:
+                    req.encoding = encoding_
                 req_text = req.text
                 if cls.enable_pagecache:
                     PAGE_CACHE.save(url_, params, req_text)
