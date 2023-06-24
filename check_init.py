@@ -228,6 +228,25 @@ class CheckUpdate(metaclass=abc.ABCMeta):
         features = kwargs.pop("features", "lxml")
         return BeautifulSoup(url_text, features=features, **kwargs)
 
+    @staticmethod
+    def get_human_readable_file_size(file_size: int, decimal_system: bool = False, decimal_places: int = 1) -> str:
+        """
+        返回人类可读的文件大小
+        :param file_size: 文件大小(单位: bytes)
+        :param decimal_system: 为True时按十进制计算(1MB == 1000KB), 否则按二进制计算(1MB == 1024KB)(默认)
+        :param decimal_places: 保留的小数位数(默认保留1位)
+        :return: 人类可读的文件大小字符串
+        """
+        divisor = 1000 if decimal_system else 1024
+        template = "%%0.%df" % decimal_places
+        if file_size < divisor:
+            return "%s bytes" % (file_size, )
+        if file_size < (divisor * divisor):
+            return template % (file_size / divisor, ) + " KB"
+        if file_size < (divisor * divisor * divisor):
+            return template % (file_size / divisor / divisor, ) + " MB"
+        return template % (file_size / divisor / divisor / divisor, ) + " GB"
+
     @abc.abstractmethod
     def do_check(self) -> NoReturn:
         """
@@ -400,9 +419,9 @@ class SfCheck(CheckUpdateWithBuildDate):
             return
         builds.sort(key=lambda x: self.date_transform(x.pubDate.get_text()), reverse=True)
         for build in builds:
-            file_size_mb = int(build.find("media:content")["filesize"]) / 1000 / 1000
+            file_size = int(build.find("media:content")["filesize"])
             # 过滤小于500MB的文件
-            if file_size_mb < 500:
+            if file_size / 1000 / 1000 < 500:
                 continue
             file_version = build.guid.get_text().split("/")[-2]
             if self.filter_rule(file_version):
@@ -410,7 +429,7 @@ class SfCheck(CheckUpdateWithBuildDate):
                 self.update_info("DOWNLOAD_LINK", build.guid.get_text())
                 self.update_info("BUILD_DATE", build.pubDate.get_text())
                 self.update_info("FILE_MD5", build.find("media:hash", {"algo": "md5"}).get_text())
-                self.update_info("FILE_SIZE", "%0.1f MB" % file_size_mb)
+                self.update_info("FILE_SIZE", self.get_human_readable_file_size(file_size, decimal_system=True))
                 break
 
 class SfProjectCheck(SfCheck):
@@ -474,7 +493,7 @@ class PlingCheck(CheckUpdateWithBuildDate):
         if file_size:
             self.update_info(
                 "FILE_SIZE",
-                "%0.2f MB" % (int(file_size) / 1048576,)
+                self.get_human_readable_file_size(int(file_size), decimal_places=2)
             )
         self.update_info(
             "DOWNLOAD_LINK",
@@ -515,7 +534,9 @@ class GithubReleases(CheckUpdateWithBuildDate):
             "\n".join([
                 "[%s (%s)](%s)" % (
                     # File name, File size, Download link
-                    asset["name"], "%0.1f MB" % (int(asset["size"]) / 1024 / 1024), asset["browser_download_url"]
+                    asset["name"],
+                    self.get_human_readable_file_size(int(asset["size"])),
+                    asset["browser_download_url"],
                 )
                 for asset in latest_json["assets"]
             ])

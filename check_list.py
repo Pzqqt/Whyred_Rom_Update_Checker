@@ -187,7 +187,7 @@ class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
         latest_file = files[-1]
         self.update_info("LATEST_VERSION", latest_file["name"])
         self.update_info("DOWNLOAD_LINK", latest_file["download_url"])
-        self.update_info("FILE_SIZE", "%0.1f KB" % (int(latest_file["size"]) / 1024))
+        self.update_info("FILE_SIZE", self.get_human_readable_file_size(int(latest_file["size"])))
         self.update_info("BUILD_DATE", self._get_build_date(latest_file["name"]))
         self.update_info(
             "BUILD_CHANGELOG",
@@ -212,7 +212,7 @@ class RaspberryPiOS64(CheckUpdate):
                         self.update_info("BUILD_DATE", item["release_date"])
                         self.update_info(
                             "FILE_SIZE",
-                            "%0.1f MB" % (int(item["image_download_size"]) / 1024 / 1024)
+                            self.get_human_readable_file_size(int(item["image_download_size"]))
                         )
                         self.update_info("DOWNLOAD_LINK", item["url"])
                         self.update_info("LATEST_VERSION", item["url"].rsplit('/', 1)[1])
