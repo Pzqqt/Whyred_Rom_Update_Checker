@@ -383,6 +383,7 @@ class CheckUpdateWithBuildDate(CheckUpdate):
 class SfCheck(CheckUpdateWithBuildDate):
     project_name: str
     sub_path: str = ""
+    minimum_file_size_mb = 500
 
     _MONTH_TO_NUMBER: Final = {
         "Jan": "01", "Feb": "02", "Mar": "03",
@@ -420,8 +421,8 @@ class SfCheck(CheckUpdateWithBuildDate):
         builds.sort(key=lambda x: self.date_transform(x.pubDate.get_text()), reverse=True)
         for build in builds:
             file_size = int(build.find("media:content")["filesize"])
-            # 过滤小于500MB的文件
-            if file_size / 1000 / 1000 < 500:
+            # 过滤小于`minimum_file_size_mb`的文件
+            if file_size / 1000 / 1000 < self.minimum_file_size_mb:
                 continue
             file_version = build.guid.get_text().split("/")[-2]
             if self.filter_rule(file_version):
