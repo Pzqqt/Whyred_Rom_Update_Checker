@@ -8,7 +8,7 @@ import logging
 
 from requests import exceptions as req_exceptions
 
-from check_init import CheckUpdate, CheckUpdateWithBuildDate, PlingCheck, GithubReleases
+from check_init import CheckUpdate, CheckUpdateWithBuildDate, SfCheck, PlingCheck, GithubReleases
 from tgbot import send_message as _send_message
 from logger import print_and_log
 
@@ -224,27 +224,15 @@ class RaspberryPiOS64(CheckUpdate):
         else:
             raise Exception("Parsing failed!")
 
-class He3(CheckUpdate):
-    fullname = "He3"
+class XiaomiEuMultilangStable(SfCheck):
+    fullname = "Xiaomi.eu Multilang MIUI ROM stable"
+    project_name = "xiaomi-eu-multilang-miui-roms"
+    sub_path = "xiaomi.eu/MIUI-STABLE-RELEASES/MIUIv14"
+    tags = ("Marble", "XiaomiEU", "MIUI", "Stable")
 
-    def do_check(self):
-        json_dic = json.loads(self.request_url("https://github.com/he3-app/he3-scoop/raw/main/bucket/he3.json"))
-        version = json_dic.get("version")
-        if not version:
-            return
-        self.update_info("LATEST_VERSION", version)
-        files = json_dic.get("architecture")
-        if not files:
-            return
-        download_link = ""
-        for arch, file_info in files.items():
-            url = file_info["url"].rsplit("#", 1)[0]
-            file_name = url.rsplit('/', 1)[-1]
-            download_link += "`%s:` [%s](%s)\n" % (arch, file_name, url)
-        self.update_info("DOWNLOAD_LINK", download_link)
-        description = json_dic.get("description")
-        if description:
-            self.fullname += " (%s)" % description
+    @classmethod
+    def filter_rule(cls, string: str) -> bool:
+        return string.endswith(".zip") and "marble" in string.lower()
 
 class MotoWidget(PlingCheck):
     fullname = "Moto Widget"
@@ -351,7 +339,7 @@ CHECK_LIST = (
     RaspberryPiEepromStable,
     RaspberryPiEepromBeta,
     RaspberryPiOS64,
-    He3,
+    XiaomiEuMultilangStable,
     MotoWidget,
     Apktool,
     ClashForWindows,
