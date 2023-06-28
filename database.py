@@ -3,11 +3,12 @@
 
 from __future__ import annotations
 import os
+import threading
 from collections import OrderedDict
 
 from sqlalchemy import create_engine, Column, String
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 
 from config import SQLITE_FILE
 
@@ -15,11 +16,12 @@ _Base = declarative_base()
 _Engine = create_engine(
     "sqlite:///%s" % os.path.join(os.path.dirname(os.path.abspath(__file__)), SQLITE_FILE)
 )
-DatabaseSession = sessionmaker(bind=_Engine)
+_DatabaseSession = sessionmaker(bind=_Engine)
+_DatabaseSession.threading_lock = threading.RLock()
 
-# 多线程模式下各个线程会同时对数据库进行读写
-# 但是一个线程只对数据库中的一条数据进行读写, 与其他线程并不相互冲突
-# 所以不需要加锁
+def DatabaseSession(**kwargs) -> Session:
+    with _DatabaseSession.threading_lock:
+        return _DatabaseSession(**kwargs)
 
 class Saved(_Base):
     __tablename__ = "saved"
