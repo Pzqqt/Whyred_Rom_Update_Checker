@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 import threading
-from typing import Union, NoReturn, Final
+from typing import Union, Final
 
 class PageCache:
 
@@ -36,11 +36,11 @@ class PageCache:
         with self.threading_lock:
             return self.__page_cache.get((url, params))
 
-    def save(self, url: str, params: Union[dict, None], page_source: str) -> NoReturn:
+    def save(self, url: str, params: Union[dict, None], page_source: str):
         params = self.__params_change(params)
         with self.threading_lock:
             self.__page_cache[(url, params)] = page_source
 
-    def clear(self) -> NoReturn:
+    def clear(self):
         with self.threading_lock:
             self.__page_cache.clear()

@@ -6,7 +6,7 @@ import time
 import logging
 import typing
 import urllib3
-from typing import Union, NoReturn, Final, Optional
+from typing import Union, Final, Optional
 from collections import OrderedDict
 from urllib.parse import unquote, urlencode
 from functools import wraps
@@ -125,14 +125,14 @@ class CheckUpdate:
     def prev_saved_info(self) -> Union[Saved, None]:
         return self.__prev_saved_info
 
-    def _abort_if_missing_property(self, *props: str) -> NoReturn:
+    def _abort_if_missing_property(self, *props: str):
         if None in (getattr(self, key, None) for key in props):
             raise Exception(
                 "Subclasses inherited from the %s class must specify the '%s' property when defining!"
                 % (self.name, "' & '".join(props))
             )
 
-    def update_info(self, key: InfoDicKeys, value: Union[str, dict, list, None]) -> NoReturn:
+    def update_info(self, key: InfoDicKeys, value: Union[str, dict, list, None]):
         """ 更新info_dic字典, 在更新之前会对key和value进行检查和转换 """
         # 尽管key已经做了变量注解, 但还是要在运行时检查, 这很重要
         if key not in self.__info_dic.keys():
@@ -246,7 +246,7 @@ class CheckUpdate:
             return template % (file_size / divisor / divisor, ) + " MB"
         return template % (file_size / divisor / divisor / divisor, ) + " GB"
 
-    def do_check(self) -> NoReturn:
+    def do_check(self):
         """
         开始进行更新检查, 包括页面请求 数据清洗 info_dic更新, 都应该在此方法中完成
         :return: None
@@ -256,7 +256,7 @@ class CheckUpdate:
         # 如确实需要引用参数, 可以在继承时添加新的类属性
         raise NotImplementedError
 
-    def after_check(self) -> NoReturn:
+    def after_check(self):
         """
         此方法将在确定检查对象有更新之后才会执行
         比如: 将下载哈希文件并获取哈希值的代码放在这里, 可以节省一些时间(没有更新时做这些是没有意义的)
@@ -266,7 +266,7 @@ class CheckUpdate:
         # 如确实需要使用self.do_check方法中的部分变量, 可以借助self._private_dic进行传递
         pass
 
-    def write_to_database(self) -> NoReturn:
+    def write_to_database(self):
         """ 将CheckUpdate实例的info_dic数据写入数据库 """
         with DatabaseSession() as session:
             try:
@@ -331,7 +331,7 @@ class CheckUpdate:
             print_str_list.append("\n%s:\n%s" % (_KEY_TO_PRINT[key], value))
         return "\n".join(print_str_list)
 
-    def send_message(self) -> NoReturn:
+    def send_message(self):
         """ 发送更新消息 """
         _send_message(self.get_print_text())
 
