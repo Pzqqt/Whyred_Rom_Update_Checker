@@ -197,6 +197,7 @@ class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
 class RaspberryPiEepromBeta(RaspberryPiEepromStable):
     fullname = "Raspberry Pi4 bootloader EEPROM Beta"
     file_path = "firmware/beta"
+    _skip = True
 
 class RaspberryPiOS64(CheckUpdate):
     fullname = "Raspberry Pi OS (64-bit)"
