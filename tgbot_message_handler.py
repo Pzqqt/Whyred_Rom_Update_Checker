@@ -105,7 +105,7 @@ def _get_latest(message):
             parse_mode="Markdown",
         )
         return
-    if saved.LATEST_VERSION is None or check_item_name in ["GoogleClangPrebuilt", "Switch520"]:
+    if saved.LATEST_VERSION is None or check_item_name in ["GoogleClangPrebuilt", "Switch520", "AckAndroid12510LTS"]:
         BOT.reply_to(
             message,
             "*%s*\n\n*Sorry, this item has not been saved in the database.*" % saved.FULL_NAME,
