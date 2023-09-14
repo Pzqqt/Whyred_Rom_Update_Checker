@@ -10,7 +10,7 @@ import datetime
 
 from requests import exceptions as req_exceptions
 
-from check_init import CheckUpdate, CheckUpdateWithBuildDate, GithubReleases, CHROME_UA
+from check_init import CheckUpdate, CheckUpdateWithBuildDate, SfCheck, PlingCheck, GithubReleases, CHROME_UA
 from tgbot import send_message as _send_message, send_photo as _send_photo
 from logger import print_and_log
 
@@ -22,7 +22,7 @@ class Linux414Y(CheckUpdate):
 
     def do_check(self):
         url = "https://www.kernel.org"
-        bs_obj = self.get_bs(self.request_url(url))
+        bs_obj = self.get_bs(self.request_url_text(url))
         for tr_obj in bs_obj.select_one("#releases").select("tr"):
             kernel_version = tr_obj.select("td")[1].get_text()
             if re.match(self.re_pattern, kernel_version):
@@ -54,7 +54,7 @@ class GoogleClangPrebuilt(CheckUpdate):
     BASE_URL = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url(self.BASE_URL + "/+log"))
+        bs_obj = self.get_bs(self.request_url_text(self.BASE_URL + "/+log"))
         commits = bs_obj.select_one(".CommitLog").select("li")
         sp_commits = {}
         for commit in commits:
@@ -83,7 +83,7 @@ class GoogleClangPrebuilt(CheckUpdate):
 
     @classmethod
     def get_detailed_version(cls, url: str) -> str:
-        bs_obj_2 = cls.get_bs(cls.request_url(url))
+        bs_obj_2 = cls.get_bs(cls.request_url_text(url))
         commit_text = bs_obj_2.find("pre").get_text().splitlines()[2]
         if commit_text[-1] == ".":
             commit_text = commit_text[:-1]
@@ -123,7 +123,7 @@ class WireGuard(CheckUpdate):
     def do_check(self):
         base_url = "https://git.zx2c4.com/wireguard-linux-compat"
         fetch_url = "https://build.wireguard.com/distros.txt"
-        fetch_text = self.request_url(fetch_url)
+        fetch_text = self.request_url_text(fetch_url)
         for line in fetch_text.splitlines():
             line = line.strip()
             if not line:
@@ -154,14 +154,15 @@ class BeyondCompare4(CheckUpdate):
     BASE_URL = "https://www.scootersoftware.com"
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url("%s/download.php?zz=dl4" % self.BASE_URL))
-        p_obj = bs_obj.select_one('form[name="prog-form"] > p')
+        fetch_url = "%s/download" % self.BASE_URL
+        bs_obj = self.get_bs(self.request_url_text(fetch_url))
+        p_obj = bs_obj.select_one('#content > h2')
         self.update_info(
             "LATEST_VERSION",
-            re.search(r'(\d+\.\d+\.\d+, build \d+),', p_obj.get_text().replace('\xa0', '')).group(1)
+            re.search(r'(\d+\.\d+\.\d+,\s*build\s*\d+),', re.sub(r'\s+', ' ', p_obj.get_text())).group(1)
         )
-        self.update_info("DOWNLOAD_LINK", "%s/download.php" % self.BASE_URL)
-        self.update_info("BUILD_CHANGELOG", "%s/download.php?zz=v4changelog" % self.BASE_URL)
+        self.update_info("DOWNLOAD_LINK", fetch_url)
+        self.update_info("BUILD_CHANGELOG", "%s/download/v4changelog" % self.BASE_URL)
 
 class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
     fullname = "Raspberry Pi4 bootloader EEPROM Stable"
@@ -174,11 +175,11 @@ class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
 
     @staticmethod
     def _get_build_date(file_name: str) -> str:
-        return re.sub(r'[^\d]', '', file_name)
+        return re.sub(r'\D', '', file_name)
 
     def do_check(self):
         files = json.loads(
-            self.request_url(
+            self.request_url_text(
                 "https://api.github.com/repos/raspberrypi/rpi-eeprom/contents/%s" % self.file_path,
                 params={"ref": "master"},
             )
@@ -188,7 +189,7 @@ class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
         latest_file = files[-1]
         self.update_info("LATEST_VERSION", latest_file["name"])
         self.update_info("DOWNLOAD_LINK", latest_file["download_url"])
-        self.update_info("FILE_SIZE", "%0.1f KB" % (int(latest_file["size"]) / 1024))
+        self.update_info("FILE_SIZE", self.get_human_readable_file_size(int(latest_file["size"])))
         self.update_info("BUILD_DATE", self._get_build_date(latest_file["name"]))
         self.update_info(
             "BUILD_CHANGELOG",
@@ -198,6 +199,7 @@ class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
 class RaspberryPiEepromBeta(RaspberryPiEepromStable):
     fullname = "Raspberry Pi4 bootloader EEPROM Beta"
     file_path = "firmware/beta"
+    _skip = True
 
 class RaspberryPiOS64(CheckUpdate):
     fullname = "Raspberry Pi OS (64-bit)"
@@ -205,12 +207,7 @@ class RaspberryPiOS64(CheckUpdate):
 
     def do_check(self):
         url = "https://downloads.raspberrypi.org/os_list_imagingutility_v3.json"
-        if "os_list_imagingutility_v4.json" in self.request_url("https://downloads.raspberrypi.org"):
-            print_and_log(
-                "%s: There is a new version of the api interface. Please update the crawler." % self.name,
-                level=logging.WARNING,
-            )
-        json_dic = json.loads(self.request_url(url))
+        json_dic = json.loads(self.request_url_text(url))
         for os_ in json_dic["os_list"]:
             if os_["name"] == "Raspberry Pi OS (other)":
                 for item in os_["subitems"]:
@@ -218,7 +215,7 @@ class RaspberryPiOS64(CheckUpdate):
                         self.update_info("BUILD_DATE", item["release_date"])
                         self.update_info(
                             "FILE_SIZE",
-                            "%0.1f MB" % (int(item["image_download_size"]) / 1024 / 1024)
+                            self.get_human_readable_file_size(int(item["image_download_size"]))
                         )
                         self.update_info("DOWNLOAD_LINK", item["url"])
                         self.update_info("LATEST_VERSION", item["url"].rsplit('/', 1)[1])
@@ -240,10 +237,10 @@ class Switch520(CheckUpdate):
             return
         req_url = self.BASE_URL + "switchyouxi"
         try:
-            bs_obj = self.get_bs(self.request_url(req_url, headers={"user-agent": CHROME_UA}))
+            bs_obj = self.get_bs(self.request_url_text(req_url, headers={"user-agent": CHROME_UA}))
         except req_exceptions.RequestException:
             time.sleep(2)
-            bs_obj = self.get_bs(self.request_url(req_url, headers={"user-agent": CHROME_UA}, proxies=None))
+            bs_obj = self.get_bs(self.request_url_text(req_url, headers={"user-agent": CHROME_UA}, proxies=None))
         articles = bs_obj.select("article")
         if not articles:
             return
@@ -296,6 +293,50 @@ class Switch520(CheckUpdate):
         finally:
             self.tags = tuple()
 
+class AckAndroid12510LTS(CheckUpdate):
+    fullname = "android12-5.10-lts"
+
+    def do_check(self):
+        json_text = self.request_url_text(
+            "https://android-review.googlesource.com/changes/",
+            params={"n": 25, "q": "project:kernel/common branch:"+self.fullname},
+        )
+        if json_text.startswith(")]}'\n"):
+            json_text = json_text[5:]
+        json_data = json.loads(json_text)
+        assert isinstance(json_data, list)
+        for item in json_data:
+            if item.get("status", "").upper() != "MERGED":
+                continue
+            if item.get("subject") is not None:
+                if re_match := re.search(r"^Merge 5\.10\.(\d+) into", item.get("subject")):
+                    self.update_info("LATEST_VERSION", re_match.group(1))
+                    return
+
+    def get_print_text(self):
+        return "Google already merged `5.10.%s` into [%s](%s)" % (
+            self.info_dic["LATEST_VERSION"],
+            self.fullname,
+            "https://android-review.googlesource.com/q/project:kernel/common+branch:%s" % self.fullname,
+        )
+
+    def send_message(self):
+        _send_message(self.get_print_text(), send_to=os.getenv("TG_BOT_MASTER", ""))
+
+class XiaomiEuMultilangStable(SfCheck):
+    fullname = "Xiaomi.eu Multilang MIUI ROM stable"
+    project_name = "xiaomi-eu-multilang-miui-roms"
+    sub_path = "xiaomi.eu/MIUI-STABLE-RELEASES/MIUIv14"
+    tags = ("Marble", "XiaomiEU", "MIUI", "Stable")
+
+    @classmethod
+    def filter_rule(cls, string: str) -> bool:
+        return string.endswith(".zip") and "marble" in string.lower()
+
+class MotoWidget(PlingCheck):
+    fullname = "Moto Widget"
+    p_id = 1996274
+
 class Apktool(GithubReleases):
     fullname = "Apktool"
     repository_url = "iBotPeaches/Apktool"
@@ -320,6 +361,19 @@ class Magisk(GithubReleases):
     fullname = "Magisk Stable"
     repository_url = "topjohnwu/Magisk"
 
+class MagiskCanary(CheckUpdate):
+    fullname = "Magisk Canary"
+
+    def do_check(self):
+        json_dic = json.loads(self.request_url_text("https://github.com/topjohnwu/magisk-files/raw/master/canary.json"))
+        magisk_info = json_dic.get("magisk")
+        if not magisk_info:
+            return
+        self.update_info("LATEST_VERSION", magisk_info["versionCode"])
+        self.update_info("DOWNLOAD_LINK", "[%s](%s)" % (magisk_info["link"].rsplit('/', 1)[-1], magisk_info["link"]))
+        self.update_info("BUILD_VERSION", magisk_info["versionCode"])
+        self.update_info("BUILD_CHANGELOG", magisk_info["note"])
+
 class Jadx(GithubReleases):
     fullname = "jadx (Dex to Java decompiler)"
     repository_url = "skylot/jadx"
@@ -335,11 +389,11 @@ class ManjaroArmRpi4Images(GithubReleases):
             return r
         try:
             actions_runs = json.loads(
-                self.request_url('https://api.github.com/repos/%s/actions/runs' % self.repository_url)
+                self.request_url_text('https://api.github.com/repos/%s/actions/runs' % self.repository_url)
             )
             for wf in actions_runs["workflow_runs"]:
                 if wf["name"] == "image_build_all":
-                    jobs = json.loads(self.request_url(wf["jobs_url"]))
+                    jobs = json.loads(self.request_url_text(wf["jobs_url"]))
                     # 等待所有的编译任务完成后再推送
                     if not [job for job in jobs["jobs"] if job["status"] != "completed"]:
                         return True
@@ -359,6 +413,10 @@ class Notepad3(GithubReleases):
 class Sandboxie(GithubReleases):
     fullname = "Sandboxie (By DavidXanatos)"
     repository_url = "sandboxie-plus/Sandboxie"
+
+class Scrcpy(GithubReleases):
+    fullname = "Scrcpy (screen copy)"
+    repository_url = "Genymobile/scrcpy"
 
 class Shamiko(GithubReleases):
     fullname = "Shamiko"
@@ -381,15 +439,20 @@ CHECK_LIST = (
     RaspberryPiEepromBeta,
     RaspberryPiOS64,
     Switch520,
+    AckAndroid12510LTS,
+    XiaomiEuMultilangStable,
+    MotoWidget,
     Apktool,
     ClashForWindows,
     EhviewerOverhauled,
     Jadx,
     Magisk,
+    MagiskCanary,
     ManjaroArmRpi4Images,
     Notepad3,
     Rufus,
     Sandboxie,
+    Scrcpy,
     Shamiko,
     Ventoy,
 )

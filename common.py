@@ -2,7 +2,48 @@
 # encoding: utf-8
 
 import threading
-from typing import Union, NoReturn, Final
+from typing import Union, Final, Literal
+
+import requests
+
+from config import PROXIES, TIMEOUT
+
+
+def request_url(
+        url: str,
+        *,
+        method: Literal["get", "post"] = "get",
+        raise_for_status: bool = True,
+        **kwargs
+) -> requests.models.Response:
+    """ 对requests进行了简单的包装
+    timeout, proxies这两个参数有默认值, 也可以根据需要自定义这些参数
+    :param url: 要请求的url
+    :param method: 请求方法, 可选: "get"(默认)或"post"
+    :param raise_for_status: 为True时, 如果请求返回的状态码是4xx或5xx则抛出异常
+    :param kwargs: 其他需要传递给requests的参数
+    :return: requests.models.Response对象
+    """
+
+    session = requests.Session()
+    # 阻止requests从环境变量中读取代理设置
+    session.trust_env = False
+    if method == "get":
+        requests_func = session.get
+    elif method == "post":
+        requests_func = session.post
+    else:
+        session.close()
+        raise Exception("Unknown request method: %s" % method)
+    timeout = kwargs.pop("timeout", TIMEOUT)
+    proxies = kwargs.pop("proxies", PROXIES)
+    try:
+        req = requests_func(url, timeout=timeout, proxies=proxies, **kwargs)
+        if raise_for_status:
+            req.raise_for_status()
+        return req
+    finally:
+        session.close()
 
 class PageCache:
 
@@ -36,11 +77,11 @@ class PageCache:
         with self.threading_lock:
             return self.__page_cache.get((url, params))
 
-    def save(self, url: str, params: Union[dict, None], page_source: str) -> NoReturn:
+    def save(self, url: str, params: Union[dict, None], page_source: str):
         params = self.__params_change(params)
         with self.threading_lock:
             self.__page_cache[(url, params)] = page_source
 
-    def clear(self) -> NoReturn:
+    def clear(self):
         with self.threading_lock:
             self.__page_cache.clear()

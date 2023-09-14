@@ -5,22 +5,19 @@ import json
 import time
 import logging
 import typing
-import abc
-
 import urllib3
-from typing import Union, NoReturn, Final
+from typing import Union, Final, Optional
 from collections import OrderedDict
 from urllib.parse import unquote, urlencode
 from functools import wraps
 
-import requests
 from bs4 import BeautifulSoup
 import lxml
 from sqlalchemy.orm import exc as sqlalchemy_exc
 
-from config import ENABLE_MULTI_THREAD, PROXIES, TIMEOUT
+from config import ENABLE_MULTI_THREAD
 from database import DatabaseSession, Saved
-from page_cache import PageCache
+from common import PageCache, request_url as _request_url
 from tgbot import send_message as _send_message
 from logger import print_and_log
 
@@ -54,7 +51,7 @@ InfoDicKeys = typing.Literal[
     "FILE_MD5", "FILE_SHA1", "FILE_SHA256", "DOWNLOAD_LINK", "FILE_SIZE",
 ]
 
-class CheckUpdate(metaclass=abc.ABCMeta):
+class CheckUpdate:
     fullname: str
     enable_pagecache: bool = False
     tags: typing.Sequence[str] = tuple()
@@ -87,9 +84,9 @@ class CheckUpdate(metaclass=abc.ABCMeta):
         self.do_check = self.__hook_do_check(self.do_check)
         self.after_check = self.__hook_is_checked(self.after_check)
         self.write_to_database = self.__hook_is_checked(self.write_to_database)
-        self.is_updated = self.__hook_is_updated(self.__hook_is_checked(self.is_updated))
         self.get_print_text = self.__hook_is_checked(self.get_print_text)
         self.send_message = self.__hook_is_checked(self.send_message)
+        self.is_updated = self.__hook_is_updated(self.__hook_is_checked(self.is_updated))
 
     def __hook_do_check(self, method: typing.Callable) -> typing.Callable:
         @wraps(method)
@@ -127,14 +124,14 @@ class CheckUpdate(metaclass=abc.ABCMeta):
     def prev_saved_info(self) -> Union[Saved, None]:
         return self.__prev_saved_info
 
-    def _abort_if_missing_property(self, *props: str) -> NoReturn:
+    def _abort_if_missing_property(self, *props: str):
         if None in (getattr(self, key, None) for key in props):
             raise Exception(
                 "Subclasses inherited from the %s class must specify the '%s' property when defining!"
                 % (self.name, "' & '".join(props))
             )
 
-    def update_info(self, key: InfoDicKeys, value: Union[str, dict, list, None]) -> NoReturn:
+    def update_info(self, key: InfoDicKeys, value: Union[str, dict, list, None]):
         """ 更新info_dic字典, 在更新之前会对key和value进行检查和转换 """
         # 尽管key已经做了变量注解, 但还是要在运行时检查, 这很重要
         if key not in self.__info_dic.keys():
@@ -153,72 +150,60 @@ class CheckUpdate(metaclass=abc.ABCMeta):
         self.__info_dic[key] = value
 
     @classmethod
-    def request_url(
+    def request_url_text(
             cls,
             url: str,
+            *,
             method: typing.Literal["get", "post"] = "get",
-            encoding: str = "utf-8",
+            raise_for_status: bool = True,
+            encoding: Optional[str] = None,
             **kwargs
     ) -> str:
-
-        """ 对requests进行了简单的包装
+        """ 使用requests库请求url并返回解码后的响应text
         timeout, proxies这两个参数有默认值, 也可以根据需要自定义这些参数
+        该方法支持使用页面缓存(PageCache)
         :param url: 要请求的url
         :param method: 请求方法, 可选: "get"(默认)或"post"
-        :param encoding: 文本编码, 默认为utf-8
+        :param raise_for_status: 为True时, 如果请求返回的状态码是4xx或5xx则抛出异常
+        :param encoding: 文本编码, 默认由requests自动识别
         :param kwargs: 其他需要传递给requests的参数
-        :return: 请求结果的text(解码后)
+        :return: 响应的text(解码后)
         """
 
-        def _request_url(url_, method_, encoding_, **kwargs_):
-            params = kwargs_.get("params")
-            if cls.enable_pagecache and method_ == "get":
-                saved_page_cache = PAGE_CACHE.read(url_, params)
+        def _request_url_text():
+            params = kwargs.get("params")
+            if cls.enable_pagecache and method == "get":
+                saved_page_cache = PAGE_CACHE.read(url, params)
                 if saved_page_cache is not None:
                     return saved_page_cache
-            session = requests.Session()
-            proxies = kwargs_.pop("proxies", PROXIES)
-            if not proxies:
-                # 阻止requests从环境变量中读取代理设置
-                session.trust_env = False
-            if method_ == "get":
-                requests_func = session.get
-            elif method_ == "post":
-                requests_func = session.post
-            else:
-                session.close()
-                raise Exception("Unknown request method: %s" % method_)
-            timeout = kwargs_.pop("timeout", TIMEOUT)
-            try:
-                req = requests_func(
-                    url_, timeout=timeout, proxies=proxies, **kwargs_
-                )
-                req.raise_for_status()
-                req.encoding = encoding_
-                req_text = req.text
-                if cls.enable_pagecache:
-                    PAGE_CACHE.save(url_, params, req_text)
-                return req_text
-            finally:
-                session.close()
+            req = _request_url(url, method=method, raise_for_status=raise_for_status, **kwargs)
+            if encoding is not None:
+                req.encoding = encoding
+            req_text = req.text
+            if cls.enable_pagecache:
+                PAGE_CACHE.save(url, params, req_text)
+            return req_text
 
         # 在多线程模式下, 同时只允许一个enable_pagecache属性为True的CheckUpdate对象进行请求
         # 在其他线程上的enable_pagecache属性为True的CheckUpdate对象必须等待
         # 这样才能避免重复请求, 同时避免了PAGE_CACHE的读写冲突
         if cls.enable_pagecache and ENABLE_MULTI_THREAD:
             with PAGE_CACHE.threading_lock:
-                return _request_url(url, method, encoding, **kwargs)
-        return _request_url(url, method, encoding, **kwargs)
+                return _request_url_text()
+        return _request_url_text()
+
+    # 向后兼容
+    request_url = request_url_text
 
     @classmethod
     def get_hash_from_file(cls, url: str, **kwargs) -> str:
         """
         请求哈希校验文件的url, 返回文件中的哈希值
         :param url: 哈希校验文件的url
-        :param kwargs: 需要传递给self.request_url方法的参数
+        :param kwargs: 需要传递给self.request_url_text方法的参数
         :return: 哈希值字符串
         """
-        return cls.request_url(url, **kwargs).strip().split()[0]
+        return cls.request_url_text(url, **kwargs).strip().split()[0]
 
     @staticmethod
     def get_bs(url_text: str, **kwargs) -> BeautifulSoup:
@@ -231,8 +216,26 @@ class CheckUpdate(metaclass=abc.ABCMeta):
         features = kwargs.pop("features", "lxml")
         return BeautifulSoup(url_text, features=features, **kwargs)
 
-    @abc.abstractmethod
-    def do_check(self) -> NoReturn:
+    @staticmethod
+    def get_human_readable_file_size(file_size: int, decimal_system: bool = False, decimal_places: int = 1) -> str:
+        """
+        返回人类可读的文件大小
+        :param file_size: 文件大小(单位: bytes)
+        :param decimal_system: 为True时按十进制计算(1MB == 1000KB), 否则按二进制计算(1MB == 1024KB)(默认)
+        :param decimal_places: 保留的小数位数(默认保留1位)
+        :return: 人类可读的文件大小字符串
+        """
+        divisor = 1000 if decimal_system else 1024
+        template = "%%0.%df" % decimal_places
+        if file_size < divisor:
+            return "%s bytes" % (file_size, )
+        if file_size < (divisor * divisor):
+            return template % (file_size / divisor, ) + " KB"
+        if file_size < (divisor * divisor * divisor):
+            return template % (file_size / divisor / divisor, ) + " MB"
+        return template % (file_size / divisor / divisor / divisor, ) + " GB"
+
+    def do_check(self):
         """
         开始进行更新检查, 包括页面请求 数据清洗 info_dic更新, 都应该在此方法中完成
         :return: None
@@ -242,7 +245,7 @@ class CheckUpdate(metaclass=abc.ABCMeta):
         # 如确实需要引用参数, 可以在继承时添加新的类属性
         raise NotImplementedError
 
-    def after_check(self) -> NoReturn:
+    def after_check(self):
         """
         此方法将在确定检查对象有更新之后才会执行
         比如: 将下载哈希文件并获取哈希值的代码放在这里, 可以节省一些时间(没有更新时做这些是没有意义的)
@@ -252,7 +255,7 @@ class CheckUpdate(metaclass=abc.ABCMeta):
         # 如确实需要使用self.do_check方法中的部分变量, 可以借助self._private_dic进行传递
         pass
 
-    def write_to_database(self) -> NoReturn:
+    def write_to_database(self):
         """ 将CheckUpdate实例的info_dic数据写入数据库 """
         with DatabaseSession() as session:
             try:
@@ -317,7 +320,7 @@ class CheckUpdate(metaclass=abc.ABCMeta):
             print_str_list.append("\n%s:\n%s" % (_KEY_TO_PRINT[key], value))
         return "\n".join(print_str_list)
 
-    def send_message(self) -> NoReturn:
+    def send_message(self):
         """ 发送更新消息 """
         _send_message(self.get_print_text())
 
@@ -340,7 +343,6 @@ class CheckUpdateWithBuildDate(CheckUpdate):
     """
 
     @classmethod
-    @abc.abstractmethod
     def date_transform(cls, date_str: str) -> typing.Any:
         """
         解析时间字符串, 用于比较
@@ -367,6 +369,7 @@ class CheckUpdateWithBuildDate(CheckUpdate):
 class SfCheck(CheckUpdateWithBuildDate):
     project_name: str
     sub_path: str = ""
+    minimum_file_size_mb = 500
 
     _MONTH_TO_NUMBER: Final = {
         "Jan": "01", "Feb": "02", "Mar": "03",
@@ -395,7 +398,7 @@ class SfCheck(CheckUpdateWithBuildDate):
     def do_check(self):
         url = "https://sourceforge.net/projects/%s/rss" % self.project_name
         bs_obj = self.get_bs(
-            self.request_url(url, params={"path": "/"+self.sub_path}),
+            self.request_url_text(url, params={"path": "/"+self.sub_path}),
             features="xml",
         )
         builds = list(bs_obj.select("item"))
@@ -403,9 +406,9 @@ class SfCheck(CheckUpdateWithBuildDate):
             return
         builds.sort(key=lambda x: self.date_transform(x.pubDate.get_text()), reverse=True)
         for build in builds:
-            file_size_mb = int(build.find("media:content")["filesize"]) / 1000 / 1000
-            # 过滤小于500MB的文件
-            if file_size_mb < 500:
+            file_size = int(build.find("media:content")["filesize"])
+            # 过滤小于`minimum_file_size_mb`的文件
+            if file_size / 1000 / 1000 < self.minimum_file_size_mb:
                 continue
             file_version = build.guid.get_text().split("/")[-2]
             if self.filter_rule(file_version):
@@ -413,7 +416,7 @@ class SfCheck(CheckUpdateWithBuildDate):
                 self.update_info("DOWNLOAD_LINK", build.guid.get_text())
                 self.update_info("BUILD_DATE", build.pubDate.get_text())
                 self.update_info("FILE_MD5", build.find("media:hash", {"algo": "md5"}).get_text())
-                self.update_info("FILE_SIZE", "%0.1f MB" % file_size_mb)
+                self.update_info("FILE_SIZE", self.get_human_readable_file_size(file_size, decimal_system=True))
                 break
 
 class SfProjectCheck(SfCheck):
@@ -424,12 +427,17 @@ class SfProjectCheck(SfCheck):
         self.fullname = "New rom release by %s" % self.developer
         super().__init__()
 
-class PlingCheck(CheckUpdate):
+class PlingCheck(CheckUpdateWithBuildDate):
     p_id: int
 
     def __init__(self):
         self._abort_if_missing_property("p_id")
         super().__init__()
+
+    @classmethod
+    def date_transform(cls, date_str: str) -> str:
+        # 例: "2023-01-02 12:34:56"
+        return date_str
 
     @staticmethod
     def filter_rule(build_dic: dict) -> typing.Any:
@@ -438,7 +446,7 @@ class PlingCheck(CheckUpdate):
 
     def do_check(self):
         url = "https://www.pling.com/p/%s/loadFiles" % self.p_id
-        json_dic_files = json.loads(self.request_url(url)).get("files")
+        json_dic_files = json.loads(self.request_url_text(url)).get("files")
         if not json_dic_files:
             return
         json_dic_filtered_files = [f for f in json_dic_files if self.filter_rule(f)]
@@ -448,6 +456,7 @@ class PlingCheck(CheckUpdate):
         self._private_dic["latest_build"] = latest_build
         self.update_info("LATEST_VERSION", latest_build["name"])
         self.update_info("BUILD_DATE", latest_build["updated_timestamp"])
+        self.update_info("BUILD_VERSION", latest_build["version"] or None)
         self.update_info("FILE_MD5", latest_build["md5sum"])
         self.update_info(
             "DOWNLOAD_LINK", "https://www.pling.com/p/%s/#files-panel" % self.p_id
@@ -471,7 +480,7 @@ class PlingCheck(CheckUpdate):
         if file_size:
             self.update_info(
                 "FILE_SIZE",
-                "%0.2f MB" % (int(file_size) / 1048576,)
+                self.get_human_readable_file_size(int(file_size), decimal_places=2)
             )
         self.update_info(
             "DOWNLOAD_LINK",
@@ -497,7 +506,7 @@ class GithubReleases(CheckUpdateWithBuildDate):
 
     def do_check(self):
         url = "https://api.github.com/repos/%s/releases/latest" % self.repository_url
-        latest_json = json.loads(self.request_url(url))
+        latest_json = json.loads(self.request_url_text(url))
         if not latest_json:
             return
         if latest_json["draft"]:
@@ -512,7 +521,9 @@ class GithubReleases(CheckUpdateWithBuildDate):
             "\n".join([
                 "[%s (%s)](%s)" % (
                     # File name, File size, Download link
-                    asset["name"], "%0.1f MB" % (int(asset["size"]) / 1024 / 1024), asset["browser_download_url"]
+                    asset["name"],
+                    self.get_human_readable_file_size(int(asset["size"])),
+                    asset["browser_download_url"],
                 )
                 for asset in latest_json["assets"]
             ])

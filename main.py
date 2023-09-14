@@ -9,7 +9,7 @@ import sys
 import threading
 import logging
 import typing
-from typing import NoReturn, Optional, Final, Union, Tuple
+from typing import Optional, Final, Union, Tuple
 from concurrent.futures import ThreadPoolExecutor
 
 from requests import exceptions as req_exceptions
@@ -52,14 +52,14 @@ def get_time_str(time_num: Optional[Union[int, float]] = None, offset: int = 0) 
         time_num = time.time()
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_num+offset))
 
-def _abort(text: str) -> NoReturn:
+def _abort(text: str):
     print_and_log(str(text), level=logging.WARNING, custom_prefix="-")
     sys.exit(1)
 
-def _abort_by_user() -> NoReturn:
+def _abort_by_user():
     _abort("Abort by user")
 
-def _sleep(sleep_time: int) -> NoReturn:
+def _sleep(sleep_time: int):
     try:
         time.sleep(sleep_time)
     except KeyboardInterrupt:
@@ -77,6 +77,11 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
         cls = {cls_.__name__: cls_ for cls_ in CHECK_LIST}.get(cls_str)
         if not cls:
             raise Exception("Can not found '%s' from CHECK_LIST!" % cls_str)
+    elif isinstance(cls, type):
+        if CheckUpdate not in cls.__mro__:
+            raise ValueError("%s is not the subclass of CheckUpdate!" % cls)
+    else:
+        raise ValueError("Invalid parameter: %s!" % cls)
     if disable_pagecache:
         if cls.enable_pagecache:
             cls = type(cls.__name__, (cls, ), {"enable_pagecache": False})
@@ -169,7 +174,7 @@ def multi_thread_check(check_list: typing.Sequence[type]) -> Tuple[list, bool]:
         executor.map(_check_one, check_list)
     return check_failed_list, is_network_error
 
-def loop_check() -> NoReturn:
+def loop_check():
     write_log_info("Run database cleanup before start")
     drop_ids = database_cleanup()
     write_log_info("Abandoned items: {%s}" % ", ".join(drop_ids))
@@ -217,7 +222,7 @@ def get_saved_json() -> str:
             # ensure_ascii=False,
         )
 
-def show_saved_data() -> NoReturn:
+def show_saved_data():
     """ 打印已保存的数据 """
     with DatabaseSession() as session:
         results = session.query(Saved).with_entities(Saved.ID, Saved.FULL_NAME, Saved.LATEST_VERSION)
