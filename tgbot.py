@@ -5,8 +5,9 @@ import traceback
 import logging
 import os
 from tempfile import mkstemp
-from typing import Final
+from typing import Final, ContextManager
 from functools import wraps
+from contextlib import contextmanager
 
 import telebot
 from telebot.apihelper import requests
@@ -46,6 +47,14 @@ def _send_wrap(func):
         return False
     return _func
 
+@contextmanager
+def _mkstemp(*args, **kwargs) -> ContextManager:
+    _temp_fd, _temp_path = mkstemp(*args, **kwargs)
+    try:
+        yield _temp_fd, _temp_path
+    finally:
+        os.remove(_temp_path)
+
 @_send_wrap
 def send_message(text: str, send_to: str = TG_SENDTO, parse_mode="Markdown", **kwargs):
     BOT.send_message(send_to, text, parse_mode=parse_mode, timeout=TIMEOUT, **kwargs)
@@ -56,14 +65,11 @@ def send_photo(photo, caption: str = "", send_to: str = TG_SENDTO, parse_mode="M
         BOT.send_photo(send_to, photo, caption=caption, parse_mode=parse_mode, timeout=TIMEOUT, **kwargs)
     except telebot.apihelper.ApiTelegramException as exc:
         if isinstance(photo, str) and exc.error_code == 400:
-            temp_fd, temp_path = mkstemp()
-            try:
+            with _mkstemp() as (temp_fd, temp_path):
                 with os.fdopen(temp_fd, 'wb') as f:
                     f.write(request_url(photo).content)
                 BOT.send_photo(
                     send_to, InputFile(temp_path), caption=caption, parse_mode=parse_mode, timeout=TIMEOUT, **kwargs
                 )
-            finally:
-                os.remove(temp_path)
         else:
             raise
