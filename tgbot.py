@@ -12,6 +12,7 @@ import telebot
 from telebot.apihelper import requests
 from telebot.types import InputFile
 
+from common import request_url
 from config import TG_TOKEN, TG_SENDTO, TIMEOUT, PROXIES, ENABLE_LOGGER
 from logger import print_and_log, LOGGER
 
@@ -58,7 +59,7 @@ def send_photo(photo, caption: str = "", send_to: str = TG_SENDTO, parse_mode="M
             temp_fd, temp_path = mkstemp()
             try:
                 with os.fdopen(temp_fd, 'wb') as f:
-                    f.write(requests.get(photo, proxies=PROXIES, timeout=TIMEOUT).content)
+                    f.write(request_url(photo).content)
                 BOT.send_photo(
                     send_to, InputFile(temp_path), caption=caption, parse_mode=parse_mode, timeout=TIMEOUT, **kwargs
                 )
