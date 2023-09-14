@@ -11,14 +11,13 @@ from collections import OrderedDict
 from urllib.parse import unquote, urlencode
 from functools import wraps
 
-import requests
 from bs4 import BeautifulSoup
 import lxml
 from sqlalchemy.orm import exc as sqlalchemy_exc
 
-from config import ENABLE_MULTI_THREAD, PROXIES, TIMEOUT
+from config import ENABLE_MULTI_THREAD
 from database import DatabaseSession, Saved
-from page_cache import PageCache
+from common import PageCache, request_url as _request_url
 from tgbot import send_message as _send_message
 from logger import print_and_log
 
@@ -151,70 +150,60 @@ class CheckUpdate:
         self.__info_dic[key] = value
 
     @classmethod
-    def request_url(
+    def request_url_text(
             cls,
             url: str,
+            *,
             method: typing.Literal["get", "post"] = "get",
+            raise_for_status: bool = True,
             encoding: Optional[str] = None,
             **kwargs
     ) -> str:
-
-        """ 对requests进行了简单的包装
+        """ 使用requests库请求url并返回解码后的响应text
         timeout, proxies这两个参数有默认值, 也可以根据需要自定义这些参数
+        该方法支持使用页面缓存(PageCache)
         :param url: 要请求的url
         :param method: 请求方法, 可选: "get"(默认)或"post"
+        :param raise_for_status: 为True时, 如果请求返回的状态码是4xx或5xx则抛出异常
         :param encoding: 文本编码, 默认由requests自动识别
         :param kwargs: 其他需要传递给requests的参数
-        :return: 请求结果的text(解码后)
+        :return: 响应的text(解码后)
         """
 
-        def _request_url(url_, method_, encoding_, **kwargs_):
-            params = kwargs_.get("params")
-            if cls.enable_pagecache and method_ == "get":
-                saved_page_cache = PAGE_CACHE.read(url_, params)
+        def _request_url_text():
+            params = kwargs.get("params")
+            if cls.enable_pagecache and method == "get":
+                saved_page_cache = PAGE_CACHE.read(url, params)
                 if saved_page_cache is not None:
                     return saved_page_cache
-            session = requests.Session()
-            # 阻止requests从环境变量中读取代理设置
-            session.trust_env = False
-            if method_ == "get":
-                requests_func = session.get
-            elif method_ == "post":
-                requests_func = session.post
-            else:
-                session.close()
-                raise Exception("Unknown request method: %s" % method_)
-            timeout = kwargs_.pop("timeout", TIMEOUT)
-            proxies = kwargs_.pop("proxies", PROXIES)
-            try:
-                req = requests_func(url_, timeout=timeout, proxies=proxies, **kwargs_)
-                req.raise_for_status()
-                if encoding_ is not None:
-                    req.encoding = encoding_
-                req_text = req.text
-                if cls.enable_pagecache:
-                    PAGE_CACHE.save(url_, params, req_text)
-                return req_text
-            finally:
-                session.close()
+            req = _request_url(url, method=method, raise_for_status=raise_for_status, **kwargs)
+            if encoding is not None:
+                req.encoding = encoding
+            req_text = req.text
+            if cls.enable_pagecache:
+                PAGE_CACHE.save(url, params, req_text)
+            return req_text
 
         # 在多线程模式下, 同时只允许一个enable_pagecache属性为True的CheckUpdate对象进行请求
         # 在其他线程上的enable_pagecache属性为True的CheckUpdate对象必须等待
         # 这样才能避免重复请求, 同时避免了PAGE_CACHE的读写冲突
         if cls.enable_pagecache and ENABLE_MULTI_THREAD:
             with PAGE_CACHE.threading_lock:
-                return _request_url(url, method, encoding, **kwargs)
-        return _request_url(url, method, encoding, **kwargs)
+                return _request_url_text()
+        return _request_url_text()
+
+    # 向后兼容
+    request_url = request_url_text
 
     @classmethod
     def get_hash_from_file(cls, url: str, **kwargs) -> str:
         """
         请求哈希校验文件的url, 返回文件中的哈希值
         :param url: 哈希校验文件的url
-        :param kwargs: 需要传递给self.request_url方法的参数
+        :param kwargs: 需要传递给self.request_url_text方法的参数
         :return: 哈希值字符串
         """
-        return cls.request_url(url, **kwargs).strip().split()[0]
+        return cls.request_url_text(url, **kwargs).strip().split()[0]
 
     @staticmethod
     def get_bs(url_text: str, **kwargs) -> BeautifulSoup:
@@ -409,7 +398,7 @@ class SfCheck(CheckUpdateWithBuildDate):
     def do_check(self):
         url = "https://sourceforge.net/projects/%s/rss" % self.project_name
         bs_obj = self.get_bs(
-            self.request_url(url, params={"path": "/"+self.sub_path}),
+            self.request_url_text(url, params={"path": "/"+self.sub_path}),
             features="xml",
         )
         builds = list(bs_obj.select("item"))
@@ -457,7 +446,7 @@ class PlingCheck(CheckUpdateWithBuildDate):
 
     def do_check(self):
         url = "https://www.pling.com/p/%s/loadFiles" % self.p_id
-        json_dic_files = json.loads(self.request_url(url)).get("files")
+        json_dic_files = json.loads(self.request_url_text(url)).get("files")
         if not json_dic_files:
             return
         json_dic_filtered_files = [f for f in json_dic_files if self.filter_rule(f)]
@@ -517,7 +506,7 @@ class GithubReleases(CheckUpdateWithBuildDate):
 
     def do_check(self):
         url = "https://api.github.com/repos/%s/releases/latest" % self.repository_url
-        latest_json = json.loads(self.request_url(url))
+        latest_json = json.loads(self.request_url_text(url))
         if not latest_json:
             return
         if latest_json["draft"]:

@@ -20,7 +20,7 @@ class Linux414Y(CheckUpdate):
 
     def do_check(self):
         url = "https://www.kernel.org"
-        bs_obj = self.get_bs(self.request_url(url))
+        bs_obj = self.get_bs(self.request_url_text(url))
         for tr_obj in bs_obj.select_one("#releases").select("tr"):
             kernel_version = tr_obj.select("td")[1].get_text()
             if re.match(self.re_pattern, kernel_version):
@@ -52,7 +52,7 @@ class GoogleClangPrebuilt(CheckUpdate):
     BASE_URL = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url(self.BASE_URL + "/+log"))
+        bs_obj = self.get_bs(self.request_url_text(self.BASE_URL + "/+log"))
         commits = bs_obj.select_one(".CommitLog").select("li")
         sp_commits = {}
         for commit in commits:
@@ -81,7 +81,7 @@ class GoogleClangPrebuilt(CheckUpdate):
 
     @classmethod
     def get_detailed_version(cls, url: str) -> str:
-        bs_obj_2 = cls.get_bs(cls.request_url(url))
+        bs_obj_2 = cls.get_bs(cls.request_url_text(url))
         commit_text = bs_obj_2.find("pre").get_text().splitlines()[2]
         if commit_text[-1] == ".":
             commit_text = commit_text[:-1]
@@ -121,7 +121,7 @@ class WireGuard(CheckUpdate):
     def do_check(self):
         base_url = "https://git.zx2c4.com/wireguard-linux-compat"
         fetch_url = "https://build.wireguard.com/distros.txt"
-        fetch_text = self.request_url(fetch_url)
+        fetch_text = self.request_url_text(fetch_url)
         for line in fetch_text.splitlines():
             line = line.strip()
             if not line:
@@ -153,7 +153,7 @@ class BeyondCompare4(CheckUpdate):
 
     def do_check(self):
         fetch_url = "%s/download" % self.BASE_URL
-        bs_obj = self.get_bs(self.request_url(fetch_url))
+        bs_obj = self.get_bs(self.request_url_text(fetch_url))
         p_obj = bs_obj.select_one('#content > h2')
         self.update_info(
             "LATEST_VERSION",
@@ -177,7 +177,7 @@ class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
 
     def do_check(self):
         files = json.loads(
-            self.request_url(
+            self.request_url_text(
                 "https://api.github.com/repos/raspberrypi/rpi-eeprom/contents/%s" % self.file_path,
                 params={"ref": "master"},
             )
@@ -205,7 +205,7 @@ class RaspberryPiOS64(CheckUpdate):
 
     def do_check(self):
         url = "https://downloads.raspberrypi.org/os_list_imagingutility_v3.json"
-        json_dic = json.loads(self.request_url(url))
+        json_dic = json.loads(self.request_url_text(url))
         for os in json_dic["os_list"]:
             if os["name"] == "Raspberry Pi OS (other)":
                 for item in os["subitems"]:
@@ -229,7 +229,7 @@ class AckAndroid12510LTS(CheckUpdate):
     fullname = "android12-5.10-lts"
 
     def do_check(self):
-        json_text = self.request_url(
+        json_text = self.request_url_text(
             "https://android-review.googlesource.com/changes/",
             params={"n": 25, "q": "project:kernel/common branch:"+self.fullname},
         )
@@ -297,7 +297,7 @@ class MagiskCanary(CheckUpdate):
     fullname = "Magisk Canary"
 
     def do_check(self):
-        json_dic = json.loads(self.request_url("https://github.com/topjohnwu/magisk-files/raw/master/canary.json"))
+        json_dic = json.loads(self.request_url_text("https://github.com/topjohnwu/magisk-files/raw/master/canary.json"))
         magisk_info = json_dic.get("magisk")
         if not magisk_info:
             return
@@ -321,11 +321,11 @@ class ManjaroArmRpi4Images(GithubReleases):
             return r
         try:
             actions_runs = json.loads(
-                self.request_url('https://api.github.com/repos/%s/actions/runs' % self.repository_url)
+                self.request_url_text('https://api.github.com/repos/%s/actions/runs' % self.repository_url)
             )
             for wf in actions_runs["workflow_runs"]:
                 if wf["name"] == "image_build_all":
-                    jobs = json.loads(self.request_url(wf["jobs_url"]))
+                    jobs = json.loads(self.request_url_text(wf["jobs_url"]))
                     # 等待所有的编译任务完成后再推送
                     if not [job for job in jobs["jobs"] if job["status"] != "completed"]:
                         return True
