@@ -17,7 +17,7 @@ from requests import exceptions as req_exceptions
 from config import (
     ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM, LESS_LOG, ENABLE_LOGGER
 )
-from check_init import PAGE_CACHE, CheckUpdate, GithubReleases
+from check_init import PAGE_CACHE, CheckUpdate, CheckMultiUpdate, GithubReleases
 from check_list import CHECK_LIST
 from database import DatabaseSession, Saved
 from logger import write_log_info, write_log_warning, print_and_log, LOGGER
@@ -106,7 +106,7 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
             print("! %s check failed!" % cls_obj.fullname)
     else:
         if FORCE_UPDATE or cls_obj.is_updated():
-            if cls_obj.name in ["GoogleClangPrebuilt", "Switch520"]:
+            if isinstance(cls_obj, CheckMultiUpdate):
                 latest_version_string = "..."
             else:
                 latest_version_string = cls_obj.info_dic["LATEST_VERSION"]
