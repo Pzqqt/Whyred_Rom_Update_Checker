@@ -5,6 +5,7 @@ import json
 import time
 import re
 import logging
+import os
 
 from requests import exceptions as req_exceptions
 
@@ -225,6 +226,36 @@ class RaspberryPiOS64(CheckUpdate):
         else:
             raise Exception("Parsing failed!")
 
+class AckAndroid12510LTS(CheckUpdate):
+    fullname = "android12-5.10-lts"
+
+    def do_check(self):
+        json_text = self.request_url(
+            "https://android-review.googlesource.com/changes/",
+            params={"n": 25, "q": "project:kernel/common branch:"+self.fullname},
+        )
+        if json_text.startswith(")]}'\n"):
+            json_text = json_text[5:]
+        json_data = json.loads(json_text)
+        assert isinstance(json_data, list)
+        for item in json_data:
+            if item.get("status", "").upper() != "MERGED":
+                continue
+            if item.get("subject") is not None:
+                if re_match := re.search(r"^Merge 5\.10\.(\d+) into", item.get("subject")):
+                    self.update_info("LATEST_VERSION", re_match.group(1))
+                    return
+
+    def get_print_text(self):
+        return "Google already merged `5.10.%s` into [%s](%s)" % (
+            self.info_dic["LATEST_VERSION"],
+            self.fullname,
+            "https://android-review.googlesource.com/q/project:kernel/common+branch:%s" % self.fullname,
+        )
+
+    def send_message(self):
+        _send_message(self.get_print_text(), send_to=os.getenv("TG_BOT_MASTER", ""))
+
 class XiaomiEuMultilangStable(SfCheck):
     fullname = "Xiaomi.eu Multilang MIUI ROM stable"
     project_name = "xiaomi-eu-multilang-miui-roms"
@@ -340,6 +371,7 @@ CHECK_LIST = (
     RaspberryPiEepromStable,
     RaspberryPiEepromBeta,
     RaspberryPiOS64,
+    AckAndroid12510LTS,
     XiaomiEuMultilangStable,
     MotoWidget,
     Apktool,
