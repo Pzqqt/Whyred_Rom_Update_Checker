@@ -10,7 +10,9 @@ import datetime
 
 from requests import exceptions as req_exceptions
 
-from check_init import CheckUpdate, CheckUpdateWithBuildDate, SfCheck, PlingCheck, GithubReleases, CHROME_UA
+from check_init import (
+    CheckUpdate, CheckUpdateWithBuildDate, CheckMultiUpdate, SfCheck, PlingCheck, GithubReleases, CHROME_UA
+)
 from tgbot import send_message as _send_message, send_photo as _send_photo
 from logger import print_and_log
 
@@ -48,7 +50,7 @@ class Linux414Y(CheckUpdate):
             self.info_dic["BUILD_CHANGELOG"],
         )
 
-class GoogleClangPrebuilt(CheckUpdate):
+class GoogleClangPrebuilt(CheckMultiUpdate):
     fullname = "Google Clang Prebuilt"
     tags = ("clang",)
     BASE_URL = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
@@ -73,49 +75,25 @@ class GoogleClangPrebuilt(CheckUpdate):
                     }
         self.update_info("LATEST_VERSION", sp_commits)
 
-    def get_print_text(self):
-        raise NotImplemented
+    def send_message_single(self, key, item):
 
-    def _get_print_text(self, dic: dict) -> str:
-        return "*%s Update*\n%s\n\n[Commit](%s)\n\nDownload tar.gz:\n[%s](%s)" % (
-            self.fullname, self.get_tags_text(), dic["BUILD_CHANGELOG"], dic["BUILD_VERSION"], dic["DOWNLOAD_LINK"],
+        def _get_detailed_version(url: str) -> str:
+            bs_obj_2 = self.get_bs(self.request_url_text(url))
+            commit_text = bs_obj_2.find("pre").get_text().splitlines()[2]
+            if commit_text[-1] == ".":
+                commit_text = commit_text[:-1]
+            return commit_text
+
+        try:
+            detailed_version = _get_detailed_version(item["commit_url"])
+        except:
+            detailed_version = key
+        _send_message(
+            "*%s Update*\n%s\n\n[Commit](%s)\n\nDownload tar.gz:\n[%s](%s)" % (
+                self.fullname, self.get_tags_text(), item["commit_url"], detailed_version,
+                "%s/+archive/%s/clang-%s.tar.gz" % (self.BASE_URL, key, item["release_version"]),
+            )
         )
-
-    @classmethod
-    def get_detailed_version(cls, url: str) -> str:
-        bs_obj_2 = cls.get_bs(cls.request_url_text(url))
-        commit_text = bs_obj_2.find("pre").get_text().splitlines()[2]
-        if commit_text[-1] == ".":
-            commit_text = commit_text[:-1]
-        return commit_text
-
-    def send_message(self):
-        fetch_commits = json.loads(self.info_dic["LATEST_VERSION"])
-        if self.prev_saved_info is None:
-            saved_commits = {}
-        else:
-            try:
-                saved_commits = json.loads(self.prev_saved_info.LATEST_VERSION)
-            except json.decoder.JSONDecodeError:
-                saved_commits = {}
-            if not isinstance(saved_commits, dict):
-                saved_commits = {}
-        for key in fetch_commits.keys() - saved_commits.keys():
-            item = fetch_commits[key]
-            try:
-                detailed_version = self.get_detailed_version(item["commit_url"])
-            except:
-                detailed_version = key
-            _send_message(self._get_print_text(
-                dic={
-                    "BUILD_CHANGELOG": item["commit_url"],
-                    "BUILD_VERSION": detailed_version,
-                    "DOWNLOAD_LINK": "%s/+archive/%s/clang-%s.tar.gz" % (
-                        self.BASE_URL, key, item["release_version"],
-                    ),
-                }
-            ))
-            time.sleep(2)
 
 class WireGuard(CheckUpdate):
     fullname = "WireGuard for Linux 3.10 - 5.5"
@@ -227,6 +205,49 @@ class RaspberryPiOS64(CheckUpdate):
         else:
             raise Exception("Parsing failed!")
 
+class PhoronixLinuxKernelNews(CheckMultiUpdate):
+    fullname = "Linux Kernel News Archives"
+    BASE_URL = "https://www.phoronix.com"
+
+    def do_check(self):
+        bs_obj = self.get_bs(self.request_url_text(
+            self.BASE_URL+"/linux/Linux+Kernel", headers={"user-agent": CHROME_UA}
+        ))
+        articles = bs_obj.select("#main > article")
+        if not articles:
+            return
+        articles_info = {}
+        for article in articles:
+            article_header = article.select_one("header > a")
+            article_details_re_match = re.search(
+                r'(.*?)\s+-\s+(.*?)\s+-\s+.*', article.select_one(".details").get_text()
+            )
+            article_date = article_details_re_match.group(1)
+            article_tag = article_details_re_match.group(2)
+            articles_info[self.BASE_URL + article_header["href"]] = {
+                "title": article_header.get_text(),
+                "image_url": article.select_one(".home_icons")["src"],
+                "summary": article.select_one("p").get_text(),
+                "comments_url": self.BASE_URL + article.select_one(".comments > a")["href"],
+                "date": article_date,
+                "tag": article_tag,
+            }
+        self.update_info("LATEST_VERSION", articles_info)
+
+    def send_message_single(self, key, item):
+        _send_photo(
+            item["image_url"],
+            "\n".join([
+                "[%s](%s)" % (item["title"], key),
+                item["date"] + ' - ' + '_%s_' % item["tag"],
+                "",
+                item["summary"],
+                "",
+                "[Comments](%s)" % item["comments_url"],
+            ]),
+            send_to=os.getenv("TG_BOT_MASTER", "423567190"),
+        )
+
 class Switch520(CheckUpdate):
     fullname = "Switch520"
     BASE_URL = "https://xxxxx528.com/"
@@ -308,8 +329,8 @@ class AckAndroid12510LTS(CheckUpdate):
         for item in json_data:
             if item.get("status", "").upper() != "MERGED":
                 continue
-            if item.get("subject") is not None:
-                if re_match := re.search(r"^Merge 5\.10\.(\d+) into", item.get("subject")):
+            if title := item.get("subject"):
+                if re_match := re.search(r"^Merge 5\.10\.(\d+) into", title):
                     self.update_info("LATEST_VERSION", re_match.group(1))
                     return
 
@@ -378,6 +399,10 @@ class Jadx(GithubReleases):
     fullname = "jadx (Dex to Java decompiler)"
     repository_url = "skylot/jadx"
 
+class KernelSU(GithubReleases):
+    fullname = "KernelSU"
+    repository_url = "tiann/KernelSU"
+
 class ManjaroArmRpi4Images(GithubReleases):
     fullname = "Manjaro ARM Image for Raspberry Pi 3/3+/4/400"
     repository_url = "manjaro-arm/rpi4-images"
@@ -438,6 +463,7 @@ CHECK_LIST = (
     RaspberryPiEepromStable,
     RaspberryPiEepromBeta,
     RaspberryPiOS64,
+    PhoronixLinuxKernelNews,
     Switch520,
     AckAndroid12510LTS,
     XiaomiEuMultilangStable,
@@ -446,6 +472,7 @@ CHECK_LIST = (
     ClashForWindows,
     EhviewerOverhauled,
     Jadx,
+    KernelSU,
     Magisk,
     MagiskCanary,
     ManjaroArmRpi4Images,
