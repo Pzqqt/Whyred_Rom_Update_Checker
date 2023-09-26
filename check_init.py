@@ -366,6 +366,45 @@ class CheckUpdateWithBuildDate(CheckUpdate):
             return True
         return latest_date > saved_date
 
+class CheckMultiUpdate(CheckUpdate):
+
+    """
+    把LATEST_VERSION字段当作字典处理
+    在发送更新消息时, 将LATEST_VERSION中每个新的元素(与数据库中已保存的相比)各自作为一条更新消息发送
+    如果从此类继承, 则必须实现`send_message_single`方法
+    子类若实现了sort_func方法, 则每一条更新消息会按sort_func方法进行排序
+    """
+
+    sort_func = None
+
+    def get_print_text(self):
+        raise NotImplemented
+
+    def send_message_single(self, key, item):
+        """
+        发送一条更新消息
+        参数key和item对应LATEST_VERSION中元素的键和值
+        """
+        raise NotImplementedError
+
+    def send_message(self):
+        fetch_items = json.loads(self.info_dic["LATEST_VERSION"])
+        assert isinstance(fetch_items, dict)
+        if self.prev_saved_info is None:
+            saved_items = {}
+        else:
+            try:
+                saved_items = json.loads(self.prev_saved_info.LATEST_VERSION)
+            except json.decoder.JSONDecodeError:
+                saved_items = {}
+        new_keys = fetch_items.keys() - saved_items.keys()
+        if self.sort_func is not None and callable(self.sort_func):
+            new_keys = sorted(new_keys, key=lambda x: self.sort_func(fetch_items[x]))
+        for key in new_keys:
+            self.send_message_single(key, fetch_items[key])
+            # 休息两秒
+            time.sleep(2)
+
 class SfCheck(CheckUpdateWithBuildDate):
     project_name: str
     sub_path: str = ""
