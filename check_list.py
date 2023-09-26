@@ -11,7 +11,7 @@ from requests import exceptions as req_exceptions
 from check_init import (
     CheckUpdate, CheckUpdateWithBuildDate, CheckMultiUpdate, SfCheck, PlingCheck, GithubReleases, CHROME_UA
 )
-from tgbot import send_message as _send_message
+from tgbot import send_message as _send_message, send_photo as _send_photo
 from logger import print_and_log
 
 class Linux414Y(CheckUpdate):
@@ -203,6 +203,49 @@ class RaspberryPiOS64(CheckUpdate):
         else:
             raise Exception("Parsing failed!")
 
+class PhoronixLinuxKernelNews(CheckMultiUpdate):
+    fullname = "Linux Kernel News Archives"
+    BASE_URL = "https://www.phoronix.com"
+
+    def do_check(self):
+        bs_obj = self.get_bs(self.request_url_text(
+            self.BASE_URL+"/linux/Linux+Kernel", headers={"user-agent": CHROME_UA}
+        ))
+        articles = bs_obj.select("#main > article")
+        if not articles:
+            return
+        articles_info = {}
+        for article in articles:
+            article_header = article.select_one("header > a")
+            article_details_re_match = re.search(
+                r'(.*?)\s+-\s+(.*?)\s+-\s+.*', article.select_one(".details").get_text()
+            )
+            article_date = article_details_re_match.group(1)
+            article_tag = article_details_re_match.group(2)
+            articles_info[self.BASE_URL + article_header["href"]] = {
+                "title": article_header.get_text(),
+                "image_url": article.select_one(".home_icons")["src"],
+                "summary": article.select_one("p").get_text(),
+                "comments_url": self.BASE_URL + article.select_one(".comments > a")["href"],
+                "date": article_date,
+                "tag": article_tag,
+            }
+        self.update_info("LATEST_VERSION", articles_info)
+
+    def send_message_single(self, key, item):
+        _send_photo(
+            item["image_url"],
+            "\n".join([
+                "[%s](%s)" % (item["title"], key),
+                item["date"] + ' - ' + '_%s_' % item["tag"],
+                "",
+                item["summary"],
+                "",
+                "[Comments](%s)" % item["comments_url"],
+            ]),
+            send_to=os.getenv("TG_BOT_MASTER", ""),
+        )
+
 class AckAndroid12510LTS(CheckUpdate):
     fullname = "android12-5.10-lts"
 
@@ -288,6 +331,10 @@ class Jadx(GithubReleases):
     fullname = "jadx (Dex to Java decompiler)"
     repository_url = "skylot/jadx"
 
+class KernelSU(GithubReleases):
+    fullname = "KernelSU"
+    repository_url = "tiann/KernelSU"
+
 class ManjaroArmRpi4Images(GithubReleases):
     fullname = "Manjaro ARM Image for Raspberry Pi 3/3+/4/400"
     repository_url = "manjaro-arm/rpi4-images"
@@ -348,6 +395,7 @@ CHECK_LIST = (
     RaspberryPiEepromStable,
     RaspberryPiEepromBeta,
     RaspberryPiOS64,
+    PhoronixLinuxKernelNews,
     AckAndroid12510LTS,
     XiaomiEuMultilangStable,
     MotoWidget,
@@ -355,6 +403,7 @@ CHECK_LIST = (
     ClashForWindows,
     EhviewerOverhauled,
     Jadx,
+    KernelSU,
     Magisk,
     MagiskCanary,
     ManjaroArmRpi4Images,
