@@ -6,6 +6,7 @@ import time
 import re
 import logging
 import os
+import datetime
 
 from requests import exceptions as req_exceptions
 
@@ -247,6 +248,58 @@ class PhoronixLinuxKernelNews(CheckMultiUpdate):
             send_to=os.getenv("TG_BOT_MASTER", ""),
         )
 
+class Switch520(CheckMultiUpdate):
+    fullname = "Switch520"
+    BASE_URL = "https://xxxxx528.com/"
+    TG_SENDTO_SP = os.getenv("TG_SENDTO_SP", "")
+
+    def do_check(self):
+        if 0 <= datetime.datetime.now().hour <= 7:
+            return
+        req_url = self.BASE_URL + "switchyouxi"
+        try:
+            bs_obj = self.get_bs(self.request_url_text(req_url, headers={"user-agent": CHROME_UA}))
+        except req_exceptions.RequestException:
+            time.sleep(2)
+            bs_obj = self.get_bs(self.request_url_text(req_url, headers={"user-agent": CHROME_UA}, proxies=None))
+        articles = bs_obj.select("article")
+        if not articles:
+            return
+        articles_info = {}
+        for article in articles:
+            a_bookmark = article.select_one('a[rel="bookmark"]')
+            articles_info[article["id"]] = {
+                "name": a_bookmark["title"],
+                "url": a_bookmark["href"],
+                "image_url": article.select_one("img")["data-src"],
+                "tags": [a.get_text().strip() for a in article.select('a[rel="category"]')],
+                "update_time": article.select_one("time")["datetime"],
+            }
+        self.update_info("LATEST_VERSION", articles_info)
+
+    @staticmethod
+    def sort_func(item):
+        return item["update_time"]
+
+    def send_message_single(self, key, item):
+        self.tags = item["tags"]
+        _send_photo(
+            item["image_url"],
+            "\n".join([
+                '<a href="%s">%s</a>' % (item["url"], item["name"]),
+                "",
+                self.get_tags_text(allow_empty=True),
+            ]),
+            send_to=self.TG_SENDTO_SP,
+            parse_mode="html",
+        )
+
+    def send_message(self):
+        try:
+            super().send_message()
+        finally:
+            self.tags = tuple()
+
 class AckAndroid12510LTS(CheckUpdate):
     fullname = "android12-5.10-lts"
 
@@ -397,6 +450,7 @@ CHECK_LIST = (
     RaspberryPiEepromBeta,
     RaspberryPiOS64,
     PhoronixLinuxKernelNews,
+    Switch520,
     AckAndroid12510LTS,
     XiaomiEuMultilangStable,
     MotoWidget,
