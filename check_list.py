@@ -261,8 +261,8 @@ class AckAndroid12510LTS(CheckUpdate):
         for item in json_data:
             if item.get("status", "").upper() != "MERGED":
                 continue
-            if item.get("subject") is not None:
-                if re_match := re.search(r"^Merge 5\.10\.(\d+) into", item.get("subject")):
+            if title := item.get("subject"):
+                if re_match := re.search(r"^Merge 5\.10\.(\d+) into", title):
                     self.update_info("LATEST_VERSION", re_match.group(1))
                     return
 
