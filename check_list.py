@@ -248,7 +248,7 @@ class PhoronixLinuxKernelNews(CheckMultiUpdate):
             send_to=os.getenv("TG_BOT_MASTER", "423567190"),
         )
 
-class Switch520(CheckUpdate):
+class Switch520(CheckMultiUpdate):
     fullname = "Switch520"
     BASE_URL = "https://xxxxx528.com/"
     TG_SENDTO_SP = os.getenv("TG_SENDTO_SP")
@@ -277,40 +277,26 @@ class Switch520(CheckUpdate):
             }
         self.update_info("LATEST_VERSION", articles_info)
 
-    def get_print_text(self):
-        raise NotImplemented
+    @staticmethod
+    def sort_func(item):
+        return item["update_time"]
+
+    def send_message_single(self, key, item):
+        self.tags = item["tags"]
+        _send_photo(
+            item["image_url"],
+            "\n".join([
+                '<a href="%s">%s</a>' % (item["url"], item["name"]),
+                "",
+                self.get_tags_text(allow_empty=True),
+            ]),
+            send_to=self.TG_SENDTO_SP,
+            parse_mode="html",
+        )
 
     def send_message(self):
-        fetch_articles_info = json.loads(self.info_dic["LATEST_VERSION"])
-        if self.prev_saved_info is None:
-            saved_articles_info = {}
-        else:
-            try:
-                saved_articles_info = json.loads(self.prev_saved_info.LATEST_VERSION)
-            except json.decoder.JSONDecodeError:
-                saved_articles_info = {}
-        new_ids = fetch_articles_info.keys() - saved_articles_info.keys()
-        sorted_new_ids = sorted(new_ids, key=lambda x: fetch_articles_info[x]["update_time"])
         try:
-            for id_ in sorted_new_ids:
-                item = fetch_articles_info[id_]
-                self.tags = item["tags"]
-                send_ret = _send_photo(
-                    item["image_url"],
-                    "\n".join([
-                        '<a href="%s">%s</a>' % (item["url"], item["name"]),
-                        "",
-                        self.get_tags_text(allow_empty=True),
-                    ]),
-                    send_to=self.TG_SENDTO_SP,
-                    parse_mode="html",
-                )
-                if not send_ret:
-                    print_and_log(
-                        "%s: id: '%s' , image_url: '%s'" % (self.name, id_, item["image_url"]),
-                        level=logging.WARNING
-                    )
-                time.sleep(2)
+            super().send_message()
         finally:
             self.tags = tuple()
 
