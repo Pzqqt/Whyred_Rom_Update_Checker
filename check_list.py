@@ -8,7 +8,9 @@ import logging
 
 from requests import exceptions as req_exceptions
 
-from check_init import CheckUpdate, CheckUpdateWithBuildDate, SfCheck, PlingCheck, GithubReleases
+from check_init import (
+    CheckUpdate, CheckUpdateWithBuildDate, CheckMultiUpdate, SfCheck, PlingCheck, GithubReleases, CHROME_UA
+)
 from tgbot import send_message as _send_message
 from logger import print_and_log
 
@@ -46,7 +48,7 @@ class Linux414Y(CheckUpdate):
             self.info_dic["BUILD_CHANGELOG"],
         )
 
-class GoogleClangPrebuilt(CheckUpdate):
+class GoogleClangPrebuilt(CheckMultiUpdate):
     fullname = "Google Clang Prebuilt"
     tags = ("clang",)
     BASE_URL = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
@@ -71,49 +73,25 @@ class GoogleClangPrebuilt(CheckUpdate):
                     }
         self.update_info("LATEST_VERSION", sp_commits)
 
-    def get_print_text(self):
-        raise NotImplemented
+    def send_message_single(self, key, item):
 
-    def _get_print_text(self, dic: dict) -> str:
-        return "*%s Update*\n%s\n\n[Commit](%s)\n\nDownload tar.gz:\n[%s](%s)" % (
-            self.fullname, self.get_tags_text(), dic["BUILD_CHANGELOG"], dic["BUILD_VERSION"], dic["DOWNLOAD_LINK"],
+        def _get_detailed_version(url: str) -> str:
+            bs_obj_2 = self.get_bs(self.request_url_text(url))
+            commit_text = bs_obj_2.find("pre").get_text().splitlines()[2]
+            if commit_text[-1] == ".":
+                commit_text = commit_text[:-1]
+            return commit_text
+
+        try:
+            detailed_version = _get_detailed_version(item["commit_url"])
+        except:
+            detailed_version = key
+        _send_message(
+            "*%s Update*\n%s\n\n[Commit](%s)\n\nDownload tar.gz:\n[%s](%s)" % (
+                self.fullname, self.get_tags_text(), item["commit_url"], detailed_version,
+                "%s/+archive/%s/clang-%s.tar.gz" % (self.BASE_URL, key, item["release_version"]),
+            )
         )
-
-    @classmethod
-    def get_detailed_version(cls, url: str) -> str:
-        bs_obj_2 = cls.get_bs(cls.request_url_text(url))
-        commit_text = bs_obj_2.find("pre").get_text().splitlines()[2]
-        if commit_text[-1] == ".":
-            commit_text = commit_text[:-1]
-        return commit_text
-
-    def send_message(self):
-        fetch_commits = json.loads(self.info_dic["LATEST_VERSION"])
-        if self.prev_saved_info is None:
-            saved_commits = {}
-        else:
-            try:
-                saved_commits = json.loads(self.prev_saved_info.LATEST_VERSION)
-            except json.decoder.JSONDecodeError:
-                saved_commits = {}
-            if not isinstance(saved_commits, dict):
-                saved_commits = {}
-        for key in fetch_commits.keys() - saved_commits.keys():
-            item = fetch_commits[key]
-            try:
-                detailed_version = self.get_detailed_version(item["commit_url"])
-            except:
-                detailed_version = key
-            _send_message(self._get_print_text(
-                dic={
-                    "BUILD_CHANGELOG": item["commit_url"],
-                    "BUILD_VERSION": detailed_version,
-                    "DOWNLOAD_LINK": "%s/+archive/%s/clang-%s.tar.gz" % (
-                        self.BASE_URL, key, item["release_version"],
-                    ),
-                }
-            ))
-            time.sleep(2)
 
 class WireGuard(CheckUpdate):
     fullname = "WireGuard for Linux 3.10 - 5.5"
