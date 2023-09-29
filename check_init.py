@@ -372,10 +372,10 @@ class CheckMultiUpdate(CheckUpdate):
     把LATEST_VERSION字段当作字典处理
     在发送更新消息时, 将LATEST_VERSION中每个新的元素(与数据库中已保存的相比)各自作为一条更新消息发送
     如果从此类继承, 则必须实现`send_message_single`方法
-    子类若实现了sort_func方法, 则每一条更新消息会按sort_func方法进行排序
+    子类若实现了messages_sort_func方法, 则每一条更新消息会按messages_sort_func方法进行排序
     """
 
-    sort_func = None
+    messages_sort_func = None
 
     def get_print_text(self):
         raise NotImplemented
@@ -398,8 +398,8 @@ class CheckMultiUpdate(CheckUpdate):
             except json.decoder.JSONDecodeError:
                 saved_items = {}
         new_keys = fetch_items.keys() - saved_items.keys()
-        if self.sort_func is not None and callable(self.sort_func):
-            new_keys = sorted(new_keys, key=lambda x: self.sort_func(fetch_items[x]))
+        if self.messages_sort_func is not None and callable(self.messages_sort_func):
+            new_keys = sorted(new_keys, key=lambda x: self.messages_sort_func(fetch_items[x]))
         for key in new_keys:
             self.send_message_single(key, fetch_items[key])
             # 休息两秒

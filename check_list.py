@@ -278,7 +278,7 @@ class Switch520(CheckMultiUpdate):
         self.update_info("LATEST_VERSION", articles_info)
 
     @staticmethod
-    def sort_func(item):
+    def messages_sort_func(item):
         return item["update_time"]
 
     def send_message_single(self, key, item):
