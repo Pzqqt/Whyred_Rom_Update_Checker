@@ -248,6 +248,58 @@ class PhoronixLinuxKernelNews(CheckMultiUpdate):
             send_to=os.getenv("TG_BOT_MASTER", ""),
         )
 
+class RaspberrypiNXEZ(CheckMultiUpdate):
+    fullname = "树莓派实验室"
+
+    def do_check(self):
+        bs_obj = self.get_bs(self.request_url_text(
+            "https://shumeipai.nxez.com/", headers={"user-agent": CHROME_UA}, proxies=None,
+        ))
+        articles = bs_obj.select("#main-content > article")
+        if not articles:
+            return
+        articles_info = {}
+        for article in articles:
+            article_title = article.select_one("h3 > a")
+            article_image_url = article.select_one("figure img")["src"]
+            if article_image_url.startswith('//'):
+                article_image_url = "https:" + article_image_url
+            article_author = article.select_one(".author > a")
+            article_summary = article.select_one(".mh-excerpt > p")
+            if (article_summary_text := article_summary.get_text().strip()).endswith('[看全文]'):
+                article_summary_text = article_summary_text.replace(
+                    '[看全文]', '[【看全文】](%s)' % article_summary.select_one("a")["href"]
+                )
+            articles_info[article_title["href"]] = {
+                "title": article_title.get_text().strip(),
+                "image_url": article_image_url,
+                "summary": article_summary_text,
+                "date": article.select_one('.mh-meta-date').get_text(),
+                "author_name": article_author.get_text(),
+                "author_url": article_author["href"],
+            }
+        self.update_info("LATEST_VERSION", articles_info)
+
+    @staticmethod
+    def messages_sort_func(item):
+        return item["date"]
+
+    def send_message_single(self, key, item):
+        _send_photo(
+            item["image_url"],
+            "\n".join([
+                "[%s](%s)" % (item["title"], key),
+                item["date"],
+                "By [%s](%s)" % (item["author_name"], item["author_url"]),
+                '#' + self.fullname,
+                "",
+                item["summary"],
+                "",
+                "[评论](%s)" % (key + "#mh-comments"),
+            ]),
+            send_to=os.getenv("TG_BOT_MASTER", ""),
+        )
+
 class Switch520(CheckMultiUpdate):
     fullname = "Switch520"
     BASE_URL = "https://xxxxx528.com/"
@@ -450,6 +502,7 @@ CHECK_LIST = (
     RaspberryPiEepromBeta,
     RaspberryPiOS64,
     PhoronixLinuxKernelNews,
+    RaspberrypiNXEZ,
     Switch520,
     AckAndroid12510LTS,
     XiaomiEuMultilangStable,
