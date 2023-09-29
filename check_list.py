@@ -145,7 +145,7 @@ class BeyondCompare4(CheckUpdate):
 class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
     fullname = "Raspberry Pi4 bootloader EEPROM Stable"
     tags = ("RaspberryPi", "eeprom")
-    file_path = "firmware/stable"
+    file_path = "firmware-2711/latest"
 
     @classmethod
     def date_transform(cls, date_str: str) -> int:
@@ -176,7 +176,7 @@ class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
 
 class RaspberryPiEepromBeta(RaspberryPiEepromStable):
     fullname = "Raspberry Pi4 bootloader EEPROM Beta"
-    file_path = "firmware/beta"
+    file_path = "firmware-2711/beta"
     _skip = True
 
 class RaspberryPiOS64(CheckUpdate):
