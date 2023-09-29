@@ -379,9 +379,6 @@ class AckAndroid12510LTS(CheckUpdate):
             "https://android-review.googlesource.com/q/project:kernel/common+branch:%s" % self.fullname,
         )
 
-    def send_message(self):
-        _send_message(self.get_print_text(), send_to=os.getenv("TG_BOT_MASTER", ""))
-
 class XiaomiEuMultilangStable(SfCheck):
     fullname = "Xiaomi.eu Multilang MIUI ROM stable"
     project_name = "xiaomi-eu-multilang-miui-roms"
