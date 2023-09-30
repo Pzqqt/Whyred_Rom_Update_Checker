@@ -17,5 +17,8 @@ A simple tool to check whyred's Rom update.
 - pyTelegramBotAPI
 - lxml
 
+## Document
+- [Here (Simplified Chinese only)](https://github.com/Pzqqt/Whyred_Rom_Update_Checker/blob/master/document.md)
+
 ## License
 - [MIT](https://github.com/Pzqqt/Whyred_Rom_Update_Checker/blob/master/LICENSE)
