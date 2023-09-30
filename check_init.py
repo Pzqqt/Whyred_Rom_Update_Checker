@@ -432,7 +432,7 @@ class SfCheck(CheckUpdateWithBuildDate):
     @classmethod
     def filter_rule(cls, string: str) -> bool:
         """ 文件名过滤规则 """
-        return string.endswith(".zip") and "whyred" in string.lower()
+        return True
 
     def do_check(self):
         url = "https://sourceforge.net/projects/%s/rss" % self.project_name
