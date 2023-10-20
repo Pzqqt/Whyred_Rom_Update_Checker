@@ -442,6 +442,11 @@ class KernelSU(GithubReleases):
         super().do_check()
         self.update_info("DOWNLOAD_LINK", "[There are too many, see here](%s)" % self.info_dic["LATEST_VERSION"])
 
+class LineageOS4rpi4(GithubReleases):
+    fullname = "LineageOS for Raspberry Pi 4"
+    repository_url = "lineage-rpi/OTA"
+    tags = ("RaspberryPi", "LineageOS")
+
 class ManjaroArmRpi4Images(GithubReleases):
     fullname = "Manjaro ARM Image for Raspberry Pi 3/3+/4/400"
     repository_url = "manjaro-arm/rpi4-images"
@@ -513,6 +518,7 @@ CHECK_LIST = (
     EhviewerOverhauled,
     Jadx,
     KernelSU,
+    LineageOS4rpi4,
     Magisk,
     MagiskCanary,
     ManjaroArmRpi4Images,
