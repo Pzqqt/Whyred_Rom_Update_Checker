@@ -438,6 +438,10 @@ class KernelSU(GithubReleases):
     fullname = "KernelSU"
     repository_url = "tiann/KernelSU"
 
+    def do_check(self):
+        super().do_check()
+        self.update_info("DOWNLOAD_LINK", "[There are too many, see here](%s)" % self.info_dic["LATEST_VERSION"])
+
 class ManjaroArmRpi4Images(GithubReleases):
     fullname = "Manjaro ARM Image for Raspberry Pi 3/3+/4/400"
     repository_url = "manjaro-arm/rpi4-images"
