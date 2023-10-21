@@ -186,22 +186,20 @@ class RaspberryPiOS64(CheckUpdate):
     def do_check(self):
         url = "https://downloads.raspberrypi.org/os_list_imagingutility_v3.json"
         json_dic = json.loads(self.request_url_text(url))
-        for os_ in json_dic["os_list"]:
-            if os_["name"] == "Raspberry Pi OS (other)":
-                for item in os_["subitems"]:
-                    if item["name"] == "Raspberry Pi OS (64-bit)":
-                        self.update_info("BUILD_DATE", item["release_date"])
-                        self.update_info(
-                            "FILE_SIZE",
-                            self.get_human_readable_file_size(int(item["image_download_size"]))
-                        )
-                        self.update_info("DOWNLOAD_LINK", item["url"])
-                        self.update_info("LATEST_VERSION", item["url"].rsplit('/', 1)[1])
-                        self.update_info(
-                            "BUILD_CHANGELOG",
-                            "https://downloads.raspberrypi.org/raspios_arm64/release_notes.txt"
-                        )
-                        return
+        for item in json_dic["os_list"]:
+            if item["name"] == "Raspberry Pi OS (64-bit)":
+                self.update_info("BUILD_DATE", item["release_date"])
+                self.update_info(
+                    "FILE_SIZE",
+                    self.get_human_readable_file_size(int(item["image_download_size"]))
+                )
+                self.update_info("DOWNLOAD_LINK", item["url"])
+                self.update_info("LATEST_VERSION", item["url"].rsplit('/', 1)[1])
+                self.update_info(
+                    "BUILD_CHANGELOG",
+                    "https://downloads.raspberrypi.org/raspios_arm64/release_notes.txt"
+                )
+                return
         else:
             raise Exception("Parsing failed!")
 
