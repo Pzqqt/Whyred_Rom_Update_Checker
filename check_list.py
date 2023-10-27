@@ -350,7 +350,7 @@ class Switch520(CheckMultiUpdate):
         finally:
             self.tags = tuple()
 
-class AckAndroid12510LTS(CheckUpdate):
+class AckAndroid12510LTS(CheckUpdateWithBuildDate):
     fullname = "android12-5.10-lts"
 
     def do_check(self):
@@ -368,7 +368,12 @@ class AckAndroid12510LTS(CheckUpdate):
             if title := item.get("subject"):
                 if re_match := re.search(r"^Merge 5\.10\.(\d+) into", title):
                     self.update_info("LATEST_VERSION", re_match.group(1))
+                    self.update_info("BUILD_DATE", item.get("updated", ""))
                     return
+
+    @classmethod
+    def date_transform(cls, date_str):
+        return date_str
 
     def get_print_text(self):
         return "Google already merged `5.10.%s` into [%s](%s)" % (
@@ -445,6 +450,10 @@ class LineageOS4rpi4(GithubReleases):
     repository_url = "lineage-rpi/OTA"
     tags = ("RaspberryPi", "LineageOS")
 
+class LSPosed(GithubReleases):
+    fullname = "LSPosed"
+    repository_url = "LSPosed/LSPosed"
+
 class ManjaroArmRpi4Images(GithubReleases):
     fullname = "Manjaro ARM Image for Raspberry Pi 3/3+/4/400"
     repository_url = "manjaro-arm/rpi4-images"
@@ -517,6 +526,7 @@ CHECK_LIST = (
     Jadx,
     KernelSU,
     LineageOS4rpi4,
+    LSPosed,
     Magisk,
     MagiskCanary,
     ManjaroArmRpi4Images,
