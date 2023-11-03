@@ -224,9 +224,10 @@ def get_saved_json() -> str:
 
 def show_saved_data():
     """ 打印已保存的数据 """
+    ignore_ids = {k for k, v in {cls_.__name__: cls_ for cls_ in CHECK_LIST}.items() if CheckMultiUpdate in v.__mro__}
     with DatabaseSession() as session:
         results = session.query(Saved).with_entities(Saved.ID, Saved.FULL_NAME, Saved.LATEST_VERSION)
-        kv_dic = {k: (v1, v2) for k, v1, v2 in results if k not in ["GoogleClangPrebuilt", "Switch520"]}
+        kv_dic = {k: (v1, v2) for k, v1, v2 in results if k not in ignore_ids}
     try:
         # 可以的话, 使用rich库
         import rich

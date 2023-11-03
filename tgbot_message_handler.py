@@ -10,6 +10,7 @@ from sqlalchemy.orm import exc as sqlalchemy_exc
 from tgbot import BOT
 from config import ENABLE_LOGGER
 from database import Saved
+from check_init import CheckMultiUpdate
 from check_list import CHECK_LIST
 from main import check_one, get_time_str
 from logger import LOG_FILE_PATH
@@ -105,10 +106,8 @@ def _get_latest(message):
             parse_mode="Markdown",
         )
         return
-    if (
-        saved.LATEST_VERSION is None or
-        check_item_name in ["GoogleClangPrebuilt", "Switch520", "AckAndroid12510LTS", "CheckUpdateWithBuildDate"]
-    ):
+    ignore_ids = {k for k, v in {cls_.__name__: cls_ for cls_ in CHECK_LIST}.items() if CheckMultiUpdate in v.__mro__}
+    if saved.LATEST_VERSION is None or check_item_name in ignore_ids:
         BOT.reply_to(
             message,
             "*%s*\n\n*Sorry, this item has not been saved in the database.*" % saved.FULL_NAME,
