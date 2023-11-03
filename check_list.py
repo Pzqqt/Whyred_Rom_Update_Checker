@@ -400,11 +400,6 @@ class Apktool(GithubReleases):
     fullname = "Apktool"
     repository_url = "iBotPeaches/Apktool"
 
-class ClashForWindows(GithubReleases):
-    fullname = "Clash for Windows"
-    repository_url = "Fndroid/clash_for_windows_pkg"
-    tags = ("Clash",)
-
 class EhviewerOverhauled(GithubReleases):
     fullname = "Ehviewer"
     repository_url = "Ehviewer-Overhauled/Ehviewer"
@@ -437,18 +432,51 @@ class Jadx(GithubReleases):
     fullname = "jadx (Dex to Java decompiler)"
     repository_url = "skylot/jadx"
 
+class KernelFlasher(GithubReleases):
+    fullname = "Kernel Flasher"
+    repository_url = "capntrips/KernelFlasher"
+
 class KernelSU(GithubReleases):
     fullname = "KernelSU"
     repository_url = "tiann/KernelSU"
 
     def do_check(self):
         super().do_check()
+        if not self.info_dic["LATEST_VERSION"]:
+            return
+        if response_json_dic := self._private_dic.get("response_json_dic"):
+            if assets := response_json_dic.get("assets"):
+                for asset in assets:
+                    if asset["name"].endswith(".apk"):
+                        self._private_dic["apk_info"] = {
+                            "name": asset["name"],
+                            "browser_download_url": asset["browser_download_url"],
+                            "size": self.get_human_readable_file_size(int(asset["size"])),
+                        }
+                        break
         self.update_info("DOWNLOAD_LINK", "[There are too many, see here](%s)" % self.info_dic["LATEST_VERSION"])
+
+    def get_print_text(self):
+        print_text = super().get_print_text()
+        if apk_info := self._private_dic.get("apk_info"):
+            print_text += "\n\nDownload apk:\n[%s (%s)](%s)" % (
+                apk_info["name"], apk_info["size"], apk_info["browser_download_url"],
+            )
+        return print_text
 
 class LineageOS4rpi4(GithubReleases):
     fullname = "LineageOS for Raspberry Pi 4"
     repository_url = "lineage-rpi/OTA"
     tags = ("RaspberryPi", "LineageOS")
+
+class LLVM(GithubReleases):
+    fullname = "LLVM"
+    repository_url = "llvm/llvm-project"
+    ignore_prerelease = False
+
+    def do_check(self):
+        super().do_check()
+        self.update_info("DOWNLOAD_LINK", "[There are too many, see here](%s)" % self.info_dic["LATEST_VERSION"])
 
 class LSPosed(GithubReleases):
     fullname = "LSPosed"
@@ -521,11 +549,12 @@ CHECK_LIST = (
     XiaomiEuMultilangStable,
     MotoWidget,
     Apktool,
-    ClashForWindows,
     EhviewerOverhauled,
     Jadx,
+    KernelFlasher,
     KernelSU,
     LineageOS4rpi4,
+    LLVM,
     LSPosed,
     Magisk,
     MagiskCanary,
