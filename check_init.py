@@ -548,6 +548,7 @@ class GithubReleases(CheckUpdateWithBuildDate):
         latest_json = json.loads(self.request_url_text(url))
         if not latest_json:
             return
+        self._private_dic["response_json_dic"] = latest_json
         if latest_json["draft"]:
             return
         if self.ignore_prerelease and latest_json["prerelease"]:
