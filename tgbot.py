@@ -4,6 +4,7 @@
 import traceback
 import logging
 import os
+import threading
 from tempfile import mkstemp
 from typing import Final, ContextManager
 from functools import wraps
@@ -20,6 +21,9 @@ from logger import print_and_log, LOGGER
 
 BOT: Final = telebot.TeleBot(TG_TOKEN)
 telebot.apihelper.proxy = PROXIES
+
+send_failed_list = list()
+send_failed_list_lock = threading.RLock()
 
 def _send_wrap(func):
     # 注意: 被`_send_wrap`装饰的函数将忽略函数原本的返回值
@@ -44,6 +48,8 @@ def _send_wrap(func):
                     print("!", warning_string)
                 return False
         print_and_log("Fuck GFW!", level=logging.WARNING)
+        with send_failed_list_lock:
+            send_failed_list.append((_send_wrap(func), (args, kwargs)))
         return False
     return _func
 
