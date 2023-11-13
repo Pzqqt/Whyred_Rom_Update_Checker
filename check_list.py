@@ -300,7 +300,7 @@ class RaspberrypiNXEZ(CheckMultiUpdate):
 
 class Switch520(CheckMultiUpdate):
     fullname = "Switch520"
-    BASE_URL = "https://xxxxx528.com/"
+    BASE_URL = "https://www.gamer520.com/"
     TG_SENDTO_SP = os.getenv("TG_SENDTO_SP", "")
 
     def do_check(self):
