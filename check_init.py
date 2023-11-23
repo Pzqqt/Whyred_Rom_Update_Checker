@@ -6,7 +6,7 @@ import time
 import logging
 import typing
 import urllib3
-from typing import Union, Final, Optional
+from typing import Union, Final, final, Optional, ClassVar
 from collections import OrderedDict
 from urllib.parse import unquote, urlencode
 from functools import wraps
@@ -53,9 +53,9 @@ InfoDicKeys = typing.Literal[
 
 class CheckUpdate:
     fullname: str
-    enable_pagecache: bool = False
+    enable_pagecache: ClassVar[bool] = False
     tags: typing.Sequence[str] = tuple()
-    _skip: bool = False
+    _skip: ClassVar[bool] = False
 
     def __init__(self):
         self._abort_if_missing_property("fullname")
@@ -131,6 +131,7 @@ class CheckUpdate:
                 % (self.name, "' & '".join(props))
             )
 
+    @final
     def update_info(self, key: InfoDicKeys, value: Union[str, dict, list, None]):
         """ 更新info_dic字典, 在更新之前会对key和value进行检查和转换 """
         # 尽管key已经做了变量注解, 但还是要在运行时检查, 这很重要
@@ -150,6 +151,7 @@ class CheckUpdate:
         self.__info_dic[key] = value
 
     @classmethod
+    @final
     def request_url_text(
             cls,
             url: str,
@@ -196,6 +198,7 @@ class CheckUpdate:
     request_url = request_url_text
 
     @classmethod
+    @final
     def get_hash_from_file(cls, url: str, **kwargs) -> str:
         """
         请求哈希校验文件的url, 返回文件中的哈希值
@@ -206,6 +209,7 @@ class CheckUpdate:
         return cls.request_url_text(url, **kwargs).strip().split()[0]
 
     @staticmethod
+    @final
     def get_bs(url_text: str, **kwargs) -> BeautifulSoup:
         """
         对BeautifulSoup函数进行了简单的包装, 默认解析器为lxml
@@ -217,6 +221,7 @@ class CheckUpdate:
         return BeautifulSoup(url_text, features=features, **kwargs)
 
     @staticmethod
+    @final
     def get_human_readable_file_size(file_size: int, decimal_system: bool = False, decimal_places: int = 1) -> str:
         """
         返回人类可读的文件大小
@@ -255,6 +260,7 @@ class CheckUpdate:
         # 如确实需要使用self.do_check方法中的部分变量, 可以借助self._private_dic进行传递
         pass
 
+    @final
     def write_to_database(self):
         """ 将CheckUpdate实例的info_dic数据写入数据库 """
         with DatabaseSession() as session:
@@ -284,6 +290,7 @@ class CheckUpdate:
             return True
         return self.__info_dic["LATEST_VERSION"] != self.__prev_saved_info.LATEST_VERSION
 
+    @final
     def get_tags_text(self, allow_empty: bool = False) -> str:
         """ 根据self.tags返回tags文本, 生成类似`#foo #bar`的格式, 以空格作为分隔符
         allow_empty为真时, 如果self.tags为空, 则返回一个空字符串
@@ -406,9 +413,9 @@ class CheckMultiUpdate(CheckUpdate):
             time.sleep(2)
 
 class SfCheck(CheckUpdateWithBuildDate):
-    project_name: str
-    sub_path: str = ""
-    minimum_file_size_mb = 500
+    project_name :ClassVar[str]
+    sub_path: ClassVar[str] = ""
+    minimum_file_size_mb: ClassVar[int] = 500
 
     _MONTH_TO_NUMBER: Final = {
         "Jan": "01", "Feb": "02", "Mar": "03",
@@ -459,7 +466,7 @@ class SfCheck(CheckUpdateWithBuildDate):
                 break
 
 class SfProjectCheck(SfCheck):
-    developer: str
+    developer: ClassVar[str]
 
     def __init__(self):
         self._abort_if_missing_property("developer")
@@ -467,7 +474,7 @@ class SfProjectCheck(SfCheck):
         super().__init__()
 
 class PlingCheck(CheckUpdateWithBuildDate):
-    p_id: int
+    p_id: ClassVar[int]
 
     def __init__(self):
         self._abort_if_missing_property("p_id")
@@ -531,8 +538,8 @@ class PlingCheck(CheckUpdateWithBuildDate):
         )
 
 class GithubReleases(CheckUpdateWithBuildDate):
-    repository_url: str
-    ignore_prerelease: bool = True
+    repository_url: ClassVar[str]
+    ignore_prerelease: ClassVar[bool] = True
 
     def __init__(self):
         self._abort_if_missing_property("repository_url")
