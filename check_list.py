@@ -236,13 +236,14 @@ class PhoronixLinuxKernelNews(CheckMultiUpdate):
         _send_photo(
             item["image_url"],
             "\n".join([
-                "[%s](%s)" % (item["title"], key),
-                item["date"] + ' - ' + '_%s_' % item["tag"],
+                '<a href="%s">%s</a>' % (key, item["title"]),
+                item["date"] + ' - ' + '<i>%s</i>' % item["tag"],
                 "",
                 item["summary"],
                 "",
-                "[Comments](%s)" % item["comments_url"],
+                '<a href="%s">Comments</a>' % item["comments_url"],
             ]),
+            parse_mode="html",
             send_to=os.getenv("TG_BOT_MASTER", ""),
         )
 
