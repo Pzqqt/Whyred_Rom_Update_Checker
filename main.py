@@ -21,7 +21,7 @@ from check_init import PAGE_CACHE, CheckUpdate, CheckMultiUpdate, GithubReleases
 from check_list import CHECK_LIST
 from database import DatabaseSession, Saved
 from logger import write_log_info, write_log_warning, print_and_log, LOGGER
-from tgbot import send_failed_list, send_failed_list_lock
+from tgbot import retry_send_messages
 
 # 为True时将强制将数据保存至数据库并发送消息
 FORCE_UPDATE = False
@@ -65,26 +65,6 @@ def _sleep(sleep_time: int):
         time.sleep(sleep_time)
     except KeyboardInterrupt:
         _abort_by_user()
-
-def retry_send_messages():
-    """ 尝试重新发送之前由于网络或代理问题没能发送成功的消息 """
-    with send_failed_list_lock:
-        _send_failed_list_copy = send_failed_list.copy()
-        send_failed_list.clear()
-    if not _send_failed_list_copy:
-        return
-    send_success_count = 0
-    for _func, _arg in _send_failed_list_copy:
-        _args, _kwargs = _arg
-        if _func(*_args, **_kwargs):
-            send_success_count += 1
-    print_and_log("retry_send_messages: %d messages were successfully resent." % send_success_count)
-    with send_failed_list_lock:
-        if send_failed_list:
-            print_and_log(
-                "retry_send_messages: But there are still %d messages that have not been successfully sent."
-                % len(send_failed_list)
-            )
 
 def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> Tuple[bool, CheckUpdate]:
     """ 对CHECK_LIST中的一个项目进程更新检查

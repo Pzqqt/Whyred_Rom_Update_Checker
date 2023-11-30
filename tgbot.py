@@ -22,8 +22,8 @@ from logger import print_and_log, LOGGER
 BOT: Final = telebot.TeleBot(TG_TOKEN)
 telebot.apihelper.proxy = PROXIES
 
-send_failed_list = list()
-send_failed_list_lock = threading.RLock()
+__send_failed_list = list()
+__send_failed_list_lock = threading.RLock()
 
 def _send_wrap(func):
     # 注意: 被`_send_wrap`装饰的函数将忽略函数原本的返回值
@@ -48,10 +48,30 @@ def _send_wrap(func):
                     print("!", warning_string)
                 return False
         print_and_log("Fuck GFW!", level=logging.WARNING)
-        with send_failed_list_lock:
-            send_failed_list.append((_send_wrap(func), (args, kwargs)))
+        with __send_failed_list_lock:
+            __send_failed_list.append((func, (args, kwargs)))
         return False
     return _func
+
+def retry_send_messages():
+    """ 尝试重新发送之前由于网络或代理问题没能发送成功的消息 """
+    with __send_failed_list_lock:
+        send_failed_list_copy = __send_failed_list.copy()
+        __send_failed_list.clear()
+    if not send_failed_list_copy:
+        return
+    send_success_count = 0
+    for _func, _arg in send_failed_list_copy:
+        _args, _kwargs = _arg
+        if _send_wrap(_func)(*_args, **_kwargs):
+            send_success_count += 1
+    print_and_log("retry_send_messages: %d messages were successfully resent." % send_success_count)
+    with __send_failed_list_lock:
+        if __send_failed_list:
+            print_and_log(
+                "retry_send_messages: But there are still %d messages that have not been successfully sent."
+                % len(__send_failed_list)
+            )
 
 @contextmanager
 def _mkstemp(*args, **kwargs) -> ContextManager:
