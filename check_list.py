@@ -479,6 +479,11 @@ class LLVM(GithubReleases):
         super().do_check()
         self.update_info("DOWNLOAD_LINK", "[There are too many, see here](%s)" % self.info_dic["LATEST_VERSION"])
 
+    def get_print_text(self):
+        print_text = super().get_print_text()
+        print_text += "\n\nSlim LLVM toolchains:\n[Here](%s)" % "https://mirrors.edge.kernel.org/pub/tools/llvm/files/"
+        return print_text
+
 class LSPosed(GithubReleases):
     fullname = "LSPosed"
     repository_url = "LSPosed/LSPosed"
