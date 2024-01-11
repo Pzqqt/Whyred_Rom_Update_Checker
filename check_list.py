@@ -16,39 +16,6 @@ from check_init import (
 from tgbot import send_message as _send_message, send_photo as _send_photo
 from logger import print_and_log
 
-class Linux414Y(CheckUpdate):
-    fullname = "Linux Kernel stable v4.14.y"
-    tags = ("Linux", "Kernel")
-    # enable_pagecache = True
-    re_pattern = r'4\.14\.\d+'
-
-    def do_check(self):
-        url = "https://www.kernel.org"
-        bs_obj = self.get_bs(self.request_url_text(url))
-        for tr_obj in bs_obj.select_one("#releases").select("tr"):
-            kernel_version = tr_obj.select("td")[1].get_text()
-            if re.match(self.re_pattern, kernel_version):
-                self.update_info("LATEST_VERSION", kernel_version)
-                self.update_info(
-                    "DOWNLOAD_LINK",
-                    "https://git.kernel.org/stable/h/v%s" % kernel_version
-                )
-                self.update_info(
-                    "BUILD_CHANGELOG",
-                    "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=v%s"
-                    % kernel_version
-                )
-                break
-        else:
-            raise Exception("Parsing failed!")
-
-    def get_print_text(self):
-        return "*Linux Kernel stable* [v%s](%s) *update*\n%s\n\n[Commits](%s)" % (
-            self.info_dic["LATEST_VERSION"],
-            self.info_dic["DOWNLOAD_LINK"],
-            self.get_tags_text(),
-            self.info_dic["BUILD_CHANGELOG"],
-        )
 
 class GoogleClangPrebuilt(CheckMultiUpdate):
     fullname = "Google Clang Prebuilt"
@@ -408,17 +375,6 @@ class Apktool(GithubReleases):
     fullname = "Apktool"
     repository_url = "iBotPeaches/Apktool"
 
-class EhviewerOverhauled(GithubReleases):
-    fullname = "Ehviewer"
-    repository_url = "Ehviewer-Overhauled/Ehviewer"
-    tags = ("Ehviewer",)
-
-    def is_updated(self):
-        r = super().is_updated()
-        if not r:
-            return r
-        return not bool(re.search(r'alpha|beta|rc', self.info_dic["BUILD_VERSION"]))
-
 class Magisk(GithubReleases):
     fullname = "Magisk Stable"
     repository_url = "topjohnwu/Magisk"
@@ -548,7 +504,6 @@ class Ventoy(GithubReleases):
     repository_url = "ventoy/Ventoy"
 
 CHECK_LIST = (
-    Linux414Y,
     GoogleClangPrebuilt,
     WireGuard,
     BeyondCompare4,
@@ -563,7 +518,6 @@ CHECK_LIST = (
     XiaomiEuModule,
     MotoWidget,
     Apktool,
-    EhviewerOverhauled,
     Jadx,
     KernelFlasher,
     KernelSU,
