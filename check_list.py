@@ -371,6 +371,40 @@ class MotoWidget(PlingCheck):
     fullname = "Moto Widget"
     p_id = 1996274
 
+class CloParrotKernel(CheckUpdate):
+    fullname = "New CodeLinaro OSS Kernel tag for Parrot"
+    project_id = 29371
+    tag_name_re_pattern = r'KERNEL\.PLATFORM\.1\.0\.r\d-\d+-kernel\.0'
+
+    def do_check(self):
+        tags = json.loads(
+            self.request_url_text("https://git.codelinaro.org/api/v4/projects/%s/repository/tags" % self.project_id)
+        )
+        for tag in tags:
+            if re.match(self.tag_name_re_pattern, tag["name"]):
+                self.update_info("LATEST_VERSION", tag["name"])
+                self._private_dic["tag"] = tag
+                return
+
+    def get_print_text(self):
+        return "\n".join([
+            "*%s found:*" % self.fullname,
+            "[{0}](https://git.codelinaro.org/clo/la/kernel/msm-5.10/-/tags/{0})".format(
+                self.info_dic["LATEST_VERSION"],
+            ),
+        ])
+
+class CloParrotVendor(CloParrotKernel):
+    fullname = "New CodeLinaro OSS Vendor tag for Parrot"
+    project_id = 13876
+    tag_name_re_pattern = r'LA\.VENDOR\.1\.0\.r\d-\d+-WAIPIO(\.QSSI\d+\.\d)?'
+
+    def get_print_text(self):
+        return "\n".join([
+            "*%s found:*" % self.fullname,
+            "`%s`" % self.info_dic["LATEST_VERSION"],
+        ])
+
 class Apktool(GithubReleases):
     fullname = "Apktool"
     repository_url = "iBotPeaches/Apktool"
@@ -517,6 +551,8 @@ CHECK_LIST = (
     XiaomiEuMultilangStable,
     XiaomiEuModule,
     MotoWidget,
+    CloParrotKernel,
+    CloParrotVendor,
     Apktool,
     Jadx,
     KernelFlasher,
