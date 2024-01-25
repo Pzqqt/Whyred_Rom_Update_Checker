@@ -109,7 +109,7 @@ class BeyondCompare4(CheckUpdate):
         self.update_info("DOWNLOAD_LINK", fetch_url)
         self.update_info("BUILD_CHANGELOG", "%s/download/v4changelog" % self.BASE_URL)
 
-class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
+class RaspberryPi4EepromStable(CheckUpdateWithBuildDate):
     fullname = "Raspberry Pi4 bootloader EEPROM Stable"
     tags = ("RaspberryPi", "eeprom")
     file_path = "firmware-2711/latest"
@@ -138,10 +138,10 @@ class RaspberryPiEepromStable(CheckUpdateWithBuildDate):
         self.update_info("BUILD_DATE", self._get_build_date(latest_file["name"]))
         self.update_info(
             "BUILD_CHANGELOG",
-            "https://github.com/raspberrypi/rpi-eeprom/blob/master/firmware/release-notes.md"
+            "https://github.com/raspberrypi/rpi-eeprom/blob/master/firmware-2711/release-notes.md"
         )
 
-class RaspberryPiEepromBeta(RaspberryPiEepromStable):
+class RaspberryPi4EepromBeta(RaspberryPi4EepromStable):
     fullname = "Raspberry Pi4 bootloader EEPROM Beta"
     file_path = "firmware-2711/beta"
     _skip = True
@@ -409,6 +409,11 @@ class Apktool(GithubReleases):
     fullname = "Apktool"
     repository_url = "iBotPeaches/Apktool"
 
+class ClashVergeRev(GithubReleases):
+    fullname = "Clash Verge Rev"
+    repository_url = "clash-verge-rev/clash-verge-rev"
+    tags = ("Clash",)
+
 class Magisk(GithubReleases):
     fullname = "Magisk Stable"
     repository_url = "topjohnwu/Magisk"
@@ -541,8 +546,8 @@ CHECK_LIST = (
     GoogleClangPrebuilt,
     WireGuard,
     BeyondCompare4,
-    RaspberryPiEepromStable,
-    RaspberryPiEepromBeta,
+    RaspberryPi4EepromStable,
+    RaspberryPi4EepromBeta,
     RaspberryPiOS64,
     PhoronixLinuxKernelNews,
     RaspberrypiNXEZ,
@@ -554,6 +559,7 @@ CHECK_LIST = (
     CloParrotKernel,
     CloParrotVendor,
     Apktool,
+    ClashVergeRev,
     Jadx,
     KernelFlasher,
     KernelSU,
