@@ -412,7 +412,12 @@ class Apktool(GithubReleases):
 class ClashVergeRev(GithubReleases):
     fullname = "Clash Verge Rev"
     repository_url = "clash-verge-rev/clash-verge-rev"
-    tags = ("Clash",)
+    tags = ("Clash", "ClashMeta")
+
+class ClashMetaAndroid(GithubReleases):
+    fullname = "Clash Meta for Android"
+    repository_url = "MetaCubeX/ClashMetaForAndroid"
+    tags = ("Clash", "ClashMeta", "Android")
 
 class Magisk(GithubReleases):
     fullname = "Magisk Stable"
@@ -560,6 +565,7 @@ CHECK_LIST = (
     CloParrotVendor,
     Apktool,
     ClashVergeRev,
+    ClashMetaAndroid,
     Jadx,
     KernelFlasher,
     KernelSU,
