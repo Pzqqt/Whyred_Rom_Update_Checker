@@ -353,8 +353,8 @@ class AckAndroid12510LTS(CheckUpdateWithBuildDate):
 class XiaomiEuMultilangStable(SfCheck):
     fullname = "Xiaomi.eu Multilang MIUI ROM stable"
     project_name = "xiaomi-eu-multilang-miui-roms"
-    sub_path = "xiaomi.eu/MIUI-STABLE-RELEASES/MIUIv14"
-    tags = ("Marble", "XiaomiEU", "MIUI", "Stable")
+    sub_path = "xiaomi.eu/HyperOS-STABLE-RELEASES/HyperOS1.0"
+    tags = ("Marble", "XiaomiEU", "HyperOS", "Stable")
 
     @classmethod
     def filter_rule(cls, string: str) -> bool:
