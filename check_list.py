@@ -351,7 +351,7 @@ class AckAndroid12510LTS(CheckUpdateWithBuildDate):
         )
 
 class XiaomiEuMultilangStable(SfCheck):
-    fullname = "Xiaomi.eu Multilang MIUI ROM stable"
+    fullname = "Xiaomi.eu Multilang HyperOS ROM stable"
     project_name = "xiaomi-eu-multilang-miui-roms"
     sub_path = "xiaomi.eu/HyperOS-STABLE-RELEASES/HyperOS1.0"
     tags = ("Marble", "XiaomiEU", "HyperOS", "Stable")
@@ -368,12 +368,13 @@ class XiaomiEuModule(SfCheck):
     tags = ("XiaomiEU",)
 
 class MotoWidget(PlingCheck):
-    fullname = "Moto Widget"
+    fullname = "Moto Widget (ported by @meoify)"
     p_id = 1996274
 
 class CloParrotKernel(CheckUpdate):
     fullname = "New CodeLinaro OSS Kernel tag for Parrot"
     project_id = 29371
+    project_url = "https://git.codelinaro.org/clo/la/kernel/msm-5.10"
     tag_name_re_pattern = r'KERNEL\.PLATFORM\.1\.0\.r\d-\d+-kernel\.0'
 
     def do_check(self):
@@ -389,21 +390,14 @@ class CloParrotKernel(CheckUpdate):
     def get_print_text(self):
         return "\n".join([
             "*%s found:*" % self.fullname,
-            "[{0}](https://git.codelinaro.org/clo/la/kernel/msm-5.10/-/tags/{0})".format(
-                self.info_dic["LATEST_VERSION"],
-            ),
+            "[{0}]({1}/-/tags/{0})".format(self.info_dic["LATEST_VERSION"], self.project_url),
         ])
 
 class CloParrotVendor(CloParrotKernel):
     fullname = "New CodeLinaro OSS Vendor tag for Parrot"
-    project_id = 13876
+    project_id = 13079
+    project_url = "https://git.codelinaro.org/clo/la/la/vendor/manifest"
     tag_name_re_pattern = r'LA\.VENDOR\.1\.0\.r\d-\d+-WAIPIO(\.QSSI\d+\.\d)?'
-
-    def get_print_text(self):
-        return "\n".join([
-            "*%s found:*" % self.fullname,
-            "`%s`" % self.info_dic["LATEST_VERSION"],
-        ])
 
 class Apktool(GithubReleases):
     fullname = "Apktool"
