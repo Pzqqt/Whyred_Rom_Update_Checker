@@ -58,6 +58,6 @@ class Saved(_Base):
         :return: Saved对象
         """
         with DatabaseSession() as session:
-            return session.query(cls).filter(cls.ID == name).one()
+            return session.query(cls).filter_by(ID=name).one()
 
 _Base.metadata.create_all(_Engine)

@@ -264,9 +264,7 @@ class CheckUpdate:
     def write_to_database(self):
         """ 将CheckUpdate实例的info_dic数据写入数据库 """
         with DatabaseSession() as session:
-            try:
-                saved_data = session.query(Saved).filter(Saved.ID == self.name).one()
-            except sqlalchemy_exc.NoResultFound:
+            if (saved_data := session.query(Saved).filter_by(ID=self.name).one_or_none()) is None:
                 new_data = Saved(
                     ID=self.name,
                     FULL_NAME=self.fullname,
@@ -479,6 +477,7 @@ class PlingCheck(CheckUpdateWithBuildDate):
     def __init__(self):
         self._abort_if_missing_property("p_id")
         super().__init__()
+        self.latest_build = {}
 
     @classmethod
     def date_transform(cls, date_str: str) -> str:
@@ -499,7 +498,7 @@ class PlingCheck(CheckUpdateWithBuildDate):
         if not json_dic_filtered_files:
             return
         latest_build = json_dic_filtered_files[-1]
-        self._private_dic["latest_build"] = latest_build
+        self.latest_build = latest_build
         self.update_info("LATEST_VERSION", latest_build["name"])
         self.update_info("BUILD_DATE", latest_build["updated_timestamp"])
         self.update_info("BUILD_VERSION", latest_build["version"] or None)
@@ -509,20 +508,19 @@ class PlingCheck(CheckUpdateWithBuildDate):
         )
 
     def after_check(self):
-        latest_build = self._private_dic["latest_build"]
-        if latest_build["tags"] is None:
+        if self.latest_build.get("tags") is None:
             real_download_link = "https://www.pling.com/p/%s/startdownload?%s" % (
                 self.p_id,
                 urlencode({
-                    "file_id": latest_build["id"],
-                    "file_name": latest_build["name"],
-                    "file_type": latest_build["type"],
-                    "file_size": latest_build["size"],
+                    "file_id": self.latest_build["id"],
+                    "file_name": self.latest_build["name"],
+                    "file_type": self.latest_build["type"],
+                    "file_size": self.latest_build["size"],
                 })
             )
         else:
-            real_download_link = unquote(latest_build["tags"]).replace("link##", "")
-        file_size = latest_build["size"]
+            real_download_link = unquote(self.latest_build["tags"]).replace("link##", "")
+        file_size = self.latest_build["size"]
         if file_size:
             self.update_info(
                 "FILE_SIZE",
@@ -544,6 +542,7 @@ class GithubReleases(CheckUpdateWithBuildDate):
     def __init__(self):
         self._abort_if_missing_property("repository_url")
         super().__init__()
+        self.response_json_dic = {}
 
     @classmethod
     def date_transform(cls, date_str: str) -> time.struct_time:
@@ -555,7 +554,7 @@ class GithubReleases(CheckUpdateWithBuildDate):
         latest_json = json.loads(self.request_url_text(url))
         if not latest_json:
             return
-        self._private_dic["response_json_dic"] = latest_json
+        self.response_json_dic = latest_json
         if latest_json["draft"]:
             return
         if self.ignore_prerelease and latest_json["prerelease"]:

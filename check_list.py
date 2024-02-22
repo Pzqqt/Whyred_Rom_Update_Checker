@@ -446,8 +446,8 @@ class KernelSU(GithubReleases):
         super().do_check()
         if not self.info_dic["LATEST_VERSION"]:
             return
-        if response_json_dic := self._private_dic.get("response_json_dic"):
-            if assets := response_json_dic.get("assets"):
+        if self.response_json_dic:
+            if assets := self.response_json_dic.get("assets"):
                 for asset in assets:
                     if asset["name"].endswith(".apk"):
                         self._private_dic["apk_info"] = {
