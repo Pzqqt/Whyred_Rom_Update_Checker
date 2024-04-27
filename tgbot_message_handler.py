@@ -106,7 +106,7 @@ def _get_latest(message):
             parse_mode="Markdown",
         )
         return
-    ignore_ids = {k for k, v in {cls_.__name__: cls_ for cls_ in CHECK_LIST}.items() if CheckMultiUpdate in v.__mro__}
+    ignore_ids = {k for k, v in {cls_.__name__: cls_ for cls_ in CHECK_LIST}.items() if issubclass(v, CheckMultiUpdate)}
     if saved.LATEST_VERSION is None or check_item_name in ignore_ids:
         BOT.reply_to(
             message,

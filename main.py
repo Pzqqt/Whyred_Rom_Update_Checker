@@ -79,7 +79,7 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
         if not cls:
             raise Exception("Can not found '%s' from CHECK_LIST!" % cls_str)
     elif isinstance(cls, type):
-        if CheckUpdate not in cls.__mro__:
+        if not issubclass(cls, CheckUpdate):
             raise ValueError("%s is not the subclass of CheckUpdate!" % cls)
     else:
         raise ValueError("Invalid parameter: %s!" % cls)
@@ -181,7 +181,7 @@ def loop_check():
     write_log_info("Abandoned items: {%s}" % ", ".join(drop_ids))
     loop_check_func = multi_thread_check if ENABLE_MULTI_THREAD else single_thread_check
     check_list = [cls for cls in CHECK_LIST if not cls._skip]
-    if len([x for x in check_list if GithubReleases in x.__mro__]) / (LOOP_CHECK_INTERVAL / (60 * 60)) >= 60:
+    if len([x for x in check_list if issubclass(x, GithubReleases)]) / (LOOP_CHECK_INTERVAL / (60 * 60)) >= 60:
         for warm_str in (
             "#" * 72,
             "Your check list contains too many items that need to request GitHub api,",
@@ -226,7 +226,7 @@ def get_saved_json() -> str:
 
 def show_saved_data():
     """ 打印已保存的数据 """
-    ignore_ids = {k for k, v in {cls_.__name__: cls_ for cls_ in CHECK_LIST}.items() if CheckMultiUpdate in v.__mro__}
+    ignore_ids = {k for k, v in {cls_.__name__: cls_ for cls_ in CHECK_LIST}.items() if issubclass(v, CheckMultiUpdate)}
     with DatabaseSession() as session:
         results = session.query(Saved).with_entities(Saved.ID, Saved.FULL_NAME, Saved.LATEST_VERSION)
         kv_dic = {k: (v1, v2) for k, v1, v2 in results if k not in ignore_ids}
