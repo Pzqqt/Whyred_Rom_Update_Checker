@@ -287,17 +287,17 @@ class Switch520(CheckMultiUpdate):
         for article in articles:
             a_bookmark = article.select_one('a[rel="bookmark"]')
             articles_info[article["id"]] = {
+                "id": int(re.sub(r'\D', '', article["id"])),
                 "name": a_bookmark["title"],
                 "url": a_bookmark["href"],
                 "image_url": article.select_one("img")["data-src"],
                 "tags": [a.get_text().strip() for a in article.select('a[rel="category"]')],
-                "update_time": article.select_one("time")["datetime"],
             }
         self.update_info("LATEST_VERSION", articles_info)
 
     @staticmethod
     def messages_sort_func(item):
-        return item["update_time"]
+        return item["id"]
 
     def send_message_single(self, key, item):
         self.tags = item["tags"]
@@ -318,7 +318,7 @@ class Switch520(CheckMultiUpdate):
         finally:
             self.tags = tuple()
 
-class AckAndroid12510LTS(CheckUpdateWithBuildDate):
+class AckAndroid12510LTS(CheckUpdate):
     fullname = "android12-5.10-lts"
 
     def do_check(self):
@@ -336,12 +336,15 @@ class AckAndroid12510LTS(CheckUpdateWithBuildDate):
             if title := item.get("subject"):
                 if re_match := re.search(r"^Merge 5\.10\.(\d+) into", title):
                     self.update_info("LATEST_VERSION", re_match.group(1))
-                    self.update_info("BUILD_DATE", item.get("updated", ""))
                     return
 
-    @classmethod
-    def date_transform(cls, date_str):
-        return date_str
+    def is_updated(self):
+        r = super().is_updated()
+        if not r:
+            return r
+        if self.prev_saved_info is None:
+            return True
+        return int(self.info_dic["LATEST_VERSION"]) > int(self.prev_saved_info.LATEST_VERSION)
 
     def get_print_text(self):
         return "Google already merged `5.10.%s` into [%s](%s)" % (
