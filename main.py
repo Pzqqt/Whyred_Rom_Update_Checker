@@ -66,6 +66,10 @@ def _sleep(sleep_time: int):
     except KeyboardInterrupt:
         _abort_by_user()
 
+if sys.platform == "linux":
+    import signal
+    signal.signal(signal.SIGTERM, lambda signum, frame: _abort("Received stop signal, aborting..."))
+
 def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> Tuple[bool, CheckUpdate]:
     """ 对CHECK_LIST中的一个项目进程更新检查
 
