@@ -6,11 +6,10 @@ import json
 import time
 import traceback
 import sys
-import threading
 import logging
 import typing
-from typing import Optional, Final, Union, Tuple
-from concurrent.futures import ThreadPoolExecutor
+from typing import Optional, Union, Tuple
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from requests import exceptions as req_exceptions
 
@@ -25,8 +24,6 @@ from tgbot import retry_send_messages
 
 # 为True时将强制将数据保存至数据库并发送消息
 FORCE_UPDATE = False
-
-_THREADING_LOCK: Final = threading.Lock()
 
 def database_cleanup() -> set[str]:
     """
@@ -158,26 +155,24 @@ def single_thread_check(check_list: typing.Sequence[type]) -> Tuple[list, bool]:
     return check_failed_list, is_network_error
 
 def multi_thread_check(check_list: typing.Sequence[type]) -> Tuple[list, bool]:
-    # 多线程模式下累计检查失败10项则判定为网络异常, 并在之后往线程池提交的任务中不再进行检查操作而是直接返回
+    # 多线程模式下累计检查失败10项则判定为网络异常, 并取消剩下所有的任务
     check_failed_list = []
     is_network_error = False
 
-    def _check_one(cls_):
-        nonlocal check_failed_list, is_network_error
-        with _THREADING_LOCK:
-            if is_network_error:
-                return
-        rc, _ = check_one(cls_)
-        time.sleep(2)
-        if not rc:
-            with _THREADING_LOCK:
-                check_failed_list.append(cls_)
+    with ThreadPoolExecutor(MAX_THREADS_NUM) as executor:
+        futures = {}
+        for cls in check_list:
+            future = executor.submit(check_one, cls)
+            futures[future] = cls
+        for future in as_completed(futures):
+            is_success, _ = future.result()
+            if not is_success:
+                check_failed_list.append(futures[future])
                 if len(check_failed_list) >= 10:
                     is_network_error = True
-
-    with ThreadPoolExecutor(MAX_THREADS_NUM) as executor:
-        executor.map(_check_one, check_list)
-    return check_failed_list, is_network_error
+                    executor.shutdown(wait=True, cancel_futures=True)
+                    break
+        return check_failed_list, is_network_error
 
 def loop_check():
     write_log_info("Run database cleanup before start")
