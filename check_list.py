@@ -523,6 +523,10 @@ class Sandboxie(GithubReleases):
     fullname = "Sandboxie (By DavidXanatos)"
     repository_url = "sandboxie-plus/Sandboxie"
 
+class SevenZip(GithubReleases):
+    fullname = "7Zip"
+    repository_url = "ip7z/7zip"
+
 class Scrcpy(GithubReleases):
     fullname = "Scrcpy (screen copy)"
     repository_url = "Genymobile/scrcpy"
@@ -570,6 +574,7 @@ CHECK_LIST = (
     Notepad3,
     Rufus,
     Sandboxie,
+    SevenZip,
     Scrcpy,
     Shamiko,
     Ventoy,
