@@ -562,18 +562,21 @@ class GithubReleases(CheckUpdateWithBuildDate):
         self.update_info("BUILD_VERSION", latest_json["name"] or latest_json["tag_name"])
         self.update_info("LATEST_VERSION", latest_json["html_url"])
         self.update_info("BUILD_DATE", latest_json["published_at"])
-        self.update_info(
-            "DOWNLOAD_LINK",
-            "\n".join([
-                "[%s (%s)](%s)" % (
-                    # File name, File size, Download link
-                    asset["name"],
-                    self.get_human_readable_file_size(int(asset["size"])),
-                    asset["browser_download_url"],
-                )
-                for asset in latest_json["assets"]
-            ])
-        )
+        if len(latest_json["assets"]) >= 10:
+            self.update_info("DOWNLOAD_LINK", "[There are too many, see here](%s)" % latest_json["html_url"])
+        else:
+            self.update_info(
+                "DOWNLOAD_LINK",
+                "\n".join([
+                    "[%s (%s)](%s)" % (
+                        # File name, File size, Download link
+                        asset["name"],
+                        self.get_human_readable_file_size(int(asset["size"])),
+                        asset["browser_download_url"],
+                    )
+                    for asset in latest_json["assets"]
+                ])
+            )
 
     def get_print_text(self):
         return "\n".join([

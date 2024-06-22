@@ -459,7 +459,6 @@ class KernelSU(GithubReleases):
                             "size": self.get_human_readable_file_size(int(asset["size"])),
                         }
                         break
-        self.update_info("DOWNLOAD_LINK", "[There are too many, see here](%s)" % self.info_dic["LATEST_VERSION"])
 
     def get_print_text(self):
         print_text = super().get_print_text()
@@ -478,10 +477,6 @@ class LLVM(GithubReleases):
     fullname = "LLVM"
     repository_url = "llvm/llvm-project"
     ignore_prerelease = False
-
-    def do_check(self):
-        super().do_check()
-        self.update_info("DOWNLOAD_LINK", "[There are too many, see here](%s)" % self.info_dic["LATEST_VERSION"])
 
     def get_print_text(self):
         print_text = super().get_print_text()
