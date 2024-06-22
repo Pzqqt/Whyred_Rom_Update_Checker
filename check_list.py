@@ -209,9 +209,10 @@ class PhoronixLinuxKernelNews(CheckMultiUpdate):
                 item["summary"],
                 "",
                 '<a href="%s">Comments</a>' % item["comments_url"],
+                "",
+                "#Phoronix #LinuxKernel",
             ]),
             parse_mode="html",
-            send_to=os.getenv("TG_BOT_MASTER", ""),
         )
 
 class RaspberrypiNXEZ(CheckMultiUpdate):
