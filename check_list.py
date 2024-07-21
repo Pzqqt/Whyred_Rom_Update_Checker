@@ -469,8 +469,8 @@ class KernelSU(GithubReleases):
             )
         return print_text
 
-class LineageOS4rpi4(GithubReleases):
-    fullname = "LineageOS for Raspberry Pi 4"
+class LineageOS4rpi(GithubReleases):
+    fullname = "LineageOS for Raspberry Pi"
     repository_url = "lineage-rpi/OTA"
     tags = ("RaspberryPi", "LineageOS")
 
@@ -566,7 +566,7 @@ CHECK_LIST = (
     Jadx,
     KernelFlasher,
     KernelSU,
-    LineageOS4rpi4,
+    LineageOS4rpi,
     LLVM,
     LSPosed,
     Magisk,
