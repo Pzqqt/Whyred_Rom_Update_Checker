@@ -94,8 +94,8 @@ class WireGuard(CheckUpdate):
             self.info_dic["DOWNLOAD_LINK"],
         )
 
-class BeyondCompare4(CheckUpdate):
-    fullname = "Beyond Compare 4"
+class BeyondCompare5(CheckUpdate):
+    fullname = "Beyond Compare 5"
     BASE_URL = "https://www.scootersoftware.com"
 
     def do_check(self):
@@ -107,7 +107,7 @@ class BeyondCompare4(CheckUpdate):
             re.search(r'(\d+\.\d+\.\d+,\s*build\s*\d+),', re.sub(r'\s+', ' ', p_obj.get_text())).group(1)
         )
         self.update_info("DOWNLOAD_LINK", fetch_url)
-        self.update_info("BUILD_CHANGELOG", "%s/download/v4changelog" % self.BASE_URL)
+        self.update_info("BUILD_CHANGELOG", "%s/download/v5changelog" % self.BASE_URL)
 
 class RaspberryPi4EepromStable(CheckUpdateWithBuildDate):
     fullname = "Raspberry Pi4 bootloader EEPROM Stable"
@@ -547,7 +547,7 @@ class Ventoy(GithubReleases):
 CHECK_LIST = (
     GoogleClangPrebuilt,
     WireGuard,
-    BeyondCompare4,
+    BeyondCompare5,
     RaspberryPi4EepromStable,
     RaspberryPi4EepromBeta,
     RaspberryPiOS64,
