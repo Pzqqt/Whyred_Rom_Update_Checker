@@ -564,7 +564,7 @@ class GithubReleases(CheckUpdateWithBuildDate):
         self.update_info("BUILD_DATE", latest_json["published_at"])
         if len(latest_json["assets"]) >= 10:
             self.update_info("DOWNLOAD_LINK", "[There are too many, see here](%s)" % latest_json["html_url"])
-        else:
+        elif latest_json["assets"]:
             self.update_info(
                 "DOWNLOAD_LINK",
                 "\n".join([
@@ -579,14 +579,18 @@ class GithubReleases(CheckUpdateWithBuildDate):
             )
 
     def get_print_text(self):
-        return "\n".join([
+        print_str_list = [
             "*%s Update*" % self.fullname,
             time.strftime("%Y-%m-%d", time.localtime(time.time())),
             self.get_tags_text(),
             "",
             "Release tag:",
             "[%s](%s)" % (self.info_dic["BUILD_VERSION"], self.info_dic["LATEST_VERSION"]),
-            "",
-            "Assets:",
-            self.info_dic["DOWNLOAD_LINK"],
-        ])
+        ]
+        if self.info_dic["DOWNLOAD_LINK"]:
+            print_str_list += [
+                "",
+                "Assets:",
+                self.info_dic["DOWNLOAD_LINK"],
+            ]
+        return '\n'.join(print_str_list)
