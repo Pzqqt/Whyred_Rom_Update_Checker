@@ -417,6 +417,10 @@ class ClashMetaAndroid(GithubReleases):
     repository_url = "MetaCubeX/ClashMetaForAndroid"
     tags = ("Clash", "ClashMeta", "Android")
 
+class Foobox(GithubReleases):
+    fullname = "Foobox"
+    repository_url = "dream7180/foobox-cn"
+
 class Magisk(GithubReleases):
     fullname = "Magisk Stable"
     repository_url = "topjohnwu/Magisk"
@@ -569,6 +573,7 @@ CHECK_LIST = (
     LineageOS4rpi,
     LLVM,
     LSPosed,
+    Foobox,
     Magisk,
     MagiskCanary,
     ManjaroArmRpi4Images,
