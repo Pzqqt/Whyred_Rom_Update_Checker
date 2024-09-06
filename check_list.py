@@ -531,6 +531,7 @@ class Sandboxie(GithubReleases):
 class SevenZip(GithubReleases):
     fullname = "7Zip"
     repository_url = "ip7z/7zip"
+    tags = ("7zip",)
 
 class Scrcpy(GithubReleases):
     fullname = "Scrcpy (screen copy)"
