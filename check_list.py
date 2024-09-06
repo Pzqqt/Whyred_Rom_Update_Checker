@@ -55,6 +55,9 @@ class GoogleClangPrebuilt(CheckMultiUpdate):
             detailed_version = _get_detailed_version(item["commit_url"])
         except:
             detailed_version = key
+        if detailed_version.startswith("Original change:"):
+            # Skip
+            return
         _send_message(
             "*%s Update*\n%s\n\n[Commit](%s)\n\nDownload tar.gz:\n[%s](%s)" % (
                 self.fullname, self.get_tags_text(), item["commit_url"], detailed_version,
