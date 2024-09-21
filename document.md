@@ -384,7 +384,7 @@ class Bar(CheckUpdate):
 
 - `project_name`：字符串类型，项目名，必须定义。
 - `sub_path`：字符串类型，子目录路径，默认为空字符串（根路径）。
-- `minimum_file_size_mb`：整形类型，过滤小于 `minimum_file_size_mb` MB的文件，默认为500。
+- `minimum_file_size_mb`：整型，过滤小于 `minimum_file_size_mb` MB的文件，默认为500。
 
 举个例子，我要跟踪marble的EvolutionX官方版Rom更新，链接为 [https://sourceforge.net/projects/evolution-x/files/marble/13/](https://sourceforge.net/projects/evolution-x/files/marble/13/)。
 
