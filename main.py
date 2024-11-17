@@ -8,22 +8,24 @@ import traceback
 import sys
 import logging
 import typing
-from typing import Optional, Union, Tuple
+from typing import Optional, Union, Tuple, Final
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from requests import exceptions as req_exceptions
 
 from config import (
-    ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM, LESS_LOG, ENABLE_LOGGER
+    ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM, LESS_LOG, ENABLE_LOGGER, PROXIES
 )
 from check_init import PAGE_CACHE, CheckUpdate, CheckMultiUpdate, GithubReleases
 from check_list import CHECK_LIST
+from common import request_url
 from database import DatabaseSession, Saved
 from logger import write_log_info, write_log_warning, print_and_log, LOGGER
 from tgbot import retry_send_messages
 
 # 为True时将强制将数据保存至数据库并发送消息
 FORCE_UPDATE = False
+PROXY_TEST_URL: Final = "https://www.google.com"
 
 def database_cleanup() -> set[str]:
     """
@@ -190,6 +192,16 @@ def loop_check():
             "#" * 72,
         ):
             print_and_log(warm_str, level=logging.WARNING)
+    if PROXIES:
+        # 检查代理是否正常
+        print_and_log("Check whether the proxy is working properly")
+        while not request_url(PROXY_TEST_URL, raise_for_status=False).ok:
+            print_and_log(
+                "The proxy does not seem to be working properly, try again in 60 seconds...",
+                level=logging.WARNING,
+            )
+            _sleep(60)
+        print_and_log("OK, the proxy works fine")
     while True:
         start_time = get_time_str()
         print(" - " + start_time)
