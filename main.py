@@ -195,12 +195,16 @@ def loop_check():
     if PROXIES:
         # 检查代理是否正常
         print_and_log("Check whether the proxy is working properly")
-        while not request_url(PROXY_TEST_URL, raise_for_status=False).ok:
-            print_and_log(
-                "The proxy does not seem to be working properly, try again in 60 seconds...",
-                level=logging.WARNING,
-            )
-            _sleep(60)
+        while True:
+            try:
+                request_url(PROXY_TEST_URL)
+                break
+            except req_exceptions.RequestException:
+                print_and_log(
+                    "The proxy does not seem to be working properly, try again in 60 seconds...",
+                    level=logging.WARNING,
+                )
+                _sleep(60)
         print_and_log("OK, the proxy works fine")
     while True:
         start_time = get_time_str()
