@@ -223,7 +223,7 @@ class RaspberrypiNXEZ(CheckMultiUpdate):
 
     def do_check(self):
         bs_obj = self.get_bs(self.request_url_text(
-            "https://shumeipai.nxez.com/", headers={"user-agent": CHROME_UA}, proxies=None, verify=False,
+            "https://shumeipai.nxez.com/", headers={"user-agent": CHROME_UA}, proxies=None,
         ))
         articles = bs_obj.select("#main-content > article")
         if not articles:
