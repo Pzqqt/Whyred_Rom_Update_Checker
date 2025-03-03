@@ -430,7 +430,7 @@ class CheckMultiUpdate(CheckUpdate):
             # 休息两秒
             time.sleep(2)
 
-class SfCheck(CheckUpdateWithBuildDate):
+class SfCheck(CheckUpdate):
     project_name :ClassVar[str]
     sub_path: ClassVar[str] = ""
     minimum_file_size_mb: ClassVar[int] = 500
@@ -491,7 +491,7 @@ class SfProjectCheck(SfCheck):
         self.fullname = "New rom release by %s" % self.developer
         super().__init__()
 
-class PlingCheck(CheckUpdateWithBuildDate):
+class PlingCheck(CheckUpdate):
     p_id: ClassVar[int]
 
     def __init__(self):
@@ -555,7 +555,7 @@ class PlingCheck(CheckUpdateWithBuildDate):
             )
         )
 
-class GithubReleases(CheckUpdateWithBuildDate):
+class GithubReleases(CheckUpdate):
     repository_url: ClassVar[str]
     ignore_prerelease: ClassVar[bool] = True
 

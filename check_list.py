@@ -11,7 +11,7 @@ import datetime
 from requests import exceptions as req_exceptions
 
 from check_init import (
-    CheckUpdate, CheckUpdateWithBuildDate, CheckMultiUpdate, SfCheck, PlingCheck, GithubReleases, CHROME_UA
+    CheckUpdate, CheckMultiUpdate, SfCheck, PlingCheck, GithubReleases, CHROME_UA
 )
 from tgbot import send_message as _send_message, send_photo as _send_photo
 from logger import print_and_log
@@ -112,7 +112,7 @@ class BeyondCompare5(CheckUpdate):
         self.update_info("DOWNLOAD_LINK", fetch_url)
         self.update_info("BUILD_CHANGELOG", "%s/download/v5changelog" % self.BASE_URL)
 
-class RaspberryPi4EepromStable(CheckUpdateWithBuildDate):
+class RaspberryPi4EepromStable(CheckUpdate):
     fullname = "Raspberry Pi4 bootloader EEPROM Stable"
     tags = ("RaspberryPi", "eeprom")
     file_path = "firmware-2711/latest"
