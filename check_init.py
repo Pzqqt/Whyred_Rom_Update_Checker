@@ -577,8 +577,12 @@ class GithubReleases(CheckUpdateWithBuildDate):
         self.response_json_dic = latest_json
         if latest_json["draft"]:
             return
-        if self.ignore_prerelease and latest_json["prerelease"]:
-            return
+        if latest_json["prerelease"]:
+            if self.ignore_prerelease:
+                return
+            self.update_info("BUILD_TYPE", "Pre-release")
+        else:
+            self.update_info("BUILD_TYPE", "Release")
         self.update_info("BUILD_VERSION", latest_json["name"] or latest_json["tag_name"])
         self.update_info("LATEST_VERSION", latest_json["html_url"])
         self.update_info("BUILD_DATE", latest_json["published_at"])
@@ -599,13 +603,16 @@ class GithubReleases(CheckUpdateWithBuildDate):
             )
 
     def get_print_text(self):
+        print_release_tag = "[%s](%s)" % (self.info_dic["BUILD_VERSION"], self.info_dic["LATEST_VERSION"])
+        if self.info_dic["BUILD_TYPE"] == "Pre-release":
+            print_release_tag += " _(Pre-release)_"
         print_str_list = [
             "*%s Update*" % self.fullname,
             time.strftime("%Y-%m-%d", time.localtime(time.time())),
             self.get_tags_text(),
             "",
             "Release tag:",
-            "[%s](%s)" % (self.info_dic["BUILD_VERSION"], self.info_dic["LATEST_VERSION"]),
+            print_release_tag,
         ]
         if self.info_dic["DOWNLOAD_LINK"]:
             print_str_list += [
