@@ -280,13 +280,17 @@ class CheckUpdate:
     def is_updated(self) -> bool:
         """
         与数据库中已存储的数据进行比对, 如果有更新, 则返回True, 否则返回False
-        一般情况下只需比对LATEST_VERSION字段, 子类在继承时可以根据需要拓展此方法
         """
         if self.__info_dic["LATEST_VERSION"] is None:
             return False
         if self.__prev_saved_info is None:
             return True
-        return self.__info_dic["LATEST_VERSION"] != self.__prev_saved_info.LATEST_VERSION
+        if self.__info_dic["LATEST_VERSION"] != self.__prev_saved_info.LATEST_VERSION:
+            return True
+        for attr in ("FILE_MD5", "FILE_SHA1", "FILE_SHA256"):
+            if self.__info_dic[attr] != getattr(self.__prev_saved_info, attr, None):
+                return True
+        return False
 
     @final
     def get_tags_text(self, allow_empty: bool = False) -> str:
