@@ -15,11 +15,11 @@ from telebot.apihelper import requests
 from telebot.types import InputFile
 
 from common import request_url
-from config import TG_TOKEN, TG_SENDTO, TIMEOUT, PROXIES, ENABLE_LOGGER
+from config import ENABLE_SENDMESSAGE, TG_TOKEN, TG_SENDTO, TIMEOUT, PROXIES, ENABLE_LOGGER
 from logger import print_and_log, LOGGER
 
 
-BOT: Final = telebot.TeleBot(TG_TOKEN)
+BOT: Final = telebot.TeleBot(TG_TOKEN, validate_token=ENABLE_SENDMESSAGE)
 telebot.apihelper.proxy = PROXIES
 
 __send_failed_list = list()
