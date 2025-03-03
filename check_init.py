@@ -6,6 +6,7 @@ import time
 import logging
 import typing
 import urllib3
+import warnings
 from typing import Union, Final, final, Optional, ClassVar
 from collections import OrderedDict
 from urllib.parse import unquote, urlencode
@@ -19,7 +20,7 @@ from config import ENABLE_MULTI_THREAD
 from database import DatabaseSession, Saved
 from common import PageCache, request_url as _request_url
 from tgbot import send_message as _send_message
-from logger import print_and_log
+from logger import print_and_log, record_exceptions
 
 
 del lxml
@@ -277,6 +278,17 @@ class CheckUpdate:
                     setattr(saved_data, key, value)
             session.commit()
 
+    @classmethod
+    def date_transform(cls, date_str: str) -> typing.Any:
+        """
+        解析BUILD_DATE字段的值, 用于比较
+        若子类重新实现了此方法, 则在执行is_updated方法时, 额外检查BUILD_DATE字段
+        如果BUILD_DATE比数据库中已存储数据的BUILD_DATE早的话则认为没有更新
+        :param date_str: 要解析的时间字符串
+        :return: 能比较大小的对象
+        """
+        return 0
+
     def is_updated(self) -> bool:
         """
         与数据库中已存储的数据进行比对, 如果有更新, 则返回True, 否则返回False
@@ -286,6 +298,17 @@ class CheckUpdate:
         if self.__prev_saved_info is None:
             return True
         if self.__info_dic["LATEST_VERSION"] != self.__prev_saved_info.LATEST_VERSION:
+            if self.__info_dic["BUILD_DATE"]:
+                try:
+                    latest_date = self.date_transform(self.info_dic["BUILD_DATE"])
+                    saved_date = self.date_transform(self.prev_saved_info.BUILD_DATE)
+                except:
+                    record_exceptions(
+                        "%s: The date_transform encountered an error while parsing the string!" % self.name
+                    )
+                    return True
+                if latest_date < saved_date:
+                    return False
             return True
         for attr in ("FILE_MD5", "FILE_SHA1", "FILE_SHA256"):
             if self.__info_dic[attr] != getattr(self.__prev_saved_info, attr, None):
@@ -349,31 +372,24 @@ class CheckUpdateWithBuildDate(CheckUpdate):
     在执行is_updated方法时, 额外检查BUILD_DATE字段
     如果BUILD_DATE比数据库中已存储数据的BUILD_DATE要早的话则认为没有更新
     如果从此类继承, 则必须实现date_transform方法
+
+    该类现已弃用, 现在请直接从CheckUpdate继承, 并实现date_transform方法即可
     """
 
-    @classmethod
-    def date_transform(cls, date_str: str) -> typing.Any:
-        """
-        解析时间字符串, 用于比较
-        :param date_str: 要解析的时间字符串
-        :return: 能比较大小的对象
-        """
-        raise NotImplementedError
+    def __new__(cls):
+        warnings.warn(
+            "%s: CheckUpdateWithBuildDate is deprecated. Please inherit from CheckUpdate" % cls.__name__,
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return super().__new__(cls)
 
-    def is_updated(self) -> bool:
-        result = super().is_updated()
-        if not result:
-            return False
-        if self.info_dic["BUILD_DATE"] is None:
-            return False
-        if self.prev_saved_info is None:
-            return True
-        latest_date = self.date_transform(str(self.info_dic["BUILD_DATE"]))
-        try:
-            saved_date = self.date_transform(self.prev_saved_info.BUILD_DATE)
-        except:
-            return True
-        return latest_date > saved_date
+    def __init_subclass__(cls):
+        warnings.warn(
+            "%s: CheckUpdateWithBuildDate is deprecated. Please inherit from CheckUpdate" % cls.__name__,
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
 class CheckMultiUpdate(CheckUpdate):
 
