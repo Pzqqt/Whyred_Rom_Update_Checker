@@ -117,6 +117,7 @@ optional arguments:
 
 - `request_url_text`：使用requests库请求url并返回解码后的响应text。timeout参数的默认值为 `config.TIMEOUT`，proxies参数的默认值为 `config.PROXIES`（当proxies参数为空时则强制禁用代理，无视系统环境变量的配置）。该方法支持使用页面缓存。
 - `get_hash_from_file`：使用requests库下载哈希校验文件，读取并返回文件中的哈希值。
+- `date_transform`：用于将 `BUILD_DATE` 字段的值转换为可比较的类型。若子类重新实现了此方法，则在执行 `is_updated` 方法时, 额外检查 `BUILD_DATE` 字段，如果 `self.info_dic["BUILD_DATE"]` 小于（早于） `self.prev_saved_info.BUILD_DATE`，则认为没有更新。
 
 ### 4. 静态方法
 
@@ -153,7 +154,9 @@ optional arguments:
 
 将 `info_dic` 字典与 `prev_saved_info` 进行比较。如果认定为有更新，则返回True，否则返回False。
 
-`CheckUpdate` 的默认行为只比对 `LATEST_VERSION` 字段，子类可以根据需要拓展此方法。
+`CheckUpdate` 首先比较 `LATEST_VERSION` 字段，其次再比较 `FILE_MD5` `FILE_SHA1` `FILE_SHA256` 字段，如果类实现了 `date_transform` 方法则还会比较 `BUILD_DATE` 字段。
+
+子类可以根据需要拓展或重新实现此方法。
 
 > 注意：此方法只实际调用一次，若重复调用则立即返回首次调用返回的结果。
 
@@ -261,6 +264,9 @@ $ python3 ./main.py -c Linux510Y
 ```
 
 ## 3. CheckUpdateWithBuildDate
+
+> `CheckUpdateWithBuildDate` 类现已弃用，请直接从 `CheckUpdate` 类继承，并实现 `date_transform` 方法即可。  
+> 从 `CheckUpdateWithBuildDate` 迁移到 `CheckUpdate` 时，之前已编写的 `date_transform` 方法可直接使用无需修改。
 
 `CheckUpdateWithBuildDate` 继承自 `CheckUpdate`，并且重写了 `is_updated` 方法，在检查 `LATEST_VERSION` 字段的同时额外检查 `BUILD_DATE` 字段。如果 `BUILD_DATE` 比数据库中已存储数据的 `BUILD_DATE` 要早的话则认为没有更新。
 
