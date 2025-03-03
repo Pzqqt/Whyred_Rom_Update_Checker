@@ -3,6 +3,7 @@
 
 import logging
 import os
+import traceback
 from typing import Union, Final
 
 from config import LOG_FILE, ENABLE_LOGGER
@@ -31,6 +32,15 @@ def write_log_info(*text: str):
 def write_log_warning(*text: str):
     """ 写入warning级日志 """
     _write_log(logging.WARNING, *text)
+
+def record_exceptions(warning_string: str):
+    """ 记录异常 """
+    if ENABLE_LOGGER:
+        LOGGER.exception(warning_string)
+        print("!", warning_string, "See exception details through log file.")
+    else:
+        print(traceback.format_exc())
+        print("!", warning_string)
 
 _PREFIX_DIC: Final = {
     logging.INFO: "-",

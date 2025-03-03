@@ -4,7 +4,6 @@
 from argparse import ArgumentParser
 import json
 import time
-import traceback
 import sys
 import logging
 import typing
@@ -14,13 +13,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from requests import exceptions as req_exceptions
 
 from config import (
-    ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM, LESS_LOG, ENABLE_LOGGER, PROXIES
+    ENABLE_SENDMESSAGE, LOOP_CHECK_INTERVAL, ENABLE_MULTI_THREAD, MAX_THREADS_NUM, LESS_LOG, PROXIES
 )
 from check_init import PAGE_CACHE, CheckUpdate, CheckMultiUpdate, GithubReleases
 from check_list import CHECK_LIST
 from common import request_url
 from database import DatabaseSession, Saved
-from logger import write_log_info, write_log_warning, print_and_log, LOGGER
+from logger import write_log_info, print_and_log, record_exceptions
 from tgbot import retry_send_messages
 
 # 为True时将强制将数据保存至数据库并发送消息
@@ -101,13 +100,7 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
     except req_exceptions.HTTPError as error:
         print_and_log("%s check failed! %s." % (cls_obj.fullname, error), level=logging.WARNING)
     except:
-        if ENABLE_LOGGER:
-            LOGGER.exception("Error while checking %s:" % cls_obj.fullname)
-            write_log_warning("%s check failed!" % cls_obj.fullname)
-            print("! %s check failed! See exception details through log file." % cls_obj.fullname)
-        else:
-            print(traceback.format_exc())
-            print("! %s check failed!" % cls_obj.fullname)
+        record_exceptions("Error while checking %s:" % cls_obj.fullname)
     else:
         if FORCE_UPDATE or cls_obj.is_updated():
             if isinstance(cls_obj, CheckMultiUpdate):
@@ -121,13 +114,7 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
             try:
                 cls_obj.after_check()
             except:
-                warning_string = "Something wrong when running after_check!"
-                if ENABLE_LOGGER:
-                    LOGGER.exception("%s: %s" % (cls_obj.fullname, warning_string))
-                    print("!", cls_obj.fullname, warning_string, "See exception details through log file.")
-                else:
-                    print(traceback.format_exc())
-                    print("!", cls_obj.fullname, warning_string)
+                record_exceptions("%s: Something wrong when running after_check!" % cls_obj.fullname)
             cls_obj.write_to_database()
             if ENABLE_SENDMESSAGE:
                 cls_obj.send_message()
