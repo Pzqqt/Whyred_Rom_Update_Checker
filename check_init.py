@@ -575,25 +575,29 @@ class GithubReleases(CheckUpdate):
 
     def do_check(self):
         url = "https://api.github.com/repos/%s/releases" % self.repository_url
-        req_params = {"per_page": 1, "page": 1}
         if self.auth_token:
             req_headers = {"Authorization": "Bearer " + self.auth_token}
         else:
             req_headers = None
-        latest_json = json.loads(self.request_url_text(url, params=req_params, headers=req_headers))
-        if not latest_json:
-            print_and_log("%s: No releases found!" % self.name, level=logging.WARNING)
-            return
-        latest_json = latest_json[0]
+        if self.ignore_prerelease:
+            latest_json = json.loads(self.request_url_text(url + "/latest", headers=req_headers))
+            if not latest_json:
+                print_and_log("%s: No releases found!" % self.name, level=logging.WARNING)
+                return
+        else:
+            releases_json = json.loads(
+                self.request_url_text(url, params={"per_page": 1, "page": 1}, headers=req_headers)
+            )
+            if not releases_json:
+                print_and_log("%s: No releases found!" % self.name, level=logging.WARNING)
+                return
+            latest_json = releases_json[0]
         self.response_json_dic = latest_json
         release_name = latest_json["name"] or latest_json["tag_name"]
         if latest_json["draft"]:
             print_and_log("%s: Abandon the draft release: %s." % (self.name, release_name), level=logging.WARNING)
             return
-        if latest_json["prerelease"]:
-            if self.ignore_prerelease:
-                print_and_log("%s: Abandon the pre-release: %s." % (self.name, release_name), level=logging.WARNING)
-                return
+        if not self.ignore_prerelease and latest_json["prerelease"]:
             self.update_info("BUILD_TYPE", "Pre-release")
         else:
             self.update_info("BUILD_TYPE", "Release")
