@@ -169,16 +169,16 @@ def loop_check():
     write_log_info("Abandoned items: {%s}" % ", ".join(drop_ids))
     loop_check_func = multi_thread_check if ENABLE_MULTI_THREAD else single_thread_check
     check_list = [cls for cls in CHECK_LIST if not cls._skip]
-    if len([x for x in check_list if issubclass(x, GithubReleases)]) / (LOOP_CHECK_INTERVAL / (60 * 60)) >= 60:
-        for warm_str in (
-            "#" * 72,
-            "Your check list contains too many items that need to request GitHub api,",
-            "which may exceed the rate limit of GitHub api (60 per hour).",
-            "Please try to remove some items from the check list,",
-            "or increase the time interval of loop check (LOOP_CHECK_INTERVAL).",
-            "#" * 72,
-        ):
-            print_and_log(warm_str, level=logging.WARNING)
+    if not GithubReleases.auth_token:
+        if len([x for x in check_list if issubclass(x, GithubReleases)]) / (LOOP_CHECK_INTERVAL / (60 * 60)) >= 60:
+            for warm_str in (
+                "#" * 72,
+                "Your check list contains too many items that need to request GitHub api,",
+                "which may exceed the rate limit of GitHub api (60 per hour).",
+                "It's recommended to configure GITHUB_TOKEN to increase the rate limit.",
+                "#" * 72,
+            ):
+                print_and_log(warm_str, level=logging.WARNING)
     if PROXIES:
         # 检查代理是否正常
         print_and_log("Check whether the proxy is working properly")

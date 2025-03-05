@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 import lxml
 from sqlalchemy.orm import exc as sqlalchemy_exc
 
-from config import ENABLE_MULTI_THREAD
+from config import ENABLE_MULTI_THREAD, GITHUB_TOKEN
 from database import DatabaseSession, Saved
 from common import PageCache, request_url as _request_url
 from tgbot import send_message as _send_message
@@ -558,6 +558,7 @@ class PlingCheck(CheckUpdate):
 class GithubReleases(CheckUpdate):
     repository_url: ClassVar[str]
     ignore_prerelease: ClassVar[bool] = True
+    auth_token: ClassVar[str] = GITHUB_TOKEN
 
     def __init__(self):
         self._abort_if_missing_property("repository_url")
@@ -572,7 +573,11 @@ class GithubReleases(CheckUpdate):
     def do_check(self):
         url = "https://api.github.com/repos/%s/releases" % self.repository_url
         req_params = {"per_page": 1, "page": 1}
-        latest_json = json.loads(self.request_url_text(url, params=req_params))
+        if self.auth_token:
+            req_headers = {"Authorization": "Bearer " + self.auth_token}
+        else:
+            req_headers = None
+        latest_json = json.loads(self.request_url_text(url, params=req_params, headers=req_headers))
         if not latest_json:
             return
         latest_json = latest_json[0]

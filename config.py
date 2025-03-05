@@ -42,3 +42,10 @@ TG_TOKEN: Final[str] = os.getenv("TG_TOKEN", "")
 
 # 发送消息到...
 TG_SENDTO: Final[str] = os.getenv("TG_SENDTO", "")
+
+# Github access token
+# 设置token可以提高Github API的访问速率限制, 当然不设置也行, 但速率会被限制在每小时最多60次
+# 相关文档: https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api
+# 我们建议你设置一个**永不过期**且**没有任何权限**的token
+# "永不过期"意味着你不需要定期更新token, "没有任何权限"则是为了确保安全
+GITHUB_TOKEN: Final = os.getenv("GITHUB_TOKEN", "")
