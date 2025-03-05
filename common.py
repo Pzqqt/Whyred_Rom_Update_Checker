@@ -25,25 +25,21 @@ def request_url(
     :return: requests.models.Response对象
     """
 
-    session = requests.Session()
-    # 阻止requests从环境变量中读取代理设置
-    session.trust_env = False
-    if method == "get":
-        requests_func = session.get
-    elif method == "post":
-        requests_func = session.post
-    else:
-        session.close()
-        raise Exception("Unknown request method: %s" % method)
-    timeout = kwargs.pop("timeout", TIMEOUT)
-    proxies = kwargs.pop("proxies", PROXIES)
-    try:
+    with requests.Session() as session:
+        # 阻止requests从环境变量中读取代理设置
+        session.trust_env = False
+        if method == "get":
+            requests_func = session.get
+        elif method == "post":
+            requests_func = session.post
+        else:
+            raise Exception("Unknown request method: %s" % method)
+        timeout = kwargs.pop("timeout", TIMEOUT)
+        proxies = kwargs.pop("proxies", PROXIES)
         req = requests_func(url, timeout=timeout, proxies=proxies, **kwargs)
         if raise_for_status:
             req.raise_for_status()
         return req
-    finally:
-        session.close()
 
 class PageCache:
 
