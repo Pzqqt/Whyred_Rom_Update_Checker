@@ -123,9 +123,10 @@ class RaspberryPiOS64(CheckUpdate):
 
     def do_check(self):
         url = "https://downloads.raspberrypi.org/os_list_imagingutility_v3.json"
+        item_name = self.fullname
         json_dic = json.loads(self.request_url_text(url))
         for item in json_dic["os_list"]:
-            if item["name"] == "Raspberry Pi OS (64-bit)":
+            if item["name"] == item_name:
                 self.update_info("BUILD_DATE", item["release_date"])
                 self.update_info(
                     "FILE_SIZE",
@@ -138,8 +139,7 @@ class RaspberryPiOS64(CheckUpdate):
                     "https://downloads.raspberrypi.org/raspios_arm64/release_notes.txt"
                 )
                 return
-        else:
-            raise Exception("Parsing failed!")
+        print_and_log('%s: Cannot found item: "%s".' % (self.name, item_name), level=logging.WARNING)
 
 class PhoronixLinuxKernelNews(CheckMultiUpdate):
     fullname = "Linux Kernel News Archives"
@@ -151,6 +151,7 @@ class PhoronixLinuxKernelNews(CheckMultiUpdate):
         ))
         articles = bs_obj.select("#main > article")
         if not articles:
+            print_and_log("%s: No articles found!" % self.name, level=logging.WARNING)
             return
         articles_info = {}
         for article in articles:
@@ -195,6 +196,7 @@ class RaspberrypiNXEZ(CheckMultiUpdate):
         ))
         articles = bs_obj.select("#main-content > article")
         if not articles:
+            print_and_log("%s: No articles found!" % self.name, level=logging.WARNING)
             return
         articles_info = {}
         for article in articles:
@@ -254,6 +256,7 @@ class Switch520(CheckMultiUpdate):
             bs_obj = self.get_bs(self.request_url_text(req_url, headers={"user-agent": CHROME_UA}, proxies=None))
         articles = bs_obj.select("article")
         if not articles:
+            print_and_log("%s: No articles found!" % self.name, level=logging.WARNING)
             return
         articles_info = {}
         for article in articles:
@@ -309,6 +312,7 @@ class AckAndroid12510LTS(CheckUpdate):
                 if re_match := re.search(r"^Merge 5\.10\.(\d+) into", title):
                     self.update_info("LATEST_VERSION", re_match.group(1))
                     return
+        print_and_log("%s: No items found after filtering." % self.name, level=logging.WARNING)
 
     def is_updated(self):
         r = super().is_updated()
@@ -361,6 +365,7 @@ class CloParrotKernel(CheckUpdate):
                 self.update_info("LATEST_VERSION", tag["name"])
                 self._private_dic["tag"] = tag
                 return
+        print_and_log("%s: No items found after filtering." % self.name, level=logging.WARNING)
 
     def get_print_text(self):
         return "\n".join([
@@ -402,8 +407,7 @@ class MagiskCanary(CheckUpdate):
     def do_check(self):
         json_dic = json.loads(self.request_url_text("https://github.com/topjohnwu/magisk-files/raw/master/canary.json"))
         magisk_info = json_dic.get("magisk")
-        if not magisk_info:
-            return
+        assert magisk_info
         self.update_info("LATEST_VERSION", magisk_info["versionCode"])
         self.update_info("DOWNLOAD_LINK", "[%s](%s)" % (magisk_info["link"].rsplit('/', 1)[-1], magisk_info["link"]))
         self.update_info("BUILD_VERSION", magisk_info["versionCode"])

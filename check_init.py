@@ -467,6 +467,7 @@ class SfCheck(CheckUpdate):
         )
         builds = list(bs_obj.select("item"))
         if not builds:
+            print_and_log("%s: No builds found!" % self.name, level=logging.WARNING)
             return
         builds.sort(key=lambda x: self.date_transform(x.pubDate.get_text()), reverse=True)
         for build in builds:
@@ -513,9 +514,11 @@ class PlingCheck(CheckUpdate):
         url = "https://www.pling.com/p/%s/loadFiles" % self.p_id
         json_dic_files = json.loads(self.request_url_text(url)).get("files")
         if not json_dic_files:
+            print_and_log("%s: No files found!" % self.name, level=logging.WARNING)
             return
         json_dic_filtered_files = [f for f in json_dic_files if self.filter_rule(f)]
         if not json_dic_filtered_files:
+            print_and_log("%s: No files found after filtering." % self.name, level=logging.WARNING)
             return
         latest_build = json_dic_filtered_files[-1]
         self.latest_build = latest_build
@@ -579,18 +582,22 @@ class GithubReleases(CheckUpdate):
             req_headers = None
         latest_json = json.loads(self.request_url_text(url, params=req_params, headers=req_headers))
         if not latest_json:
+            print_and_log("%s: No releases found!" % self.name, level=logging.WARNING)
             return
         latest_json = latest_json[0]
         self.response_json_dic = latest_json
+        release_name = latest_json["name"] or latest_json["tag_name"]
         if latest_json["draft"]:
+            print_and_log("%s: Abandon the draft release: %s." % (self.name, release_name), level=logging.WARNING)
             return
         if latest_json["prerelease"]:
             if self.ignore_prerelease:
+                print_and_log("%s: Abandon the pre-release: %s." % (self.name, release_name), level=logging.WARNING)
                 return
             self.update_info("BUILD_TYPE", "Pre-release")
         else:
             self.update_info("BUILD_TYPE", "Release")
-        self.update_info("BUILD_VERSION", latest_json["name"] or latest_json["tag_name"])
+        self.update_info("BUILD_VERSION", release_name)
         self.update_info("LATEST_VERSION", latest_json["html_url"])
         self.update_info("BUILD_DATE", latest_json["published_at"])
         if len(latest_json["assets"]) >= 10:
