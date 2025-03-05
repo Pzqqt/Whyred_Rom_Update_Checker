@@ -434,7 +434,7 @@ class EvolutionX(SfCheck):
 
 `GithubReleases` 在检查时会跳过具有 `Pre-release` 标签的Release，如果你不想错过，请将类属性 `ignore_prerelease` 设置为False。
 
-> 注意：对于未经认证的api请求，GitHub将配额设置为每个ip每小时最多请求60次。因此，请根据情况合理配置 `check_list.CHECK_LIST` 以及 `config.LOOP_CHECK_INTERVAL`，或者使用代理池等其他方法规避此问题。
+> 注意：对于未经认证的api请求，GitHub将配额设置为每个ip每小时最多请求60次，因此建议你配置 `GITHUB_TOKEN` 以提高访问速率限制。
 
 ## 8. PageCache
 
