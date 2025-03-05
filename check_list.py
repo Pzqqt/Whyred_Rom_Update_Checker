@@ -65,38 +65,6 @@ class GoogleClangPrebuilt(CheckMultiUpdate):
             )
         )
 
-class WireGuard(CheckUpdate):
-    fullname = "WireGuard for Linux 3.10 - 5.5"
-
-    def do_check(self):
-        base_url = "https://git.zx2c4.com/wireguard-linux-compat"
-        fetch_url = "https://build.wireguard.com/distros.txt"
-        fetch_text = self.request_url_text(fetch_url)
-        for line in fetch_text.splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            distro, package, version = line.split()[:3]
-            if distro == "upstream" and package == "linuxcompat":
-                self.update_info("LATEST_VERSION", "v"+version)
-                self.update_info(
-                    "DOWNLOAD_LINK",
-                    "%s/snapshot/wireguard-linux-compat-%s.tar.xz" % (base_url, version)
-                )
-                self.update_info("BUILD_CHANGELOG", "%s/log/?h=%s" % (base_url, "v"+version))
-                break
-        else:
-            raise Exception("Parsing failed!")
-
-    def get_print_text(self):
-        return "*%s update*\n%s\n\n[Commits](%s)\n\nDownload tar.gz:\n[%s](%s)" % (
-            self.fullname,
-            self.get_tags_text(),
-            self.info_dic["BUILD_CHANGELOG"],
-            self.info_dic["DOWNLOAD_LINK"].split("/")[-1],
-            self.info_dic["DOWNLOAD_LINK"],
-        )
-
 class BeyondCompare5(CheckUpdate):
     fullname = "Beyond Compare 5"
     BASE_URL = "https://www.scootersoftware.com"
@@ -554,7 +522,6 @@ class Ventoy(GithubReleases):
 
 CHECK_LIST = (
     GoogleClangPrebuilt,
-    WireGuard,
     BeyondCompare5,
     RaspberryPi4EepromStable,
     RaspberryPi4EepromBeta,
