@@ -89,18 +89,24 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
         if cls.enable_pagecache:
             cls = type(cls.__name__, (cls, ), {"enable_pagecache": False})
     cls_obj = cls()
+
+    def _handle_do_check_exception(e: Exception):
+        if isinstance(e, req_exceptions.ReadTimeout):
+            print_and_log("%s check failed! Timeout." % cls_obj.fullname, level=logging.WARNING)
+        elif isinstance(e, (req_exceptions.SSLError, req_exceptions.ProxyError)):
+            print_and_log("%s check failed! Proxy error." % cls_obj.fullname, level=logging.WARNING)
+        elif isinstance(e, req_exceptions.ConnectionError):
+            print_and_log("%s check failed! Connection error." % cls_obj.fullname, level=logging.WARNING)
+        elif isinstance(e, req_exceptions.HTTPError):
+            print_and_log("%s check failed! %s." % (cls_obj.fullname, e), level=logging.WARNING)
+        else:
+            record_exceptions("Error while checking %s:" % cls_obj.fullname)
+
     try:
         cls_obj.do_check()
-    except req_exceptions.ReadTimeout:
-        print_and_log("%s check failed! Timeout." % cls_obj.fullname, level=logging.WARNING)
-    except (req_exceptions.SSLError, req_exceptions.ProxyError):
-        print_and_log("%s check failed! Proxy error." % cls_obj.fullname, level=logging.WARNING)
-    except req_exceptions.ConnectionError:
-        print_and_log("%s check failed! Connection error." % cls_obj.fullname, level=logging.WARNING)
-    except req_exceptions.HTTPError as error:
-        print_and_log("%s check failed! %s." % (cls_obj.fullname, error), level=logging.WARNING)
-    except:
-        record_exceptions("Error while checking %s:" % cls_obj.fullname)
+    except Exception as exc:
+        _handle_do_check_exception(exc)
+        return False, cls_obj
     else:
         if FORCE_UPDATE or cls_obj.is_updated():
             if isinstance(cls_obj, CheckMultiUpdate):
@@ -123,7 +129,6 @@ def check_one(cls: typing.Union[type, str], disable_pagecache: bool = False) -> 
             if not LESS_LOG:
                 write_log_info("%s no update" % cls_obj.fullname)
         return True, cls_obj
-    return False, cls_obj
 
 def single_thread_check(check_list: typing.Sequence[type]) -> Tuple[list, bool]:
     # 单线程模式下连续检查失败5项则判定为网络异常, 并提前终止
