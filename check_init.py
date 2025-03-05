@@ -570,10 +570,12 @@ class GithubReleases(CheckUpdate):
         return time.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
 
     def do_check(self):
-        url = "https://api.github.com/repos/%s/releases/latest" % self.repository_url
-        latest_json = json.loads(self.request_url_text(url))
+        url = "https://api.github.com/repos/%s/releases" % self.repository_url
+        req_params = {"per_page": 1, "page": 1}
+        latest_json = json.loads(self.request_url_text(url, params=req_params))
         if not latest_json:
             return
+        latest_json = latest_json[0]
         self.response_json_dic = latest_json
         if latest_json["draft"]:
             return
