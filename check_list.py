@@ -379,6 +379,55 @@ class CloParrotVendor(CloParrotKernel):
     project_url = "https://git.codelinaro.org/clo/la/la/vendor/manifest"
     tag_name_re_pattern = r'LA\.VENDOR\.1\.0\.r\d-\d+-WAIPIO(\.QSSI\d+\.\d)?'
 
+class RealVNCViewer(CheckUpdate):
+    fullname = "RealVNC Viewer"
+    fetch_url = "https://www.realvnc.com/en/connect/download/viewer/"
+    _OS_TYPES = {
+        'windows': "Windows",
+        'macos': "Mac OS",
+        'linux': "Linux",
+        'raspberrypi': "Raspberry Pi",
+    }
+
+    def do_check(self):
+        download_links = {}
+        version = ""
+        bs_obj = self.get_bs(self.request_url(self.fetch_url))
+        for download_selection in bs_obj.select('select[data-os-selected]'):
+            if not (os_type:= download_selection.get('data-os-selected')):
+                continue
+            if not (os_str := self._OS_TYPES.get(os_type)):
+                print_and_log(
+                    "%s: Unknown OS type: %s" % (self.name, os_type),
+                    level=logging.WARNING,
+                )
+                continue
+            for option in download_selection.select("option"):
+                if download_link := option.get("data-file"):
+                    download_links["%s (%s)" % (os_str, option.get_text())] = download_link
+                    if not version:
+                        if re_match := re.search(r'\d+\.\d+\.\d+', download_link):
+                            version = re_match.group(0)
+        if not version:
+            print_and_log(
+                "%s: Failed to retrieve the version number." % self.name,
+                level=logging.WARNING,
+            )
+            return
+        self.update_info("LATEST_VERSION", version)
+        self.update_info("BUILD_VERSION", version)
+        self.update_info(
+            "DOWNLOAD_LINK",
+            '\n'.join([
+                "[%s](%s)" % (k, v)
+                for k, v in download_links.items()
+            ])
+        )
+
+class RealVNCServer(RealVNCViewer):
+    fullname = "RealVNC Server"
+    fetch_url = "https://www.realvnc.com/en/connect/download/vnc/"
+
 class Apktool(GithubReleases):
     fullname = "Apktool"
     repository_url = "iBotPeaches/Apktool"
@@ -539,6 +588,8 @@ CHECK_LIST = (
     MotoWidget,
     CloParrotKernel,
     CloParrotVendor,
+    RealVNCViewer,
+    RealVNCServer,
     Apktool,
     ClashVergeRev,
     ClashMetaAndroid,
