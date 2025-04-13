@@ -12,10 +12,12 @@ from sqlalchemy.orm import sessionmaker, Session
 
 from config import SQLITE_FILE
 
+
+if not os.path.isabs(SQLITE_FILE):
+    SQLITE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), SQLITE_FILE)
+
 _Base = declarative_base()
-_Engine = create_engine(
-    "sqlite:///%s" % os.path.join(os.path.dirname(os.path.abspath(__file__)), SQLITE_FILE)
-)
+_Engine = create_engine("sqlite:///%s" % SQLITE_FILE)
 _DatabaseSession = sessionmaker(bind=_Engine)
 _DatabaseSession.threading_lock = threading.RLock()
 
