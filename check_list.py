@@ -15,6 +15,7 @@ from check_init import (
 )
 from tgbot import send_message as _send_message, send_photo as _send_photo
 from logger import print_and_log
+from config import GITHUB_TOKEN
 
 
 class GoogleClangPrebuilt(CheckMultiUpdate):
@@ -97,6 +98,7 @@ class RaspberryPi4EepromStable(CheckUpdate):
         files = json.loads(
             self.request_url_text(
                 "https://api.github.com/repos/raspberrypi/rpi-eeprom/contents/%s" % self.file_path,
+                headers={"Authorization": "Bearer " + GITHUB_TOKEN} if GITHUB_TOKEN else None,
                 params={"ref": "master"},
             )
         )
@@ -527,7 +529,10 @@ class ManjaroArmRpi4Images(GithubReleases):
             return r
         try:
             actions_runs = json.loads(
-                self.request_url_text('https://api.github.com/repos/%s/actions/runs' % self.repository_url)
+                self.request_url_text(
+                    'https://api.github.com/repos/%s/actions/runs' % self.repository_url,
+                    headers={"Authorization": "Bearer " + GITHUB_TOKEN} if GITHUB_TOKEN else None,
+                )
             )
             for wf in actions_runs["workflow_runs"]:
                 if wf["name"] == "image_build_all":
