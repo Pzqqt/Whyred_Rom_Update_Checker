@@ -13,7 +13,7 @@ from database import Saved
 from check_init import CheckMultiUpdate
 from check_list import CHECK_LIST
 from main import check_one, get_time_str
-from logger import LOG_FILE_PATH
+from logger import LOG_FILE
 
 
 BOT_MASTER_USERID: Final = int(os.getenv("TG_BOT_MASTER_USERID", "0"))
@@ -129,7 +129,7 @@ def _get_latest(message):
 
 @BOT.message_handler(commands=["log", ], chat_types=["private", ], func=_is_master)
 def _log(message):
-    with open(LOG_FILE_PATH, 'rb') as f:
+    with open(LOG_FILE, 'rb') as f:
         BOT.send_document(message.chat.id, f, reply_to_message_id=message.message_id)
 
 def update_listener(messages):
