@@ -10,6 +10,12 @@ SQLITE_FILE: Final = "saved.db"
 # 日志文件名
 LOG_FILE: Final = "log.txt"
 
+# 日志文件大小限制, 超过后将备份当前的日志文件并生成一个新的(单位: 字节)(默认: 512 KB)
+LOG_FILE_MAX_BYTES: Final = 512 * 1024
+
+# 最多备份多少个日志文件(默认: 10)
+LOG_FILE_BACKUP_COUNT: Final = 10
+
 # 是否启用多线程模式
 ENABLE_MULTI_THREAD: Final = True
 

@@ -2,11 +2,12 @@
 # encoding: utf-8
 
 import logging
+import logging.handlers
 import os
 import traceback
 from typing import Union, Final
 
-from config import LOG_FILE, ENABLE_LOGGER
+from config import LOG_FILE, LOG_FILE_MAX_BYTES, LOG_FILE_BACKUP_COUNT, ENABLE_LOGGER
 
 
 if not os.path.isabs(LOG_FILE):
@@ -15,7 +16,12 @@ if not os.path.isabs(LOG_FILE):
 LOGGER: Final = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 
-_HANDLER = logging.FileHandler(LOG_FILE, encoding="utf-8")
+_HANDLER = logging.handlers.RotatingFileHandler(
+    LOG_FILE,
+    encoding="utf-8",
+    maxBytes=LOG_FILE_MAX_BYTES,
+    backupCount=LOG_FILE_BACKUP_COUNT,
+)
 _HANDLER.setLevel(logging.INFO)
 _HANDLER.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 
