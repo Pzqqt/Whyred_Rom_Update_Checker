@@ -250,7 +250,7 @@ class Switch520(CheckMultiUpdate):
     def do_check(self):
         if 0 <= datetime.datetime.now().hour <= 7:
             return
-        req_url = self.BASE_URL + "switchyouxi"
+        req_url = self.BASE_URL + "gameswitch"
         try:
             bs_obj = self.get_bs(self.request_url_text(req_url, headers={"user-agent": CHROME_UA}))
         except req_exceptions.RequestException:
