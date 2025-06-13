@@ -143,6 +143,10 @@ class RaspberryPiOS64(CheckUpdate):
                 return
         print_and_log('%s: Cannot found item: "%s".' % (self.name, item_name), level=logging.WARNING)
 
+    @classmethod
+    def date_transform(cls, date_str: str):
+        return date_str
+
 class PhoronixLinuxKernelNews(CheckMultiUpdate):
     fullname = "Linux Kernel News Archives"
     BASE_URL = "https://www.phoronix.com"
