@@ -22,9 +22,13 @@ class GoogleClangPrebuilt(CheckMultiUpdate):
     fullname = "Google Clang Prebuilt"
     tags = ("clang",)
     BASE_URL = "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
+    BRANCH = "mirror-goog-main-prebuilts"
 
     def do_check(self):
-        bs_obj = self.get_bs(self.request_url_text(self.BASE_URL + "/+log"))
+        url = self.BASE_URL + "/+log"
+        if self.BRANCH:
+            url += '/' + self.BRANCH
+        bs_obj = self.get_bs(self.request_url_text(url))
         commits = bs_obj.select_one(".CommitLog").select("li")
         sp_commits = {}
         for commit in commits:
