@@ -434,6 +434,14 @@ class RealVNCViewer(CheckUpdate):
             ])
         )
 
+    def is_updated(self) -> bool:
+        if not super().is_updated():
+            return False
+        if self.prev_saved_info is None:
+            return True
+        _ = lambda version_str: [int(x) for x in version_str.split(".")]
+        return _(self.info_dic["LATEST_VERSION"]) > _(self.prev_saved_info.LATEST_VERSION)
+
 class RealVNCServer(RealVNCViewer):
     fullname = "RealVNC Server"
     fetch_url = "https://www.realvnc.com/en/connect/download/vnc/"
