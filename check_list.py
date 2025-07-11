@@ -157,7 +157,7 @@ class PhoronixLinuxKernelNews(CheckMultiUpdate):
 
     def do_check(self):
         bs_obj = self.get_bs(self.request_url_text(
-            self.BASE_URL+"/linux/Linux+Kernel", headers={"user-agent": CHROME_UA}
+            self.BASE_URL+"/linux/Linux+Kernel", headers={"user-agent": CHROME_UA},
         ))
         articles = bs_obj.select("#main > article")
         if not articles:
@@ -325,9 +325,8 @@ class AckAndroid12510LTS(CheckUpdate):
         print_and_log("%s: No items found after filtering." % self.name, level=logging.WARNING)
 
     def is_updated(self):
-        r = super().is_updated()
-        if not r:
-            return r
+        if not super().is_updated():
+            return False
         if self.prev_saved_info is None:
             return True
         return int(self.info_dic["LATEST_VERSION"]) > int(self.prev_saved_info.LATEST_VERSION)
@@ -404,7 +403,7 @@ class RealVNCViewer(CheckUpdate):
         version = ""
         bs_obj = self.get_bs(self.request_url(self.fetch_url))
         for download_selection in bs_obj.select('select[data-os-selected]'):
-            if not (os_type:= download_selection.get('data-os-selected')):
+            if not (os_type := download_selection.get('data-os-selected')):
                 continue
             if not (os_str := self._OS_TYPES.get(os_type)):
                 print_and_log(

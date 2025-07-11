@@ -414,7 +414,8 @@ class CheckMultiUpdate(CheckUpdate):
 
     def send_message(self):
         fetch_items = json.loads(self.info_dic["LATEST_VERSION"])
-        assert isinstance(fetch_items, dict)
+        if not isinstance(fetch_items, dict):
+            raise TypeError("LATEST_VERSION must be a dict!")
         if self.prev_saved_info is None:
             saved_items = {}
         else:
@@ -431,7 +432,7 @@ class CheckMultiUpdate(CheckUpdate):
             time.sleep(2)
 
 class SfCheck(CheckUpdate):
-    project_name :ClassVar[str]
+    project_name: ClassVar[str]
     sub_path: ClassVar[str] = ""
     minimum_file_size_mb: ClassVar[int] = 500
 

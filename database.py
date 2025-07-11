@@ -21,6 +21,7 @@ _Engine = create_engine("sqlite:///%s" % SQLITE_FILE)
 _DatabaseSession = sessionmaker(bind=_Engine)
 _DatabaseSession.threading_lock = threading.RLock()
 
+# noinspection PyPep8Naming
 def DatabaseSession(**kwargs) -> Session:
     with _DatabaseSession.threading_lock:
         return _DatabaseSession(**kwargs)
