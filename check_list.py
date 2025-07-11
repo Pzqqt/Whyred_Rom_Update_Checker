@@ -534,37 +534,6 @@ class LSPosed(GithubReleases):
     fullname = "LSPosed"
     repository_url = "LSPosed/LSPosed"
 
-class ManjaroArmRpi4Images(GithubReleases):
-    fullname = "Manjaro ARM Image for Raspberry Pi 3/3+/4/400"
-    repository_url = "manjaro-arm/rpi4-images"
-    tags = ("RaspberryPi", "Manjaro")
-
-    def is_updated(self):
-        r = super().is_updated()
-        if not r:
-            return r
-        try:
-            actions_runs = json.loads(
-                self.request_url_text(
-                    'https://api.github.com/repos/%s/actions/runs' % self.repository_url,
-                    headers={"Authorization": "Bearer " + GITHUB_TOKEN} if GITHUB_TOKEN else None,
-                )
-            )
-            for wf in actions_runs["workflow_runs"]:
-                if wf["name"] == "image_build_all":
-                    jobs = json.loads(self.request_url_text(wf["jobs_url"]))
-                    # 等待所有的编译任务完成后再推送
-                    if not [job for job in jobs["jobs"] if job["status"] != "completed"]:
-                        return True
-                    print_and_log(
-                        "%s: There is a new release tag, but the action job has not been completed yet." % self.name,
-                        level=logging.WARNING,
-                    )
-                    break
-            return False
-        except req_exceptions.RequestException:
-            return False
-
 class Notepad3(GithubReleases):
     fullname = "Notepad3"
     repository_url = "rizonesoft/Notepad3"
@@ -623,7 +592,6 @@ CHECK_LIST = (
     Foobox,
     Magisk,
     MagiskCanary,
-    ManjaroArmRpi4Images,
     Notepad3,
     Rufus,
     Sandboxie,
