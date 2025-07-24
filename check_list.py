@@ -18,6 +18,46 @@ from logger import print_and_log
 from config import GITHUB_TOKEN
 
 
+class Linux510Y(CheckUpdate):
+    fullname = "Linux Kernel stable v5.10.y"
+    tags = ("Linux", "Kernel")
+    re_pattern = r'5\.10\.(\d+)'
+
+    def do_check(self):
+        url = "https://www.kernel.org"
+        bs_obj = self.get_bs(self.request_url_text(url))
+        for tr_obj in bs_obj.select_one("#releases").select("tr"):
+            kernel_version = tr_obj.select("td")[1].get_text()
+            if re_match := re.match(self.re_pattern, kernel_version):
+                self.update_info("LATEST_VERSION", kernel_version)
+                self.update_info("BUILD_VERSION", re_match.group(1))
+                self.update_info(
+                    "DOWNLOAD_LINK",
+                    "https://git.kernel.org/stable/h/v%s" % kernel_version
+                )
+                self.update_info(
+                    "BUILD_CHANGELOG",
+                    "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/log/?h=v%s"
+                    % kernel_version
+                )
+                return
+        print_and_log("%s: No articles found!" % self.name, level=logging.WARNING)
+
+    def get_print_text(self):
+        return "*Linux Kernel stable* [v%s](%s) *update*\n%s\n\n[Commits](%s)" % (
+            self.info_dic["LATEST_VERSION"],
+            self.info_dic["DOWNLOAD_LINK"],
+            self.get_tags_text(),
+            self.info_dic["BUILD_CHANGELOG"],
+        )
+
+    def is_updated(self):
+        if not super().is_updated():
+            return False
+        if self.prev_saved_info is None:
+            return True
+        return int(self.info_dic["BUILD_VERSION"]) > int(self.prev_saved_info.BUILD_VERSION)
+
 class GoogleClangPrebuilt(CheckMultiUpdate):
     fullname = "Google Clang Prebuilt"
     tags = ("clang",)
@@ -563,6 +603,7 @@ class Ventoy(GithubReleases):
     repository_url = "ventoy/Ventoy"
 
 CHECK_LIST = (
+    Linux510Y,
     GoogleClangPrebuilt,
     BeyondCompare5,
     RaspberryPi4EepromStable,
