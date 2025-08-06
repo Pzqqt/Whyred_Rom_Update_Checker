@@ -499,6 +499,10 @@ class ClashMetaAndroid(GithubReleases):
     repository_url = "MetaCubeX/ClashMetaForAndroid"
     tags = ("Clash", "ClashMeta", "Android")
 
+class ErofsUtils(GithubReleases):
+    fullname = "erofs-utils"
+    repository_url = "sekaiacg/erofs-utils"
+
 class Foobox(GithubReleases):
     fullname = "Foobox"
     repository_url = "dream7180/foobox-cn"
@@ -629,6 +633,7 @@ CHECK_LIST = (
     LineageOS4rpi,
     LLVM,
     LSPosed,
+    ErofsUtils,
     Foobox,
     Magisk,
     MagiskCanary,
