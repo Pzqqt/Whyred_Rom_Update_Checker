@@ -510,6 +510,7 @@ class Foobox(GithubReleases):
 class Magisk(GithubReleases):
     fullname = "Magisk Stable"
     repository_url = "topjohnwu/Magisk"
+    ignore_prerelease = False
 
 class MagiskCanary(CheckUpdate):
     fullname = "Magisk Canary"
