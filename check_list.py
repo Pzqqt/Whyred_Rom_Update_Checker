@@ -514,15 +514,20 @@ class Magisk(GithubReleases):
 
 class MagiskCanary(CheckUpdate):
     fullname = "Magisk Canary"
+    req_url = "https://github.com/topjohnwu/magisk-files/raw/master/canary.json"
 
     def do_check(self):
-        json_dic = json.loads(self.request_url_text("https://github.com/topjohnwu/magisk-files/raw/master/canary.json"))
+        json_dic = json.loads(self.request_url_text(self.req_url))
         magisk_info = json_dic.get("magisk")
         assert magisk_info
         self.update_info("LATEST_VERSION", magisk_info["versionCode"])
         self.update_info("DOWNLOAD_LINK", "[%s](%s)" % (magisk_info["link"].rsplit('/', 1)[-1], magisk_info["link"]))
         self.update_info("BUILD_VERSION", magisk_info["versionCode"])
         self.update_info("BUILD_CHANGELOG", magisk_info["note"])
+
+class MagiskBeta(MagiskCanary):
+    fullname = "Magisk Beta"
+    req_url = "https://github.com/topjohnwu/magisk-files/raw/master/beta.json"
 
 class Jadx(GithubReleases):
     fullname = "jadx (Dex to Java decompiler)"
@@ -638,6 +643,7 @@ CHECK_LIST = (
     Foobox,
     Magisk,
     MagiskCanary,
+    MagiskBeta,
     Notepad3,
     Rufus,
     Sandboxie,
