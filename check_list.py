@@ -533,10 +533,6 @@ class Jadx(GithubReleases):
     fullname = "jadx (Dex to Java decompiler)"
     repository_url = "skylot/jadx"
 
-class KernelFlasher(GithubReleases):
-    fullname = "Kernel Flasher"
-    repository_url = "capntrips/KernelFlasher"
-
 class KernelSU(GithubReleases):
     fullname = "KernelSU"
     repository_url = "tiann/KernelSU"
@@ -634,7 +630,6 @@ CHECK_LIST = (
     ClashVergeRev,
     ClashMetaAndroid,
     Jadx,
-    KernelFlasher,
     KernelSU,
     LineageOS4rpi,
     LLVM,
