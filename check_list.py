@@ -388,13 +388,6 @@ class XiaomiEuMultilangStable(SfCheck):
     def filter_rule(cls, string: str) -> bool:
         return string.endswith(".zip") and "marble" in string.lower()
 
-class XiaomiEuModule(SfCheck):
-    fullname = "Xiaomi.eu inject Module"
-    project_name = "xiaomi-eu-multilang-miui-roms"
-    sub_path = "xiaomi.eu/Xiaomi.eu-app"
-    minimum_file_size_mb = 0
-    tags = ("XiaomiEU",)
-
 class MotoWidget(PlingCheck):
     fullname = "Moto Widget (ported by @meoify)"
     p_id = 1996274
@@ -620,7 +613,6 @@ CHECK_LIST = (
     Switch520,
     AckAndroid12510LTS,
     XiaomiEuMultilangStable,
-    XiaomiEuModule,
     MotoWidget,
     CloParrotKernel,
     CloParrotVendor,
