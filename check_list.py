@@ -589,10 +589,6 @@ class Scrcpy(GithubReleases):
     fullname = "Scrcpy (screen copy)"
     repository_url = "Genymobile/scrcpy"
 
-class Shamiko(GithubReleases):
-    fullname = "Shamiko"
-    repository_url = "LSPosed/LSPosed.github.io"
-
 class Rufus(GithubReleases):
     fullname = "Rufus"
     repository_url = "pbatard/rufus"
@@ -636,6 +632,5 @@ CHECK_LIST = (
     Sandboxie,
     SevenZip,
     Scrcpy,
-    Shamiko,
     Ventoy,
 )
