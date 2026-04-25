@@ -19,7 +19,7 @@ if not os.path.isabs(SQLITE_FILE):
 _Base = declarative_base()
 _Engine = create_engine("sqlite:///%s" % SQLITE_FILE)
 _DatabaseSession = sessionmaker(bind=_Engine)
-_DatabaseSession.threading_lock = threading.RLock()
+_DatabaseSession.threading_lock = threading.Lock()
 
 # noinspection PyPep8Naming
 def DatabaseSession(**kwargs) -> Session:

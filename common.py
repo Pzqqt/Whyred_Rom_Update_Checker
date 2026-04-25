@@ -58,7 +58,7 @@ class PageCache:
 
     def __init__(self):
         self.__page_cache = dict()
-        self.threading_lock: Final = threading.RLock()
+        self.threading_lock: Final = threading.Lock()
 
     @staticmethod
     def __params_change(params: Union[dict, None]) -> Union[frozenset, None]:

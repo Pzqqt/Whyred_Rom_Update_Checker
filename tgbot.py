@@ -23,7 +23,7 @@ BOT: Final = telebot.TeleBot(TG_TOKEN, validate_token=ENABLE_SENDMESSAGE)
 telebot.apihelper.proxy = PROXIES
 
 __send_failed_list = list()
-__send_failed_list_lock = threading.RLock()
+__send_failed_list_lock = threading.Lock()
 
 def _send_wrap(func):
     # 注意: 被`_send_wrap`装饰的函数将忽略函数原本的返回值
