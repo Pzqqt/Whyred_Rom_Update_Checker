@@ -213,7 +213,7 @@ class PhoronixLinuxKernelNews(CheckMultiUpdate):
             article_tag = article_details_re_match.group(2)
             articles_info[self.BASE_URL + article_header["href"]] = {
                 "title": article_header.get_text(),
-                "image_url": article.select_one(".home_icons")["src"],
+                "image_url": article.select_one(".home_icons")["src"] if article.select_one(".home_icons") else None,
                 "summary": article.select_one("p").get_text(),
                 "comments_url": self.BASE_URL + article.select_one(".comments > a")["href"],
                 "date": article_date,
@@ -222,20 +222,20 @@ class PhoronixLinuxKernelNews(CheckMultiUpdate):
         self.update_info("LATEST_VERSION", articles_info)
 
     def send_message_single(self, key, item):
-        _send_photo(
-            item["image_url"],
-            "\n".join([
-                '<a href="%s">%s</a>' % (key, item["title"]),
-                item["date"] + ' - ' + '<i>%s</i>' % item["tag"],
-                "",
-                item["summary"],
-                "",
-                '<a href="%s">Comments</a>' % item["comments_url"],
-                "",
-                "#Phoronix #LinuxKernel",
-            ]),
-            parse_mode="html",
-        )
+        message_text = "\n".join([
+            '<a href="%s">%s</a>' % (key, item["title"]),
+            item["date"] + ' - ' + '<i>%s</i>' % item["tag"],
+            "",
+            item["summary"],
+            "",
+            '<a href="%s">Comments</a>' % item["comments_url"],
+            "",
+            "#Phoronix #LinuxKernel",
+        ])
+        if item["image_url"]:
+            _send_photo(item["image_url"], message_text, parse_mode="html")
+        else:
+            _send_message(message_text, parse_mode="html")
 
 class RaspberrypiNXEZ(CheckMultiUpdate):
     fullname = "树莓派实验室"
