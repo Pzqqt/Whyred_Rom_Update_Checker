@@ -378,16 +378,6 @@ class AckAndroid12510LTS(CheckUpdate):
             "https://android-review.googlesource.com/q/project:kernel/common+branch:%s" % self.fullname,
         )
 
-class XiaomiEuMultilangStable(SfCheck):
-    fullname = "Xiaomi.eu Multilang HyperOS ROM stable"
-    project_name = "xiaomi-eu-multilang-miui-roms"
-    sub_path = "xiaomi.eu/HyperOS-STABLE-RELEASES/HyperOS3.0"
-    tags = ("Marble", "XiaomiEU", "HyperOS", "Stable")
-
-    @classmethod
-    def filter_rule(cls, string: str) -> bool:
-        return string.endswith(".zip") and "marble" in string.lower()
-
 class MotoWidget(PlingCheck):
     fullname = "Moto Widget (ported by @meoify)"
     p_id = 1996274
@@ -608,7 +598,6 @@ CHECK_LIST = (
     RaspberrypiNXEZ,
     Switch520,
     AckAndroid12510LTS,
-    XiaomiEuMultilangStable,
     MotoWidget,
     CloParrotKernel,
     CloParrotVendor,
