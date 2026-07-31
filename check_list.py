@@ -355,14 +355,17 @@ class AckAndroid12510LTS(CheckUpdate):
             json_text = json_text[5:]
         json_data = json.loads(json_text)
         assert isinstance(json_data, list)
+        version_list = []
         for item in json_data:
             if item.get("status", "").upper() != "MERGED":
                 continue
             if title := item.get("subject"):
                 if re_match := re.search(r"^Merge 5\.10\.(\d+) into", title):
-                    self.update_info("LATEST_VERSION", re_match.group(1))
-                    return
-        print_and_log("%s: No items found after filtering." % self.name, level=logging.WARNING)
+                    version_list.append(int(re_match.group(1)))
+        if version_list:
+            self.update_info("LATEST_VERSION", str(max(version_list)))
+        else:
+            print_and_log("%s: No items found after filtering." % self.name, level=logging.WARNING)
 
     def is_updated(self):
         if not super().is_updated():
@@ -410,63 +413,6 @@ class CloParrotVendor(CloParrotKernel):
     project_id = 13079
     project_url = "https://git.codelinaro.org/clo/la/la/vendor/manifest"
     tag_name_re_pattern = r'LA\.VENDOR\.1\.0\.r\d-\d+-WAIPIO(\.QSSI\d+\.\d)?'
-
-class RealVNCViewer(CheckUpdate):
-    fullname = "RealVNC Viewer"
-    fetch_url = "https://www.realvnc.com/en/connect/download/viewer/"
-    _OS_TYPES = {
-        'windows': "Windows",
-        'macos': "Mac OS",
-        'linux': "Linux",
-        'raspberrypi': "Raspberry Pi",
-    }
-
-    def do_check(self):
-        download_links = {}
-        version = ""
-        bs_obj = self.get_bs(self.request_url(self.fetch_url))
-        for download_selection in bs_obj.select('select[data-os-selected]'):
-            if not (os_type := download_selection.get('data-os-selected')):
-                continue
-            if not (os_str := self._OS_TYPES.get(os_type)):
-                print_and_log(
-                    "%s: Unknown OS type: %s" % (self.name, os_type),
-                    level=logging.WARNING,
-                )
-                continue
-            for option in download_selection.select("option"):
-                if download_link := option.get("data-file"):
-                    download_links["%s (%s)" % (os_str, option.get_text())] = download_link
-                    if not version:
-                        if re_match := re.search(r'\d+\.\d+\.\d+', download_link):
-                            version = re_match.group(0)
-        if not version:
-            print_and_log(
-                "%s: Failed to retrieve the version number." % self.name,
-                level=logging.WARNING,
-            )
-            return
-        self.update_info("LATEST_VERSION", version)
-        self.update_info("BUILD_VERSION", version)
-        self.update_info(
-            "DOWNLOAD_LINK",
-            '\n'.join([
-                "[%s](%s)" % (k, v)
-                for k, v in download_links.items()
-            ])
-        )
-
-    def is_updated(self) -> bool:
-        if not super().is_updated():
-            return False
-        if self.prev_saved_info is None:
-            return True
-        _ = lambda version_str: [int(x) for x in version_str.split(".")]
-        return _(self.info_dic["LATEST_VERSION"]) > _(self.prev_saved_info.LATEST_VERSION)
-
-class RealVNCServer(RealVNCViewer):
-    fullname = "RealVNC Server"
-    fetch_url = "https://www.realvnc.com/en/connect/download/vnc/"
 
 class Apktool(GithubReleases):
     fullname = "Apktool"
@@ -601,8 +547,6 @@ CHECK_LIST = (
     MotoWidget,
     CloParrotKernel,
     CloParrotVendor,
-    RealVNCViewer,
-    RealVNCServer,
     Apktool,
     ClashVergeRev,
     ClashMetaAndroid,
