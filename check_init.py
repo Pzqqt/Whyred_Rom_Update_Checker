@@ -3,6 +3,7 @@
 
 import json
 import time
+import datetime
 import logging
 import typing
 import urllib3
@@ -570,9 +571,9 @@ class GithubReleases(CheckUpdate):
         self.response_json_dic = {}
 
     @classmethod
-    def date_transform(cls, date_str: str) -> time.struct_time:
+    def date_transform(cls, date_str: str) -> datetime.datetime:
         # 例: "2022-02-02T08:21:26Z"
-        return time.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
+        return datetime.datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
 
     def do_check(self):
         url = "https://api.github.com/repos/%s/releases" % self.repository_url
