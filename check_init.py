@@ -641,3 +641,82 @@ class GithubReleases(CheckUpdate):
                 self.info_dic["DOWNLOAD_LINK"],
             ]
         return '\n'.join(print_str_list)
+
+class GithubActionsArtifacts(CheckMultiUpdate):
+    repository_url: ClassVar[str]
+    auth_token: ClassVar[str] = GITHUB_TOKEN
+
+    def __init__(self):
+        self._abort_if_missing_property("repository_url")
+        super().__init__()
+        self.req_headers = None
+        if self.auth_token:
+            self.req_headers = {"Authorization": "Bearer " + self.auth_token}
+
+    def do_check(self):
+        url = "https://api.github.com/repos/%s/actions/runs" % self.repository_url
+        releases_json = json.loads(
+            self.request_url_text(
+                url, params={"per_page": 8, "page": 1, "status": "completed"}, headers=self.req_headers,
+            )
+        )
+        self.update_info("LATEST_VERSION", {
+            str(workflow_run["id"]): {
+                k: workflow_run[k] for k in {
+                    "head_branch",    # Branch name
+                    "head_sha",       # Commit hash
+                    "path",           # Workflow file path
+                    "display_title",  # Commit title
+                    "artifacts_url",  # Artifacts url (REST, used in after_check)
+                    "url",            # Self url (REST)
+                    "html_url",       # Html url
+                    "created_at",     # Creation time
+                    "updated_at",     # Update time (can be considered as the job completion time... maybe)
+                }
+            }
+            for workflow_run in releases_json.get("workflow_runs", [])
+        })
+
+    def send_message_single(self, key, item):
+        artifacts_json = json.loads(
+            self.request_url_text(item["artifacts_url"], headers=self.req_headers)
+        )
+        cost_time = int(
+            (GithubReleases.date_transform(item["updated_at"]) - GithubReleases.date_transform(item["created_at"])
+            ).total_seconds()
+        )
+        print_str_list = [
+            '<b>New GitHub Actions job of <a href="https://github.com/%s">%s</a> is complete</b>' % (
+                self.repository_url, self.repository_url.split('/', 1)[1]
+            ),
+            self.get_tags_text(),
+            "",
+            "<b>Creation time</b>: <code>%s</code>" % item["created_at"],
+            '<b>Branch:</b> <a href="https://github.com/%s/tree/%s">%s</a>' % (
+                self.repository_url, item["head_branch"], item["head_branch"],
+            ),
+            '<b>Commit:</b> <a href="https://github.com/%s/commit/%s">%s</a>' % (
+                self.repository_url, item["head_sha"], item["display_title"],
+            ),
+            '<b>Workflow:</b> <a href="https://github.com/%s/tree/%s/%s">%s</a>' % (
+                self.repository_url, item["head_sha"], item["path"], item["path"],
+            ),
+            "<b>Cost time:</b> <code>%sm %ss</code>" % (cost_time // 60, cost_time % 60),
+            "<b>Summary:</b> %s" % item["html_url"],
+        ]
+        if artifacts := artifacts_json.get("artifacts", []):
+            print_str_list += [
+                "",
+                "<b>Artifacts:</b>",
+            ]
+            for artifact in artifacts:
+                print_str_list.append(
+                    '<a href="https://github.com/%s/actions/runs/%s/artifacts/%s">%s (%s)</a>' % (
+                        self.repository_url,
+                        key,
+                        artifact["id"],
+                        artifact["name"],
+                        self.get_human_readable_file_size(int(artifact["size_in_bytes"])),
+                    )
+                )
+        _send_message('\n'.join(print_str_list), parse_mode="html")
