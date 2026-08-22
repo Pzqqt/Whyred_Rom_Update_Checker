@@ -676,6 +676,10 @@ class GithubActionsArtifacts(CheckMultiUpdate):
         """ 过滤规则 """
         return True
 
+    @staticmethod
+    def messages_sort_func(workflow_run_dic):
+        return int(workflow_run_dic["id"])
+
     def do_check(self):
         url = "https://api.github.com/repos/%s/actions/runs" % self.repository_url
         releases_json = json.loads(
@@ -692,6 +696,7 @@ class GithubActionsArtifacts(CheckMultiUpdate):
         self.update_info("LATEST_VERSION", {
             str(workflow_run["id"]): {
                 k: workflow_run[k] for k in {
+                    "id",
                     "head_branch",    # Branch name
                     "head_sha",       # Commit hash
                     "path",           # Workflow file path
