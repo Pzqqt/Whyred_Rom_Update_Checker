@@ -422,6 +422,10 @@ class BouquetKernel(GithubActionsArtifacts):
     fullname = "Bouquet Kernel CI Build"
     repository_url = "Pzqqt/android_kernel_xiaomi_marble"
 
+    @classmethod
+    def filter_rule(cls, workflow_run_dic: dict):
+        return workflow_run_dic.get("head_branch", "") == "bouquet_ci"
+
 class ClashVergeRev(GithubReleases):
     fullname = "Clash Verge Rev"
     repository_url = "clash-verge-rev/clash-verge-rev"
