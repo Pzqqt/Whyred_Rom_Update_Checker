@@ -671,6 +671,11 @@ class GithubActionsArtifacts(CheckMultiUpdate):
         if self.auth_token:
             self.req_headers = {"Authorization": "Bearer " + self.auth_token}
 
+    @staticmethod
+    def filter_rule(workflow_run_dic: dict) -> typing.Any:
+        """ 过滤规则 """
+        return True
+
     def do_check(self):
         url = "https://api.github.com/repos/%s/actions/runs" % self.repository_url
         releases_json = json.loads(
@@ -678,6 +683,12 @@ class GithubActionsArtifacts(CheckMultiUpdate):
                 url, params={"per_page": 8, "page": 1, "status": "completed"}, headers=self.req_headers,
             )
         )
+        if not (workflow_runs := releases_json.get("workflow_runs", [])):
+            print_and_log("%s: No workflow runs found!" % self.name, level=logging.WARNING)
+            return
+        if not (workflow_runs := list(filter(self.filter_rule, workflow_runs))):
+            print_and_log("%s: No workflow runs found after filtering!" % self.name, level=logging.WARNING)
+            return
         self.update_info("LATEST_VERSION", {
             str(workflow_run["id"]): {
                 k: workflow_run[k] for k in {
@@ -692,7 +703,7 @@ class GithubActionsArtifacts(CheckMultiUpdate):
                     "updated_at",     # Update time (can be considered as the job completion time... maybe)
                 }
             }
-            for workflow_run in releases_json.get("workflow_runs", [])
+            for workflow_run in workflow_runs
         })
 
     def send_message_single(self, key, item):
