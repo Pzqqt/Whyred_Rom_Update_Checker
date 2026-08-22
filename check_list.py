@@ -11,7 +11,7 @@ import datetime
 from requests import exceptions as req_exceptions
 
 from check_init import (
-    CheckUpdate, CheckMultiUpdate, SfCheck, PlingCheck, GithubReleases, CHROME_UA
+    CheckUpdate, CheckMultiUpdate, SfCheck, PlingCheck, GithubReleases, GithubActionsArtifacts, CHROME_UA
 )
 from tgbot import send_message as _send_message, send_photo as _send_photo
 from logger import print_and_log
@@ -418,6 +418,10 @@ class Apktool(GithubReleases):
     fullname = "Apktool"
     repository_url = "iBotPeaches/Apktool"
 
+class BouquetKernel(GithubActionsArtifacts):
+    fullname = "Bouquet Kernel CI Build"
+    repository_url = "Pzqqt/android_kernel_xiaomi_marble"
+
 class ClashVergeRev(GithubReleases):
     fullname = "Clash Verge Rev"
     repository_url = "clash-verge-rev/clash-verge-rev"
@@ -548,6 +552,7 @@ CHECK_LIST = (
     CloParrotKernel,
     CloParrotVendor,
     Apktool,
+    BouquetKernel,
     ClashVergeRev,
     ClashMetaAndroid,
     Jadx,
