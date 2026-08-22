@@ -403,6 +403,33 @@ class CheckMultiUpdate(CheckUpdate):
 
     messages_sort_func = None
 
+    def __init__(self):
+        super().__init__()
+        self.__new_keys = None
+
+    def _get_new_keys(self) -> frozenset:
+        if self.__new_keys is not None:
+            return self.__new_keys
+        fetch_items = json.loads(self.info_dic["LATEST_VERSION"])
+        if not isinstance(fetch_items, dict):
+            raise TypeError("LATEST_VERSION must be a dict!")
+        if self.prev_saved_info is None:
+            self.__new_keys = frozenset(fetch_items.keys())
+        else:
+            try:
+                saved_items = json.loads(self.prev_saved_info.LATEST_VERSION)
+            except json.decoder.JSONDecodeError:
+                saved_items = {}
+            self.__new_keys = frozenset(fetch_items.keys() - saved_items.keys())
+        return self.__new_keys
+
+    def is_updated(self) -> bool:
+        if self.info_dic["LATEST_VERSION"] is None:
+            return False
+        if self.prev_saved_info is None:
+            return True
+        return bool(self._get_new_keys())
+
     def get_print_text(self):
         raise NotImplemented
 
@@ -414,17 +441,8 @@ class CheckMultiUpdate(CheckUpdate):
         raise NotImplementedError
 
     def send_message(self):
+        new_keys = self._get_new_keys()
         fetch_items = json.loads(self.info_dic["LATEST_VERSION"])
-        if not isinstance(fetch_items, dict):
-            raise TypeError("LATEST_VERSION must be a dict!")
-        if self.prev_saved_info is None:
-            saved_items = {}
-        else:
-            try:
-                saved_items = json.loads(self.prev_saved_info.LATEST_VERSION)
-            except json.decoder.JSONDecodeError:
-                saved_items = {}
-        new_keys = fetch_items.keys() - saved_items.keys()
         if self.messages_sort_func is not None and callable(self.messages_sort_func):
             new_keys = sorted(new_keys, key=lambda x: self.messages_sort_func(fetch_items[x]))
         for key in new_keys:
