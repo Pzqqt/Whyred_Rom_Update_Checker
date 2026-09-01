@@ -424,7 +424,10 @@ class BouquetKernel(GithubActionsArtifacts):
 
     @classmethod
     def filter_rule(cls, workflow_run_dic: dict):
-        return workflow_run_dic.get("head_branch", "") == "bouquet_ci"
+        return all([
+            workflow_run_dic.get("head_branch", "") == "bouquet_ci",
+            "[TEST]" not in workflow_run_dic.get("display_title", ""),
+        ])
 
 class ClashVergeRev(GithubReleases):
     fullname = "Clash Verge Rev"
