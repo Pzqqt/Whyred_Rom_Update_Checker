@@ -684,7 +684,14 @@ class GithubActionsArtifacts(CheckMultiUpdate):
         url = "https://api.github.com/repos/%s/actions/runs" % self.repository_url
         releases_json = json.loads(
             self.request_url_text(
-                url, params={"per_page": 8, "page": 1, "status": "completed"}, headers=self.req_headers,
+                url,
+                params={
+                    "per_page": 8,
+                    "page": 1,
+                    "status": "completed",
+                    "created": '>' + (datetime.datetime.today() - datetime.timedelta(days=3)).strftime('%Y-%m-%d'),
+                },
+                headers=self.req_headers,
             )
         )
         if not (workflow_runs := releases_json.get("workflow_runs", [])):
