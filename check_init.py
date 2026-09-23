@@ -586,6 +586,11 @@ class GithubReleases(CheckUpdate):
     def __init__(self):
         self._abort_if_missing_property("repository_url")
         super().__init__()
+        self.req_headers = {
+            "Accept": "application/vnd.github+json",
+        }
+        if self.auth_token:
+            self.req_headers["Authorization"] = "Bearer " + self.auth_token
         self.response_json_dic = {}
 
     @classmethod
@@ -595,18 +600,14 @@ class GithubReleases(CheckUpdate):
 
     def do_check(self):
         url = "https://api.github.com/repos/%s/releases" % self.repository_url
-        if self.auth_token:
-            req_headers = {"Authorization": "Bearer " + self.auth_token}
-        else:
-            req_headers = None
         if self.ignore_prerelease:
-            latest_json = json.loads(self.request_url_text(url + "/latest", headers=req_headers))
+            latest_json = json.loads(self.request_url_text(url + "/latest", headers=self.req_headers))
             if not latest_json:
                 print_and_log("%s: No releases found!" % self.name, level=logging.WARNING)
                 return
         else:
             releases_json = json.loads(
-                self.request_url_text(url, params={"per_page": 1, "page": 1}, headers=req_headers)
+                self.request_url_text(url, params={"per_page": 1, "page": 1}, headers=self.req_headers)
             )
             if not releases_json:
                 print_and_log("%s: No releases found!" % self.name, level=logging.WARNING)
@@ -667,9 +668,11 @@ class GithubActionsArtifacts(CheckMultiUpdate):
     def __init__(self):
         self._abort_if_missing_property("repository_url")
         super().__init__()
-        self.req_headers = None
+        self.req_headers = {
+            "Accept": "application/vnd.github+json",
+        }
         if self.auth_token:
-            self.req_headers = {"Authorization": "Bearer " + self.auth_token}
+            self.req_headers["Authorization"] = "Bearer " + self.auth_token
 
     @staticmethod
     def filter_rule(workflow_run_dic: dict) -> typing.Any:
